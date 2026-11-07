@@ -253,6 +253,14 @@ CustomerAccount invite → EXC RFQ → Tenant Incoming RFQ → clarified data
 
 **Stop rule:** If a scenario requires inventing legal authority, money threshold, retrospective POD edit, a fake Carrier acceptance or cross-tenant data leak, mark `BLOCKED_FOR_BUSINESS_REVIEW` and preserve the underlying facts; do not satisfy it with a mock-positive test.
 
+## 7A. Blocker disposition after the fourth analysis pass
+
+The 12 `BLOCKER` gaps `GAP-01/02/03/05/08/09/12/13/15/18/21/22` now each have explicit fail-closed **proposed technical rules** and decision evidence in [27 — Business Policy Decisions](27-r0-blocker-policy-decisions.md), [machine JSON](contracts/r0-blocker-decisions.v1.json).
+
+**Status distinction:** `DESIGN_SPECIFIED` for all 12; **zero real business/legal stakeholder approvals recorded**. They therefore remain **BLOCKED_FOR_BUSINESS_SIGNOFF** for irreversible legal/financial/customer commitments. Simulations do not replace a meeting.
+
+[28 — R0 TDD Bank](28-r0-tdd-acceptance-bank.md) supplies 60 blocker-level tests, 14 R0 safety tests (one for each safety gap) and 10 cross-role end-to-end checks. [29 — Stakeholder Workshop Kit](29-r0-business-acceptance-workshop-kit.md) provides five review sessions; neither test implementation nor approval is claimed. R1/R2 gap entries remain deferred.
+
 ## 8. Outstanding workshop questions
 
 - Which documents prove authority for customer signatory, carrier capacity confirmation and POD recipient in the Kazakhstan R0 corridor?
