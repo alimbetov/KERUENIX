@@ -1314,9 +1314,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-8-S07-01",
+      "id": "TDD-SIM-08-S07-01",
       "gapId": "GAP-07",
-      "simId": "SIM-8",
+      "simId": "SIM-08",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Incoming RFQ has absent assignee and two Sales workers",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
