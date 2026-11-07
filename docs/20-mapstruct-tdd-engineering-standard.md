@@ -102,3 +102,7 @@ The first permission-driven TDD input is [22 — Role → Permission → Scope �
 ## 11. Second security audit test selection
 
 The current authorization design contract is v2.1. Start Red/Green/Refactor by proving read-only permission cannot call Quote decline, EXC viewer cannot sign, foreign CustomerAccount cannot list RFQ/orders, and concurrent incoming RFQ assignment respects expectedVersion. Then add Testcontainers RLS for composed portal reads, booking cancellation request state separation, membership revoke isolation, and verified Finance payment reconciliation. See `AUTH-X-019..027` in [24](24-access-control-tdd-matrix-v2.md). These are **planned tests** only, not passing CI.
+
+## 12. User Story Book → cross-role Business Scenario Book → TDD
+
+Current draft sources: [User Story Book v0.5](21-user-story-book.md) and [25 — Business Scenario Book](25-business-scenario-book.md). 18 newly DISCOVERED role-based stories are not approved. 11 `BSC-*` scenarios contain 38 proposed business acceptance criteria. Do not turn unapproved narrative into unit-test contracts: close actor, pricing/legal liability, current RLS context, event/cargo evidence, permission gaps and exact state transitions first. On approval map each `BSC-xxx-AC-nn` to production-code test `TDD-BSC-xxx-nn`, reusing `AUTH-*` for security and `LFC-*` for domain invariants; use PostgreSQL Testcontainers for resource concurrency/cargo/finance uniqueness and Modulith verification for ownership. No tests are implemented by these documents.
