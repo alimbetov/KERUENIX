@@ -82,6 +82,24 @@ class ErrorContractTest {
     }
 
     @Test
+    void staleAggregateVersionReturns409WithoutInfrastructureDetails() throws Exception {
+        var result = mvc().perform(get("/test/stale"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("KX-GEN-409-001"))
+                .andReturn();
+        assertThat(result.getResponse().getContentAsString()).doesNotContain("SQL SECRET");
+    }
+
+    @Test
+    void unsupportedContentTypeReturns415WithoutParserTrace() throws Exception {
+        mvc().perform(post("/test/validate")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("not-json"))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.code").value("KX-GEN-415-001"));
+    }
+
+    @Test
     void httpMethodViolationPreservesAllowAnd405() throws Exception {
         mvc().perform(get("/test/validate"))
                 .andExpect(status().isMethodNotAllowed())
@@ -94,6 +112,11 @@ class ErrorContractTest {
         @GetMapping("/test/capacity")
         String capacity() {
             throw new DomainProblemException(ErrorCode.CAPACITY_CONFLICT);
+        }
+
+        @GetMapping("/test/stale")
+        String stale() {
+            throw new org.springframework.dao.OptimisticLockingFailureException("SQL SECRET version");
         }
 
         @GetMapping("/test/unexpected")
