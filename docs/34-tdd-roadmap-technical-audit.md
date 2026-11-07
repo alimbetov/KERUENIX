@@ -12,6 +12,8 @@
 
 **v1 was not yet an executable implementation schedule:** a late Jobs stage conflicted with earlier event use, stage owners were ambiguous, RD-05 scope was too broad for one merge, legal approvals and permissions were treated as dependencies without a per-command mechanism, and the JSON roadmap had no required CI consistency check. **v1.1 improves sequencing and testability; it does not certify code readiness.**
 
+**Follow-up finding:** the first v1.1 PR-cut list also lacked individual PR dependencies; it is now hardened with an explicit DAG and CI validation (AUD-RD-13).
+
 The PR contains a minimal backend HTTP error-handler bootstrap. GitHub Actions `Backend Error Contract` had a successful run on an earlier HEAD (SHA `964eaec3...` observed before roadmap revisions), **not proof of any real PostgreSQL RLS, Spring Modulith domain modules, Fleet/Booking tests or complete release**. This review did not execute the business application.
 
 ## 2. Detailed findings, severity and disposition
@@ -30,8 +32,9 @@ The PR contains a minimal backend HTTP error-handler bootstrap. GitHub Actions `
 | `AUD-RD-10` | P0 | **Количество test specs выдаётся за покрытие**: 132 кандидата и SDB 20 не составляют независимый исполняемый набор | Ввести per-PR applicability с accepted, failClosed, deferred, blocked; no test-count quota | RD-00, RD-11 | Manifest case/BR/source-to-owner mapping, no orphan IDs, no silent skipped |
 | `AUD-RD-11` | P1 | **Неавтоматизированная проверка roadmap**: JSON может ссылаться на неизвестные BR, modules, stages и измениться незаметно | Скрипт validate_tdd_roadmap.py и отдельный CI на docs/roadmap contracts | RD-00, RD-01 | Uniqueness, DAG, 17-module catalog, valid BSC/BR/phase refs, 84+48 baseline counts |
 | `AUD-RD-12` | P0 | **Переоценка статуса из старого CI**: Зелёные тесты RFC9457 не подтверждают новую RLS/Booking реализацию | Статус только при точном SHA/бизнес-согласовании/реальных DB+E2E тестах, restore и artifact digest | RD-01..RD-12 | Evidence manifest, no missing P0, signed BR, actual startup and restore |
+| `AUD-RD-13` | P0 | **PR-level dependency graph missing:** phases alone did not protect against starting Booking before Quote/Capacity, or Finance before Documents/POD | Add `dependsOnPrs` for every PR-00..20 and validate an acyclic graph with exact IDs | All stages / PR-00..20 | CI DAG validation and prerequisite code-qualified merge check |
 
-**Disposition:** all 12 now have a **written plan correction** in [33](33-tdd-development-roadmap-v1.md). For each one, implementation, business approvals and Testcontainers evidence remain **PENDING**. This is not a claim that 12 production defects have been fixed.
+**Disposition:** all 13 now have a **written plan correction** in [33](33-tdd-development-roadmap-v1.md). For each one, implementation, business approvals and Testcontainers evidence remain **PENDING**. This is not a claim that 13 production defects have been fixed.
 
 ## 3. Exact implementation boundary: platform reliability before first business write
 
@@ -76,7 +79,7 @@ Required first foundation PR `PR-01`:
 
 **Scope control:** 17 business modules remain in the catalog; only a minimum subset is needed for one R0 transport. No generic BPM engine, all-module controllers, universal soft delete, permanent per-module worker/service, unsanctioned regulatory automation or blanket Kubernetes requirement.
 
-**Planning:** Phase IDs `RD-00..RD-12` and PR IDs `PR-00..PR-20` are logical ordering/gates, **not days or weeks**. Estimate effort from the first 2–3 fully qualified vertical PRs and actual stakeholder availability. Distinguish *work that can start now* (docs validator, platform compatibility, fail-closed auth foundation) from *irreversible business commands blocked pending signoff*.
+**Planning:** Phase IDs `RD-00..RD-12` and PR IDs `PR-00..PR-20` have an explicit prerequisite DAG and are logical ordering/gates, **not days or weeks**. Estimate effort from the first 2–3 fully qualified vertical PRs and actual stakeholder availability. Distinguish *work that can start now* (docs validator, platform compatibility, fail-closed auth foundation) from *irreversible business commands blocked pending signoff*.
 
 ## 7. Reviewer conclusion
 
