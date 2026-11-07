@@ -17,6 +17,7 @@ KERUENIX/
 │   ├── pom.xml                        # один основной Maven/Spring Boot artifact в R0
 │   ├── src/main/java/kz/keruenix/
 │   │   ├── KeruenixApplication.java
+│   │   ├── platform/                 # jobs, state machine kernel, event/outbox infrastructure
 │   │   ├── tenancy/
 │   │   ├── commercial/
 │   │   ├── fleet/
@@ -171,3 +172,7 @@ P0–P5 — **порядок задач**, не длительности. Не �
 ## Intelligence — special module extension (proposed)
 
 `intelligence` is a separate Spring Modulith module for tenant-safe historical ML projections, immutable datasets, training lifecycle, registry and inference. `optimization` remains owner of Timefold jobs and hard constraints. Training workers are separately deployable and cannot write another module's tables. The exact contracts, state machines, RLS boundaries and acceptance cases are in [17 — Intelligence Special Module](17-intelligence-special-module.md). The design is R0; execution starts after qualified tenancy and a usable first business vertical slice. Do not treat this section as implemented code.
+
+## Platform Jobs / State Machines / Workflow standard
+
+Selected architecture: [18 — Platform Jobs, State Machines & Workflows](18-platform-jobs-state-machines-workflows.md). Platform Jobs stores durable technical job state in PostgreSQL with bounded virtual-thread I/O workers, lease fencing, retry/recovery and tenant security. State Machine Kernel only standardizes transition evaluation; each module persists its own business lifecycle and guards. Cross-module coordination belongs to domain-specific durable Process Managers. Redis never owns confirmed jobs. First acceptance slice: expired Fleet capacity hold + Booking process manager with outbox, crash and two-tenant tests. JobRunr is a PoC candidate, not a locked dependency.
