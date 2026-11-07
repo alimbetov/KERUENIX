@@ -1,4 +1,6 @@
-# 22 — Role → Permission → Resource Scope → Approval Policy → TDD Acceptance
+# 22 — Role → Permission → Resource Scope → Approval Policy → TDD Acceptance (historical v1)
+
+> **SUPERSEDED FOR NEW DESIGN:** use [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md) and [machine-readable v2](contracts/access-policy-matrix.v2.json). This document is preserved to trace initial Tenancy/Commercial decisions. Its tables represent the original 24-policy slice; v1 JSON subsequently acquired external-customer rows. The newer v2 also distinguishes guard-only checks from mandatory human approvals and adds Booking/Execution/Finance. Neither version is implemented.
 
 **Версия:** 1.0 / первая итерация Tenancy + Commercial. **Дата:** 2026-11-07. **Статус:** архитектурная матрица на business/security review; тесты НЕ реализованы. **Каталог бизнес-модулей:** 17, без изменений.
 
