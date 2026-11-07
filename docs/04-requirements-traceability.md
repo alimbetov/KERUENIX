@@ -130,7 +130,7 @@
 
 ## User Story Book — actor-centered traceability
 
-[21 — User Story Book](21-user-story-book.md) — единый банк пользовательских сценариев. ID `USB-<role>-NNN` связывает роли/tenant scope с `KX-*`, `LFC-*` и будущими `TDD-USB-*`. Итерация 1: реестр ролей и 22 draft сценария; это не утверждённые бизнес-правила и не исполняемые тесты.
+[21 — User Story Book](21-user-story-book.md) — единый банк пользовательских сценариев. ID `USB-<role>-NNN` связывает роли/tenant scope с `KX-*`, `LFC-*` и будущими `TDD-USB-*`. Итерация 1: 22 роли-персоны и 35 draft сценариев; это не утверждённые бизнес-правила и не исполняемые тесты.
 
 ## Access Governance — Tenancy & Commercial (итерация матрицы 1)
 
@@ -141,6 +141,19 @@
 - `KX-AUTH-SOD-001` (R0 P0): The author of exceptional commercial terms cannot approve the same exception; tenant admin cannot elevate self; no automatic platform-admin access to tenant business data.
 
 Acceptance statuses are **planned**, not green TDD tests. Thresholds, signatory authorization and recovery approval rules still require business/legal/security confirmation.
+
+## Canonical Access Governance v2 — external customer, owner and all R0 operations
+
+**Supersedes the earlier 24/36-policy v1 for future design.** [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json) define 55 draft policy rows over Tenancy, Commercial, Fleet, Booking, Execution, Tracking, Documents and Finance; each has a stable `AUTH-*` case, plus 16 adversarial `AUTH-X-*` cases. Role templates are not employment titles and do not grant unconditional access.
+
+- `KX-ACCESS-V2-001` (R0 P0): subject-type separation (platform operator / tenant member / external customer / partner / driver / receiver / service principal), explicit resource grants, deny-by-default. Acceptance: AUTH-X-001..004,012,014,015.
+- `KX-ACCESS-V2-002` (R0 P0): ordinary scoped access guard is distinct from human approval; independent price exception and payment approval; legal customer signatory evidence. Acceptance: AUTH-COM-005..007, AUTH-FIN-003, AUTH-X-005,013.
+- `KX-ACCESS-V2-003` (R0 P0): external customer My RFQs/My Orders with provider relationship scope and provider-side inbound request queue. Acceptance: AUTH-EXT-001..006, AUTH-COM-014, AUTH-X-001,002.
+- `KX-ACCESS-V2-004` (R0 P0): protected customer tracking/ETA/POD and exact shipment/document scope with revocation semantics. Acceptance: AUTH-EXT-007..008, AUTH-DOC-002, AUTH-X-007,009,012.
+- `KX-ACCESS-V2-005` (R0 P0): private verified-service customer feedback after completion; prevent self/foreign/replay reviews. Acceptance: AUTH-EXT-009,011, AUTH-X-008. Public ratings remain deferred.
+- `KX-ACCESS-V2-006` (R0 P0): Booking/Fleet/Driver/Receiver/Finance source-owned state guards, no quote=booking, GPS=POD, delivery=paid shortcuts. Acceptance: AUTH-FLT-001..002, AUTH-BKG-001..002, AUTH-EXE-001..003, AUTH-FIN-001..003, AUTH-X-016.
+
+**No tests have been implemented or executed.** External customer legal status and quote signing policies need business review; negative tests require real PostgreSQL/RLS and scope-projected HTTP assertions.
 
 ## Acceptance status
 
