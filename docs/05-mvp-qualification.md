@@ -8,7 +8,7 @@
 
 ## Audited R0 TDD Delivery Roadmap
 
-[33 — TDD Roadmap v1.1](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) define **13 R0 stage gates**, 21 independently testable PR outcomes and real RLS/Outbox/Modulith, cross-role API+UI and exact-SHA qualification. R0 events and retries begin at RD-01, **not** at late RD-10. Each irreversible operation is fail-closed until the applicable BR signoff. No stage is deemed complete from this planning document, and no migration, booking, custody or finance integration is qualified yet.
+[33 — TDD Roadmap v1.3](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) define **13 R0 stage gates**, 23 independently testable PR outcomes and real RLS/Outbox/Modulith, cross-role API+UI and exact-SHA qualification. R0 events and retries begin at RD-01, **not** at late RD-10. Each irreversible operation is fail-closed until the applicable BR signoff. No stage is deemed complete from this planning document, and no migration, booking, custody or finance integration is qualified yet.
 
 ## Error-handling foundation qualification (code exists, tests not run)
 
