@@ -21,7 +21,7 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
-| 34 | [TDD Roadmap Technical Audit v1.1](34-tdd-roadmap-technical-audit.md) | 12 technical findings, severity, corrections, PR slicing, unresolved business gates | Audit complete / implementation pending |
+| 34 | [TDD Roadmap Technical Audit v1.1](34-tdd-roadmap-technical-audit.md) | 13 technical findings, PR prerequisite DAG, owner/test gates, unresolved business signoff | Audit complete / implementation pending |
 | 33 | [TDD Development Roadmap v1.1](33-tdd-development-roadmap-v1.md) | RD-00..RD-12, 21 small PR cuts, early Outbox/RLS, owner boundaries, TDD+UI+CI gates | Revised proposal / no business module qualified |
 | JSON | [TDD Roadmap Contract v1.1](contracts/tdd-development-roadmap.v1.json) | Machine-readable DAG, PR cuts, BR/test traceability and ownership guards | Proposed / validated by separate CI when green |
 | CI | [TDD Roadmap Contract Validator](../scripts/validate_tdd_roadmap.py) | Phase DAG, 17 modules, BR/BSC references, 21 PR cuts, 132 candidate test records | New CI contract gate; not business code |
