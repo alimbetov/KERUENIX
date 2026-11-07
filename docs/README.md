@@ -18,6 +18,7 @@
 | 09 | [Deployment & Operations](09-deployment-operations.md) | Как Cloud и Enterprise используют один код? | Draft |
 | 10 | [Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md) | Каковы команды, состояния, инварианты, согласования и исключения? | Proposed / review |
 | 11 | [Lifecycle Acceptance & Simulation](11-commercial-execution-acceptance-v1.md) | Как проверить коммерческий и операционный цикл? | Test plan |
+| 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | JSON | [Lifecycle State Machines](contracts/commercial-execution-lifecycle.v1.json) | Машинно-читаемый контракт допустимых переходов (12 агрегатов) | Proposed |
 | 25 | [Сводка изменений идей v0.2](../idea/25-consolidation-v0.2.md) | Что уточнили и что ещё нужно доказать? | Draft |
 | 26 | [Lifecycle gaps and decisions](../idea/26-commercial-execution-lifecycle-risks.md) | Коммерческие риски, исключения и бизнес-вопросы | Proposed |
