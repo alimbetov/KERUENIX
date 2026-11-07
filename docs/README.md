@@ -21,7 +21,7 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
-| 16 | [Data & GIS Annex for 16 Modules](16-module-storage-gis-addendum.md) | Отдельные требования и тесты к хранению и геоданным каждого модуля | Proposed |
+| 17 | [Intelligence Special Module](17-intelligence-special-module.md) | История ML, обучение, модельный реестр, inference, tenant isolation и тесты | Proposed |\n| 16 | [Data & GIS Annex for 16 Modules](16-module-storage-gis-addendum.md) | Отдельные требования и тесты к хранению и геоданным каждого модуля | Proposed |
 | JSON | [Storage & GIS Module Contract](contracts/storage-gis-module-contract.v1.json) | Машинный каталог 16 модульных требований | Proposed |
 | 14 | [Modular Delivery Blueprint](14-modular-delivery-blueprint.md) | Структура репозитория, PR срезы, контракты и qualification | Proposed |
 | JSON | [Module Boundaries v1](contracts/module-boundaries.v1.json) | Каталог модулей и разрешённых зависимостей (пока без кода) | Proposed |
