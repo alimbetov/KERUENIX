@@ -1,0 +1,515 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "TWELVE_BLOCKER_CONTRACTS_DESIGNED_NO_STAKEHOLDER_SIGNOFF",
+  "date": "2026-11-07",
+  "sources": [
+    "docs/26-role-process-simulation-and-gap-audit.md",
+    "docs/10-commercial-execution-lifecycle-v1.md",
+    "docs/contracts/access-policy-matrix.v2.json"
+  ],
+  "legalResearch": [
+    {
+      "url": "https://old.adilet.zan.kz/rus/docs/K2600000255",
+      "title": "Kazakhstan Digital Code No.255-VIII (EDS/e-doc provisions)",
+      "interpretation": "Verify effective version, signature method, legal entity authority before treating quote/POD as legally binding. This document does not assert that portal click is EDS."
+    },
+    {
+      "url": "https://adilet.kz/ru/laws/doc-14027/",
+      "title": "Prior electronic document and EDS law",
+      "interpretation": "Reported repealed; avoid outdated law as operating requirement."
+    }
+  ],
+  "decisionStateDefinitions": {
+    "DESIGN_SPECIFIED": "Suggested fail-safe technical/operational rule is written, not approved by party representatives",
+    "PENDING_REAL_STAKEHOLDER": "Real stakeholder must approve obligations and exceptions",
+    "NOT_EXECUTED": "No production code/tests or simulator executed"
+  },
+  "decisions": [
+    {
+      "decisionId": "BR-01",
+      "gapId": "GAP-01",
+      "title": "Customer legal signatory on Quote",
+      "moduleOwner": "Commercial",
+      "signoffActors": [
+        "Customer legal representative",
+        "legal counsel"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "Customer quote acceptance requires verified identity, org representation/delegation evidence, exact immutable QuoteVersion digest, full terms, authority valid at event time; separate signatory grant; if verified signing method unavailable: status SIGNATURE_PENDING not ACCEPTED and no binding booking.",
+      "requiredEvidence": "Signed/accepted record: signer identity, tenant/customerOrg, delegation proof ref, signature method, UTC timestamp, termsHash, version, policyVersion.",
+      "scenarioVariants": [
+        "Customer without tenant",
+        "customer tenant",
+        "delegated signer",
+        "role change while quote open",
+        "signer expired",
+        "acceptance retry."
+      ],
+      "outstandingSignoff": "Signing method and Kazakhstan pilot contract wording require written legal signoff; portal click alone not assumed equivalent to statutory EDS.",
+      "storyIds": [
+        "USB-EXC-004",
+        "USB-SHP-002"
+      ],
+      "simIds": [
+        "SIM-06",
+        "SIM-13"
+      ],
+      "existingTests": [
+        "AUTH-EXT-006",
+        "LFC-003",
+        "LFC-004"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-02",
+      "gapId": "GAP-02",
+      "title": "External customer Quote decline",
+      "moduleOwner": "Commercial",
+      "signoffActors": [
+        "Customer representative",
+        "provider sales"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "customer:quote:decline requires explicit customer decline permission (not read), current ISSUED version, exact customer-account relationship and reason. Decline is an authorized state-changing command, idempotent and audited; cannot decline ACCEPTED/EXPIRED/SUPERSEDED version.",
+      "requiredEvidence": "quoteVersion, actor, reasonCode, idempotencyKey, expectedVersion, timestamp, event id.",
+      "scenarioVariants": [
+        "viewer only",
+        "signer without decline grant",
+        "expiry race",
+        "duplicate decline",
+        "different customerOrg."
+      ],
+      "outstandingSignoff": "Business must decide whether general customer requester can decline or only signatory; default separate grant.",
+      "storyIds": [
+        "USB-EXC-014"
+      ],
+      "simIds": [
+        "SIM-13"
+      ],
+      "existingTests": [
+        "AUTH-COM-008",
+        "AUTH-X-019"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "REVIEW_AS_APPLICABLE",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-03",
+      "gapId": "GAP-03",
+      "title": "Own-tenant customer vs provider EXC identity",
+      "moduleOwner": "Tenancy",
+      "signoffActors": [
+        "Tenant Admin",
+        "customer org admin",
+        "security"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "Each request resolves verified subject, active relationship and providerTenant/customerOrg/account; no caller-supplied tenant override; own Tenant-B membership never creates membership in provider Tenant-A; RLS and field projections deny cross-customer and cross-provider reads.",
+      "requiredEvidence": "grantId, providerTenantId, customerOrgId, customerAccountId, scope, expiry, revocation, policy version.",
+      "scenarioVariants": [
+        "same user in 2 customer orgs",
+        "multiple providers",
+        "branch scoping",
+        "partner Grant revoked while Redis warm",
+        "subscription difference."
+      ],
+      "outstandingSignoff": "CustomerAccount ownership, verified company contact, invite origin and authority require customer pilot signoff.",
+      "storyIds": [
+        "USB-EXC-001",
+        "USB-EXC-003",
+        "USB-TEN-005"
+      ],
+      "simIds": [
+        "SIM-04",
+        "SIM-05",
+        "SIM-38"
+      ],
+      "existingTests": [
+        "AUTH-X-001",
+        "AUTH-X-002",
+        "AUTH-X-015",
+        "AUTH-X-021",
+        "AUTH-X-023"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "REVIEW_AS_APPLICABLE",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-04",
+      "gapId": "GAP-05",
+      "title": "Subscription suspended with active cargo",
+      "moduleOwner": "SaaS Control",
+      "signoffActors": [
+        "Tenant Owner",
+        "operations head",
+        "legal"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "SaaS subscription restrictions never delete, hide or silently stop in-flight safety-critical trip/custody/POD/evidence and incident reporting. Proposed SAFE_CONTINUITY mode permits scoped safety/evidence commands on already active work, blocks new discretionary paid bookings; immutable ledger and audit. Never treat billing fault as transport cancellation.",
+      "requiredEvidence": "subscription state, active booking/trip refs, continuity policy version, authorized actors, audit, exact allowed actions.",
+      "scenarioVariants": [
+        "subscription suspended before booking",
+        "during Trip.STARTED",
+        "after delivery while POD pending",
+        "unpaid invoice",
+        "SaaS service outage."
+      ],
+      "outstandingSignoff": "Scope/duration of safe continuity, contractual commitments and retention need legal/operations/SaaS signoff; no default automatic operation without policy.",
+      "storyIds": [
+        "USB-TNO-004"
+      ],
+      "simIds": [
+        "SIM-41"
+      ],
+      "existingTests": [
+        "LFC-011",
+        "LFC-034"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-05",
+      "gapId": "GAP-08",
+      "title": "Material change to RFQ/Quote after issue or acceptance",
+      "moduleOwner": "Commercial + Booking",
+      "signoffActors": [
+        "Customer and Sales",
+        "legal",
+        "operations"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "Material edit of cargo/address/date/quantity/price creates explicit revision with snapshot and change proposal, never mutates issued/accepted QuoteVersion. Pre-accept: supersede old version and require new approval; post-accept: amendment request, commercial and customer agreement, Booking revalidation/re-reservation if capacity impacted. Until acceptance keep current binding truth and explicit pending change; no phantom cancellation.",
+      "requiredEvidence": "old/new immutable version refs, change reason, expectedVersion, approval/acceptance hashes, reservation impact.",
+      "scenarioVariants": [
+        "small draft correction",
+        "price increase",
+        "weight change after booking",
+        "changed carrier/time window",
+        "acceptance races revision."
+      ],
+      "outstandingSignoff": "Which changes are material, cancellation price and legal amendment process require customer/Sales/legal signoff.",
+      "storyIds": [
+        "USB-EXC-011",
+        "USB-SAL-008",
+        "USB-SAL-002"
+      ],
+      "simIds": [
+        "SIM-09",
+        "SIM-10"
+      ],
+      "existingTests": [
+        "LFC-004",
+        "LFC-026",
+        "AUTH-COM-012"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-06",
+      "gapId": "GAP-09",
+      "title": "CarrierOffer selection/withdrawal and binding capacity",
+      "moduleOwner": "Commercial + Fleet",
+      "signoffActors": [
+        "Carrier authorized representative",
+        "procurement",
+        "legal"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "CarrierOffer REQUESTED/OFFERED/SELECTED is sourcing state, never resource availability proof. Carrier may decline/withdraw before specifically defined cutoff; store carrier-authorized acknowledgement with expiry/version. Fleet holds resource and obtains separate owner consent; only CONFIRMED capacity may unblock Booking. Post-confirm withdrawal triggers BookingException/replacement, not silent resource release or false confirmation.",
+      "requiredEvidence": "carrierOffer version, actor authority, supplier agreement, ack timestamp, expiry, capacity reservation ref, exception event.",
+      "scenarioVariants": [
+        "carrier without paid tenant",
+        "carrier calls phone",
+        "offer expires during selection",
+        "withdraw before/after HELD/CONFIRMED",
+        "own fleet."
+      ],
+      "outstandingSignoff": "Carrier commitments, contract signature method, cancellation liabilities and fallback manual evidence require carrier/legal signoff.",
+      "storyIds": [
+        "USB-CAR-001",
+        "USB-CAR-003",
+        "USB-PRC-003"
+      ],
+      "simIds": [
+        "SIM-15",
+        "SIM-16",
+        "SIM-17"
+      ],
+      "existingTests": [
+        "LFC-006",
+        "AUTH-COM-010",
+        "AUTH-FLT-002"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-07",
+      "gapId": "GAP-12",
+      "title": "Double-booking exclusion and expiry race",
+      "moduleOwner": "Fleet",
+      "signoffActors": [
+        "Planner",
+        "Dispatcher",
+        "carrier manager"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "PostgreSQL is authority for exclusive vehicle/driver/trailer per overlapping time interval; unique/exclusion constraints or explicit locked resource-interval model; version checks and transactional hold+outbox. HELD expiry job can RELEASE only same version and expired state; CONFIRMED or CONSUMED never released by stale expiry. No Redis-only booking lock.",
+      "requiredEvidence": "resource ids, tenant/owner, UTC tstzrange interval, reservation version, holdExpiresAt, commit event.",
+      "scenarioVariants": [
+        "two dispatchers race",
+        "held/confirmed same instant",
+        "different time zones",
+        "server crash after hold",
+        "shared-load not enabled."
+      ],
+      "outstandingSignoff": "Shared load and partial vehicle capacity not supported in R0 unless separately qualified; vehicle/driver/trailer resource model to be signed by Fleet.",
+      "storyIds": [
+        "USB-DSP-001",
+        "USB-PLN-001"
+      ],
+      "simIds": [
+        "SIM-18"
+      ],
+      "existingTests": [
+        "LFC-007",
+        "AUTH-FLT-001",
+        "AUTH-BKG-001"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "REVIEW_AS_APPLICABLE",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-08",
+      "gapId": "GAP-13",
+      "title": "Compliance critical UNKNOWN and legal route safety",
+      "moduleOwner": "Compliance",
+      "signoffActors": [
+        "Compliance specialist",
+        "legal",
+        "planner"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "Critical missing/unverified permit, cargo restriction, jurisdictional route constraint or UNKNOWN assessment yields HOLD/DENY, never default allow. Only qualified Compliance authority and versioned rule/evidence can resolve; not Dispatcher/ML/ETA. Keep manual review in pilot; no general-purpose rules engine.",
+      "requiredEvidence": "source rule version, validity/jurisdiction, cargo/route snapshot, reviewer identity/qualification, decision and evidence refs.",
+      "scenarioVariants": [
+        "dangerous goods",
+        "expired permit",
+        "region unknown",
+        "conflict among legal sources",
+        "override request",
+        "offline driver."
+      ],
+      "outstandingSignoff": "Kazakhstan corridor applicability, binding norm version and legally qualified reviewer must be validated against official sources and counsel.",
+      "storyIds": [
+        "USB-COM-001",
+        "USB-COM-002"
+      ],
+      "simIds": [
+        "SIM-19"
+      ],
+      "existingTests": [
+        "LFC-009"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-09",
+      "gapId": "GAP-15",
+      "title": "Offline pickup event after reassignment/revoke",
+      "moduleOwner": "Execution",
+      "signoffActors": [
+        "Driver",
+        "Dispatcher",
+        "security",
+        "operations"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "Separate capture of historical fact from authority to mutate current custody. Offline event with stable event ID, signed device/actor assignment snapshot, observedAt/receivedAt, baseVersion, cargo units and evidence; on late replay verify authoritative assignment history and monotonic custody. Valid historical evidence may be quarantined for reconciliation; revoked/current unauthorized actor cannot create new custody state. Exactly one logical effect via DB dedup.",
+      "requiredEvidence": "eventId, actor, trip/assignmentVersion, cargoUnitIds, evidence hash, observedAt, receivedAt, signature, decision/reconciliation.",
+      "scenarioVariants": [
+        "offline replay after driver reassigned",
+        "duplicate delayed event",
+        "wrong device clock",
+        "no network",
+        "expired role",
+        "order inversion."
+      ],
+      "outstandingSignoff": "Legal admissibility of offline signature and custody handover proof needs operations/legal signoff.",
+      "storyIds": [
+        "USB-DRV-002",
+        "USB-DSP-006"
+      ],
+      "simIds": [
+        "SIM-24",
+        "SIM-25",
+        "SIM-35"
+      ],
+      "existingTests": [
+        "LFC-011",
+        "LFC-029",
+        "LFC-032"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-10",
+      "gapId": "GAP-18",
+      "title": "Partial POD and conservation",
+      "moduleOwner": "Execution",
+      "signoffActors": [
+        "Consignee",
+        "driver",
+        "operations",
+        "finance"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "Each identified CargoUnit has nonnegative conserved quantity across current custodian, accepted delivered, returned and incident disposition. DeliveryAttempt 8/10=PARTIAL, Shipment not DELIVERED; residual 2 remain owned by known custodian with reattempt/return case. POD evidence append-only and corrections versioned; duplicate signature/event does not create second delivery.",
+      "requiredEvidence": "cargoUnit IDs, accepted/refused/damaged counts, custody actor, verified receiver, signed POD, evidence hash, disposition refs.",
+      "scenarioVariants": [
+        "full, partial, no-show, reject, damaged, return, mixed units, duplicate callback, delivery correction."
+      ],
+      "outstandingSignoff": "Recipient authority and jurisdiction-specific evidence form need consignee/legal review.",
+      "storyIds": [
+        "USB-RCV-001",
+        "USB-RCV-002"
+      ],
+      "simIds": [
+        "SIM-27",
+        "SIM-28",
+        "SIM-29"
+      ],
+      "existingTests": [
+        "LFC-013",
+        "LFC-014",
+        "LFC-035",
+        "AUTH-EXE-003"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-11",
+      "gapId": "GAP-21",
+      "title": "Booking cancellation and financial impact",
+      "moduleOwner": "Booking",
+      "signoffActors": [
+        "Customer",
+        "operations manager",
+        "commercial",
+        "finance"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "Customer submits CancellationRequest, does not mutate Booking. Booking owner checks exact aggregate state+version, started Trip, custody and contractual terms. Before execution may CANCEL after policy approval with reservation release, invoice/charges audit; in execution must record exception/return/rescue with custody and payment impact, not direct CANCELLED. Nonapproved fees stay disputed/pending.",
+      "requiredEvidence": "cancelRequest id, booking version, legal terms snapshot, reason, actor, time, carrier response, approved charges, resource release/compensation event.",
+      "scenarioVariants": [
+        "cancel before capacity",
+        "after Booking confirmed",
+        "after pickup",
+        "concurrent Trip.STARTED",
+        "outstanding invoice",
+        "seller carrier refuses."
+      ],
+      "outstandingSignoff": "Precise time windows, fee thresholds, party liable and cancellation authority require forwarder/customer/carrier/finance/legal agreement.",
+      "storyIds": [
+        "USB-EXC-009",
+        "USB-DSP-003"
+      ],
+      "simIds": [
+        "SIM-21",
+        "SIM-22"
+      ],
+      "existingTests": [
+        "LFC-034",
+        "AUTH-EXT-013",
+        "AUTH-BKG-003"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    },
+    {
+      "decisionId": "BR-12",
+      "gapId": "GAP-22",
+      "title": "Payment approval vs bank/ERP settlement",
+      "moduleOwner": "Finance",
+      "signoffActors": [
+        "Finance controller",
+        "independent approver",
+        "accounting"
+      ],
+      "priority": "P0",
+      "recommendedFailSafeContract": "Payment PREPARED/APPROVED are internal authorization not actual settlement. Only verified bank/ERP transaction and unique allocation(s), currency/amount/FX/taxes, matched legal entity/source may reduce receivable/payable. Duplicate callbacks/idempotency never create second allocation; reconcile partial advances, disputes and credit corrections separately. Paid status derived from confirmed allocation not UI command.",
+      "requiredEvidence": "paymentTransaction reference, source/issuer, hash, amount/currency, exchange snapshot, allocation unique key, approver and initiator IDs.",
+      "scenarioVariants": [
+        "same operator initiates/approves",
+        "paid partially",
+        "duplicate callback",
+        "bank outage",
+        "wrong currency",
+        "forged payment",
+        "disputed surcharge."
+      ],
+      "outstandingSignoff": "Which bank/ERP is authoritative, ledger of record, legal payment evidence, timing/reversal policy need finance/accounting signoff.",
+      "storyIds": [
+        "USB-FIN-001",
+        "USB-FIN-003",
+        "USB-FAP-001"
+      ],
+      "simIds": [
+        "SIM-31",
+        "SIM-32"
+      ],
+      "existingTests": [
+        "LFC-021",
+        "LFC-022",
+        "LFC-025",
+        "AUTH-FIN-003",
+        "AUTH-FIN-004"
+      ],
+      "technicalStatus": "DESIGN_SPECIFIED",
+      "businessApproval": "PENDING_REAL_STAKEHOLDER",
+      "legalApproval": "PENDING",
+      "operationalAcceptance": "NOT_EXECUTED",
+      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+    }
+  ]
+}
