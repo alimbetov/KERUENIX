@@ -4,7 +4,7 @@
 
 **Цель:** поэтапно реализовать KERUENIX как один надёжный Spring Modulith modular monolith в Java 21, от имеющегося error bootstrap до полной, безопасной и воспроизводимой автомобильной перевозки между независимыми компаниями. Технические решения и бизнес-требования должны квалифицироваться через TDD, реальные PostgreSQL/PostGIS транзакции, RLS, API и cross-role E2E. Не заявлять готовность по наличию документации, mock-тестов или единичного happy path.
 
-**Audit:** [34 — TDD Roadmap Technical Audit](34-tdd-roadmap-technical-audit.md) — 12 findings resolved in proposed roadmap, not business signoff. **Machine roadmap:** [tdd-development-roadmap.v1.json](contracts/tdd-development-roadmap.v1.json). Эта JSON-модель содержит единые ID этапов, связи, owners, scope, связанные BSC/BR и gates. Это план, не GitHub Actions/issue tracker и не CI evidence.
+**Audit:** [34 — TDD Roadmap Technical Audit](34-tdd-roadmap-technical-audit.md) — 13 findings resolved in proposed roadmap, not business signoff. **Machine roadmap:** [tdd-development-roadmap.v1.json](contracts/tdd-development-roadmap.v1.json). Эта JSON-модель содержит единые ID этапов, связи, owners, scope, связанные BSC/BR и gates. Это план, не GitHub Actions/issue tracker и не CI evidence.
 
 **Опорные спецификации:**
 - [32 — Scenario-Driven Backend Design](32-scenario-driven-backend-design-v1.md) + [query/soft delete contract](contracts/backend-query-soft-delete.v1.json): DDD, command/query repositories, DTO/MapStruct, controllers, pagination, filters, Soft Delete.
@@ -667,6 +667,7 @@ This audit is attached as [34 — Roadmap Technical Audit](34-tdd-roadmap-techni
 | AUD-RD-10 | P0 | Counts (84 + 48) might become meaningless test quota | Applicability register by story/owner/BR; 132 planned case specs, eight MIX not counted, no blind gate from unsigned legal flow |
 | AUD-RD-11 | P1 | No executable roadmap JSON/ID consistency gate | New stdlib roadmap validator & CI workflow; cross-check modules, phases, story/test catalogs |
 | AUD-RD-12 | P0 | Status might be promoted from previously green handler SHA | Per-phase evidence manifest: exact SHA, artifact digest, RLS/restore/UI/legal evidence; stage remains planned until that evidence exists |
+| AUD-RD-13 | P0 | 21 PR cuts had no explicit per-PR prerequisites | Each PR has `dependsOnPrs` and an acyclic DAG; prerequisite code-qualified before merge |
 
 **R0 contract truth:** `CustomerPortalApi` and `PlatformJobs` are technical integration surfaces, not 18th/19th business modules. The 17-domain catalog stays fixed. RD-01 Platform baseline is infrastructure, not a Tenancy feature.
 
@@ -674,29 +675,31 @@ This audit is attached as [34 — Roadmap Technical Audit](34-tdd-roadmap-techni
 
 A phase is an **epic with exit criteria**, not a requirement to implement all participating modules in one PR. Each row below is one recommended **independently testable small PR or smaller**. Early PRs may be separate focused branches but must build/test on the target baseline; dependents cannot merge on red integration.
 
-| PR | Phase | Canonical write owner | Runnable outcome / first critical gate |
-|---|---|---|---|
-| `PR-00` | `RD-00` | `architecture` | traceability validator, signoff ledger and phase-by-phase test selection. **Gate:** catalog IDs and BR status truthful |
-| `PR-01` | `RD-01` | `platform` | Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox. **Gate:** verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic |
-| `PR-02` | `RD-02` | `tenancy` | tenant/legal entity and verified identity/invitation/grants. **Gate:** real JWT or verified auth adapter + multi-grant denial + SoD |
-| `PR-03` | `RD-02` | `tenancy` | provider-customer organization grants and revoke. **Gate:** Customer-X/Y negative list/detail, warm cache, RLS context reset |
-| `PR-04` | `RD-03` | `commercial` | RFQ creation+submit+customer My RFQs. **Gate:** idempotency conflict + scoped list/pagination + first real outbox |
-| `PR-05` | `RD-03` | `commercial` | provider Inbox assignment, clarification/qualify. **Gate:** branch restriction, CAS assignment, no unapproved quote |
-| `PR-06` | `RD-04` | `commercial` | immutable QuoteVersion issue/supersede, independent price approval. **Gate:** version race + SoD; no binding acceptance without BR-01 |
-| `PR-07` | `RD-04` | `commercial` | authorized customer Quote accept/decline with evidence. **Gate:** BR-01/02/05 acceptance, exact signer, termsHash and expiry |
-| `PR-08` | `RD-05` | `cargo` | CargoProfile/identified units and physical compatibility inputs. **Gate:** mass/quantity/identity/value invariants |
-| `PR-09` | `RD-05` | `compliance` | versioned compliance decision and critical UNKNOWN safety gate. **Gate:** qualified source / correct HOLD, BR-08 signoff where binding |
-| `PR-10` | `RD-05` | `fleet` | vehicle/driver/trailer registry and atomic capacity holding. **Gate:** PostgreSQL exclusion/locked-slot race, hold expiry fencing BR-07 |
-| `PR-11` | `RD-06` | `commercial` | carrier sourced offer+withdrawal/ack and own-fleet alternative. **Gate:** partner grants, no margin disclosure, no false capacity, BR-06 |
-| `PR-12` | `RD-06` | `booking` | Booking pending→confirmed via accepted quote and confirmed exclusive capacity. **Gate:** process crash/replay, stale quote/carrier, no phantom Booking |
-| `PR-13` | `RD-07` | `execution` | Trip+pickup offline custody and signed evidence references. **Gate:** historical authority, late replay, one custodian, BR-09 |
-| `PR-14` | `RD-07` | `execution` | delivery attempts, partial/refused POD and compensating disposition. **Gate:** 8/10 conservation, receiver evidence and proof immutability, BR-10 |
-| `PR-15` | `RD-08` | `tracking` | customer-scoped timeline and ETA freshness. **Gate:** stale cache, wrong-customer cursor, no GPS-derived POD |
-| `PR-16` | `RD-08` | `documents` | verified POD/document package and bounded download. **Gate:** verified version, revoked grant, legal hold, no generic soft delete |
-| `PR-17` | `RD-09` | `finance` | distinct AR/AP/Invoice and verified payment reconciliation. **Gate:** money/SoD, allocation uniqueness, reversal, BR-11/12 |
-| `PR-18` | `RD-10` | `platform` | advanced job fencing, timeout, crash and safe SaaS continuity. **Gate:** replay/failover + BR-04 in-flight evidence after suspension |
-| `PR-19` | `RD-11` | `cross-functional` | full customer→forwarder→carrier→driver→receiver→finance real E2E. **Gate:** accepted P0 negative, RLS, outage recovery, UI states and artifact evidence |
-| `PR-20` | `RD-12` | `release` | pilot signoff, container, SBOM, restore drill and release artifact. **Gate:** same SHA/digest, no open P0, signed applicable BR |
+| PR | Phase | Canonical write owner | Requires code-qualified PRs | Runnable outcome / first critical gate |
+|---|---|---|---|---|
+| `PR-00` | `RD-00` | `architecture` | Parallel foundation start | traceability validator, signoff ledger and phase-by-phase test selection. **Gate:** catalog IDs and BR status truthful |
+| `PR-01` | `RD-01` | `platform` | Parallel foundation start | Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox. **Gate:** verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic |
+| `PR-02` | `RD-02` | `tenancy` | `PR-00`, `PR-01` | tenant/legal entity and verified identity/invitation/grants. **Gate:** real JWT or verified auth adapter + multi-grant denial + SoD |
+| `PR-03` | `RD-02` | `tenancy` | `PR-02` | provider-customer organization grants and revoke. **Gate:** Customer-X/Y negative list/detail, warm cache, RLS context reset |
+| `PR-04` | `RD-03` | `commercial` | `PR-03` | RFQ creation+submit+customer My RFQs. **Gate:** idempotency conflict + scoped list/pagination + first real outbox |
+| `PR-05` | `RD-03` | `commercial` | `PR-04` | provider Inbox assignment, clarification/qualify. **Gate:** branch restriction, CAS assignment, no unapproved quote |
+| `PR-06` | `RD-04` | `commercial` | `PR-05` | immutable QuoteVersion issue/supersede, independent price approval. **Gate:** version race + SoD; no binding acceptance without BR-01 |
+| `PR-07` | `RD-04` | `commercial` | `PR-06` | authorized customer Quote accept/decline with evidence. **Gate:** BR-01/02/05 acceptance, exact signer, termsHash and expiry |
+| `PR-08` | `RD-05` | `cargo` | `PR-02` | CargoProfile/identified units and physical compatibility inputs. **Gate:** mass/quantity/identity/value invariants |
+| `PR-09` | `RD-05` | `compliance` | `PR-08` | versioned compliance decision and critical UNKNOWN safety gate. **Gate:** qualified source / correct HOLD, BR-08 signoff where binding |
+| `PR-10` | `RD-05` | `fleet` | `PR-08`, `PR-09` | vehicle/driver/trailer registry and atomic capacity holding. **Gate:** PostgreSQL exclusion/locked-slot race, hold expiry fencing BR-07 |
+| `PR-11` | `RD-06` | `commercial` | `PR-03`, `PR-06` | carrier sourced offer+withdrawal/ack and own-fleet alternative. **Gate:** partner grants, no margin disclosure, no false capacity, BR-06 |
+| `PR-12` | `RD-06` | `booking` | `PR-07`, `PR-10`, `PR-11` | Booking pending→confirmed via accepted quote and confirmed exclusive capacity. **Gate:** process crash/replay, stale quote/carrier, no phantom Booking |
+| `PR-13` | `RD-07` | `execution` | `PR-12` | Trip+pickup offline custody and signed evidence references. **Gate:** historical authority, late replay, one custodian, BR-09 |
+| `PR-14` | `RD-07` | `execution` | `PR-13` | delivery attempts, partial/refused POD and compensating disposition. **Gate:** 8/10 conservation, receiver evidence and proof immutability, BR-10 |
+| `PR-15` | `RD-08` | `tracking` | `PR-13` | customer-scoped timeline and ETA freshness. **Gate:** stale cache, wrong-customer cursor, no GPS-derived POD |
+| `PR-16` | `RD-08` | `documents` | `PR-14` | verified POD/document package and bounded download. **Gate:** verified version, revoked grant, legal hold, no generic soft delete |
+| `PR-17` | `RD-09` | `finance` | `PR-07`, `PR-14`, `PR-16` | distinct AR/AP/Invoice and verified payment reconciliation. **Gate:** money/SoD, allocation uniqueness, reversal, BR-11/12 |
+| `PR-18` | `RD-10` | `platform` | `PR-13`, `PR-17` | advanced job fencing, timeout, crash and safe SaaS continuity. **Gate:** replay/failover + BR-04 in-flight evidence after suspension |
+| `PR-19` | `RD-11` | `cross-functional` | `PR-12`, `PR-14`, `PR-15`, `PR-16`, `PR-17`, `PR-18` | full customer→forwarder→carrier→driver→receiver→finance real E2E. **Gate:** accepted P0 negative, RLS, outage recovery, UI states and artifact evidence |
+| `PR-20` | `RD-12` | `release` | `PR-00`, `PR-19` | pilot signoff, container, SBOM, restore drill and release artifact. **Gate:** same SHA/digest, no open P0, signed applicable BR |
+
+**PR DAG rule:** Every `dependsOnPrs` edge denotes a prerequisite **qualified implementation artifact**, not merely a completed document; CI validates no orphan dependency or cycle. Technical parallelism is allowed only where dependencies and security contracts permit.
 
 **Critical path:** `PR-00/01` parallel → `PR-02/03` → `PR-04/05` → `PR-06/07` and `PR-08/09/10` parallel → `PR-11/12` → `PR-13/14` → `PR-15/16/17` as business dependencies permit → `PR-18` hardening → `PR-19` actual E2E → `PR-20` pilot. A dependency is a tested API/data/contract prerequisite, not a calendar estimate.
 
