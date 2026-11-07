@@ -107,5 +107,5 @@ class ErrorContractTest {
         }
     }
 
-    record Input(@NotBlank String privateValue) {}
+    public record Input(@NotBlank String privateValue) {}
 }
