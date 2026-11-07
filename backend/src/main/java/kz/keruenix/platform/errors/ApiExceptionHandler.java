@@ -3,6 +3,7 @@ package kz.keruenix.platform.errors;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -50,6 +51,13 @@ public final class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                                                              HttpServletRequest request) {
         return response(problems.create(ErrorCode.PERMISSION_DENIED, request),
                 ErrorCode.PERMISSION_DENIED.status());
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> staleVersion(
+            OptimisticLockingFailureException failure, HttpServletRequest request) {
+        return response(problems.create(ErrorCode.STALE_VERSION, request),
+                ErrorCode.STALE_VERSION.status());
     }
 
     @ExceptionHandler(Exception.class)
