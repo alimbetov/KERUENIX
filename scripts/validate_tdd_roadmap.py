@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CI contract verification for KERUENIX TDD Roadmap v1.2.
+"""CI contract verification for KERUENIX TDD Roadmap v1.3.
 
 Standard library only; checks documentary consistency, NOT executable-domain
 qualification or real stakeholder signoff.
@@ -20,21 +20,23 @@ def load(rel: str) -> dict:
 
 
 
-def audit_v12_pr_contract(road: dict, known_cases: set[str],
+def audit_v13_pr_contract(road: dict, known_cases: set[str],
                           valid_permissions: dict[str, str],
                           known_br: set[str]) -> list[str]:
-    """Check v1.2 PR risk claims; these are planned contracts, not executed tests."""
+    """Check v1.3 PR risk claims; these are planned contracts, not executed tests."""
     issues: list[str] = []
     required_ui = {
-        "PR-02", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07",
+        "PR-02", "PR-03C", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07",
         "PR-10", "PR-11", "PR-12", "PR-13", "PR-14", "PR-15",
-        "PR-16", "PR-17", "PR-18", "PR-19", "PR-20",
+        "PR-16", "PR-17", "PR-17S", "PR-18", "PR-19", "PR-20",
     }
     valid_modes = {
         "DOCUMENTATION_ONLY", "FOUNDATION_FAIL_CLOSED", "POLICY_SCOPED",
         "BLOCKED_UNTIL_BUSINESS_SIGNOFF", "BLOCKED_UNTIL_PERMISSION_APPROVED",
         "SAFE_DRAFT_ONLY", "FAIL_CLOSED_LEGAL_SIGNOFF", "PURE_DOMAIN_INPUT",
         "RELEASE_ACCEPTANCE", "RELEASE_SIGNOFF",
+        "BLOCKED_UNTIL_OWNER_ADR_AND_RELATED_BR",
+        "BLOCKED_UNTIL_BUSINESS_SIGNOFF_AND_VERIFIED_SOURCE",
     }
     cuts = {p["id"]: p for p in road["r0Prcuts"]}
     for pr in road["r0Prcuts"]:
@@ -83,7 +85,7 @@ def audit_v12_pr_contract(road: dict, known_cases: set[str],
     owners = {x.get("resource"): x for x in road.get("domainOwnershipDecisions", [])}
     ca = owners.get("CustomerAccount", {})
     if (ca.get("canonicalWriter") != "commercial" or ca.get("otherOwner") != "tenancy"
-            or ca.get("decision") != "PROPOSED_AWAITING_ADR"):
+            or ca.get("decision") != "PROPOSED_ADR_REQUIRED_BEFORE_PR_03C"):
         issues.append("CustomerAccount owner/grant split must remain explicitly proposed pending ADR")
     evidence = road.get("proofIntegrityProtocol") or {}
     if evidence.get("writeOwner") != "execution" or not evidence.get("storageTransactionRule") or len(evidence.get("required", [])) < 8:
@@ -96,7 +98,7 @@ def audit_v12_pr_contract(road: dict, known_cases: set[str],
     return issues
 
 
-def audit_v12_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
+def audit_v13_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
     """Compare rendered PR DAG table to the machine graph, not just ID presence."""
     issues: list[str] = []
     if "## 16. Executable delivery increments" not in main_doc or "## 17. Mandatory ownership" not in main_doc:
@@ -105,7 +107,7 @@ def audit_v12_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
         "## 17. Mandatory ownership", 1)[0]
     rows = {}
     for line in section.splitlines():
-        if not re.match(r"^\|\s*"+ chr(96) + r"PR-\d{2}" + chr(96), line):
+        if not re.match(r"^\|\s*"+ chr(96) + r"PR-\d{2}[A-Z]?" + chr(96), line):
             continue
         cols = [x.strip() for x in line.split("|")[1:-1]]
         if len(cols) < 5:
@@ -115,7 +117,7 @@ def audit_v12_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
         if pid in rows:
             issues.append(f"Duplicate Markdown PR {pid}")
         rows[pid] = {"phase": phase, "owner": owner,
-                     "dependsOnPrs": re.findall(r"PR-\d{2}", deps)}
+                     "dependsOnPrs": re.findall(r"PR-\d{2}[A-Z]?", deps)}
     expected = {p["id"]: p for p in road["r0Prcuts"]}
     if set(rows) != set(expected):
         issues.append("Markdown PR IDs differ from JSON r0Prcuts")
@@ -150,8 +152,8 @@ def main() -> int:
         check(len(values) == len(set(values)), f"Duplicate {label} ID")
         return set(values)
 
-    check(road["schemaVersion"] == "1.2.0", "Roadmap schema version must be 1.2.0")
-    check("v1.2" in main_doc[:400], "Roadmap Markdown version and JSON must match")
+    check(road["schemaVersion"] == "1.3.0", "Roadmap schema version must be 1.3.0")
+    check("v1.3" in main_doc[:400], "Roadmap Markdown version and JSON must match")
     module_ids = unique(modules["modules"], "id", "business module")
     check(len(module_ids) == 17, f"Expected 17 business module IDs, got {len(module_ids)}")
     phase_ids = unique(road["phases"], "id", "phase")
@@ -260,7 +262,7 @@ def main() -> int:
     pr_ids = unique(cuts, "id", "PR cut")
     check(len(cuts) == 23, f"Expected 23 slices, got {len(cuts)}")
     check(pr_ids == ({f"PR-{i:02d}" for i in range(21)} | {"PR-03C", "PR-17S"}), "PR IDs missing or reused")
-    check(road["audit"]["findingsTotal"] == 21, "Expected 21 audited findings")
+    check(road["audit"]["findingsTotal"] == 27, "Expected 27 audited findings")
     pr_map = {pr["id"]: pr for pr in cuts}
     for pr in cuts:
         for upstream in pr.get("dependsOnPrs", []):
@@ -373,9 +375,9 @@ def main() -> int:
         check(bool(pr.get("caseCoverageNote")) or pr["id"] in {"PR-00", "PR-01", "PR-08"},
               f"{pr['id']}: test case-selection rationale missing")
 
-    problems.extend(audit_v12_pr_contract(
+    problems.extend(audit_v13_pr_contract(
         road, full_case_ids, {e["id"]: e["permission"] for e in access["entries"]}, br_ids))
-    problems.extend(audit_v12_markdown_pr_table(road, main_doc))
+    problems.extend(audit_v13_markdown_pr_table(road, main_doc))
     for path in road["testBanks"]:
         check((ROOT / path).is_file(), f"Missing linked test source {path}")
     for item in road["r0Prcuts"]:
@@ -395,7 +397,7 @@ def main() -> int:
     check("EvidenceBlobGateway" in proof.get("immutableObjectOwner", ""),
           "Proof bytes must be verified through non-cyclic platform EvidenceBlobGateway")
     check(road["audit"]["findingsTotal"] ==
-          len(re.findall(r"^\\| `AUD-RD-[0-9]{2}` \\|", (ROOT / "docs/34-tdd-roadmap-technical-audit.md").read_text(encoding="utf-8"), re.M)),
+          len(re.findall(r"^\| `AUD-RD-[0-9]{2}` \|", (ROOT / "docs/34-tdd-roadmap-technical-audit.md").read_text(encoding="utf-8"), re.M)),
           "Audit Markdown rows must match the machine finding count")
 
     if problems:
