@@ -193,6 +193,19 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 
 **Blocked for implementation:** 12 business/legal/security `BLOCKER` findings must be resolved in their respective business actions; `R0-SAFETY` gaps must at least fail closed and preserve evidence. This does not mandate 33 new features. Existing 67 draft permissions remain canonical until reviewed. After approval derive `TDD-SIM-NNN` tests in unit, PostgreSQL RLS/Testcontainers, Modulith, HTTP/consumer and failure-recovery layers.
 
+## R0 Blocker Resolution and TDD Test Bank — fourth design pass
+
+[27 — 12 R0 Blocker Decisions](27-r0-blocker-policy-decisions.md) and [machine decisions](contracts/r0-blocker-decisions.v1.json) specify explicit technical fail-safe behaviors for **all twelve** prior BLOCKER findings. **Business/legal signoff pending for all 12**; do not mark policy active, legal acceptance or completed release.
+
+[28 — R0 TDD Acceptance Bank](28-r0-tdd-acceptance-bank.md), [machine test contract](contracts/r0-tdd-scenarios.v1.json) defines **84 planned tests**:
+- **60 blocker tests** (five per decision: positive, negative, concurrency, replay and tenant);
+- **14 R0 safety tests** (one for each R0-SAFETY gap);
+- **10 cross-role E2E** (CustomerOrg → provider → carrier/own-fleet → Booking → pickup → POD → finance; other exceptional paths).
+
+[29 — Business Acceptance Workshop Kit](29-r0-business-acceptance-workshop-kit.md) defines five genuine stakeholder review packets (Customer/Commercial, Carrier/Fleet/Compliance, Driver/Receiver/Documents, Finance/Booking, SaaS/Identity/Support). **None held or signed**. The 67 draft permission policies in Access Governance v2.1 remain unchanged; missing command permission is an explicit implementation blocker, not role default.
+
+**Test traceability:** `BR-xx → GAP-xx → SIM-xx → USB-xx → AUTH/LFC → TDD-SIM-xx or TDD-R0-E2E-xx`. Pass/fail evidence not available until code and exact-SHA CI are run. Kazakhstan electronic signing/transport evidence rules require applicable law/version and authorized legal verification.
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.
