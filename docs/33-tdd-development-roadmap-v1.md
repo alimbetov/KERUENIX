@@ -1,6 +1,6 @@
-# 33 — KERUENIX TDD Development Roadmap v1.2
+# 33 — KERUENIX TDD Development Roadmap v1.3
 
-**Дата:** 2026-11-07 · **Версия:** 1.2.0 · **Статус:** PROPOSED DELIVERY ROADMAP / BUSINESS SIGNOFF PENDING / ROADMAP NOT EXECUTED.
+**Дата:** 2026-11-07 · **Версия:** 1.3.0 · **Статус:** PROPOSED DELIVERY ROADMAP / BUSINESS SIGNOFF PENDING / ROADMAP NOT EXECUTED.
 
 **Цель:** поэтапно реализовать KERUENIX как один надёжный Spring Modulith modular monolith в Java 21, от имеющегося error bootstrap до полной, безопасной и воспроизводимой автомобильной перевозки между независимыми компаниями. Технические решения и бизнес-требования должны квалифицироваться через TDD, реальные PostgreSQL/PostGIS транзакции, RLS, API и cross-role E2E. Не заявлять готовность по наличию документации, mock-тестов или единичного happy path.
 
@@ -818,29 +818,29 @@ Start PR-00 and PR-01 in parallel (traceability/validator plus Boot, Modulith, F
 
 All 17 existing business modules remain in the architecture map. This version is a **proposal and CI-verifiable documentary plan**, not a completed business backend.
 
-## 20. Second audit v1.3 — critical design corrections
+## 24. Second audit v1.3 — critical design corrections
 
 **Verified observed defect in prior HEAD:** Roadmap contract was `schemaVersion=1.2.0` with 21 audit findings while `validate_tdd_roadmap.py` enforced `1.1.0` and 13 findings. GitHub Actions run [42403111243](https://github.com/alimbetov/KERUENIX/actions/runs/42403111243) **FAILED** on these two comparisons. This is a *real documentation CI defect*, not an application defect. The v1.3 machine and Markdown contracts, validator, and synthetic negative validator self-tests are required for correction. Do not claim newest SHA qualified until new CI finishes.
 
-### 20.1 Owner-safe customer onboarding, not duplicate CustomerAccount
+### 24.1 Owner-safe customer onboarding, not duplicate CustomerAccount
 
 `PR-02` is Tenancy identity and verified provider membership. `PR-03C` creates canonical `CustomerAccount` and business provider/customer relationship in **Commercial** after real provider authority/business rule verification, then emits a versioned, tenant-scoped account-registered **integration envelope**. `PR-03` is **Tenancy** external grant (subject → provider/customer account) based on the verified account reference; no direct Tenancy → Commercial class import or repository read is allowed. Commercial may depend on Tenancy exported authorization services, per module boundaries. Integration event schema/producer/consumer and at-least-once/duplicate/revoke tests must be approved before any grant is activated. CustomerOrg-X and Y share provider Tenant-A but must never see each other's RFQs, detail, totals, exports or evidence. PostgreSQL tenant RLS alone is insufficient; scoped predicate/permission contract is mandatory.
 
 **ADR gate:** `CustomerAccount` canonical ownership is still a **proposed** architecture decision, not automatically approved by this edit. `Order` source-of-truth remains `PENDING_ADR` and must be resolved before Booking PR-12 migration. The PR DAG provides technical ordering, not acceptance of these ADRs.
 
-### 20.2 Evidence provenance without Execution ↔ Documents cycle
+### 24.2 Evidence provenance without Execution ↔ Documents cycle
 
 `PR-13` calls an infrastructure-level `EvidenceBlobGateway` through an exported/own port (not a new business module), stages/uploads original proof bytes, checks object presence, MIME/scan policy, SHA-256, byte size and actor authority. Execution commits verified `ProofReceipt` + custody transition + Outbox atomically *after* externally stored evidence is validated; orphan blobs and uncertain cleanup have explicit reconciliation. `PR-16` Documents consumes Execution's published proof receipt or exported API and assembles versioned immutable `DocumentPackage`. **No Execution→Documents direct module import**, which would contradict the allowed `documents → execution` dependency. An arbitrary signed URL is not legal/operational proof of POD.
 
-### 20.3 Invoice ≠ settled payment — split the finance slice
+### 24.3 Invoice ≠ settled payment — split the finance slice
 
 `PR-17` delivers accurate Finance-owned Invoice, AR/AP, payable approvals, outstanding/partial amounts and immutable originals; `PR-17S` delivers verified bank/ERP transaction ingestion, unique allocation, replay/reversal handling and guarded `SETTLED`. PR-17 may be qualified with no live bank integration **only as an invoicing slice**, while PR-17S and R0 finance E2E may not be qualified by mock/sandbox callback claiming real production payment. Actual payment source, currency/legal-entity matching and independent approver remain business/legal/operational gates.
 
-### 20.4 Workflow/approval status are not global blockers
+### 24.4 Workflow/approval status are not global blockers
 
 `RD-00` owns the list of all 12 `BR` decisions and reviews their actual statuses, **not the requirement to get all 12 signatures before PR-01**. It can qualify truthful documentation even while BRs remain `PENDING_REAL_STAKEHOLDER`. For each irreversible command, `activationGate.br` and owner-approved specific policy determine readiness; unknown client RFQ submit permission remains DENY without altering the approved CREATE_DRAFT capability.
 
-### 20.5 Gate design: no silent pass and no status fabrication
+### 24.5 Gate design: no silent pass and no status fabrication
 
 The v1.3 validator must check **all 23 PRs**, PR DAG and Markdown parity, `criticalCaseIds` against actual 132 IDs, actor/client scope and `uiAcceptance` fields, `activationGate` known BR, consistent primary owner, and status evidence. Implement positive and deliberate negative/mutation tests for the validator. A case count alone is not meaningful coverage. A declared `ciRunUrl` string is not proof the job passed: that needs GitHub-required check status and artifact/SHA verification outside static JSON validation.
 
