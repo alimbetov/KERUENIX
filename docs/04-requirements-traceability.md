@@ -130,7 +130,7 @@
 
 ## User Story Book — actor-centered traceability
 
-[21 — User Story Book](21-user-story-book.md) — единый банк пользовательских сценариев. ID `USB-<role>-NNN` связывает роли/tenant scope с `KX-*`, `LFC-*` и будущими `TDD-USB-*`. Итерация 1: 22 роли-персоны и 37 draft сценариев; это не утверждённые бизнес-правила и не исполняемые тесты.
+[21 — User Story Book](21-user-story-book.md) — единый банк пользовательских сценариев. ID `USB-<role>-NNN` связывает роли/tenant scope с `KX-*`, `LFC-*` и будущими `TDD-USB-*`. Итерация 1: 22 роли-персоны и 40 draft сценариев; это не утверждённые бизнес-правила и не исполняемые тесты.
 
 ## Access Governance — Tenancy & Commercial (итерация матрицы 1)
 
@@ -144,7 +144,7 @@ Acceptance statuses are **planned**, not green TDD tests. Thresholds, signatory 
 
 ## Canonical Access Governance v2 — external customer, owner and all R0 operations
 
-**Supersedes the earlier 24/36-policy v1 for future design.** [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json) define 57 draft policy rows over Tenancy, Commercial, Fleet, Booking, Execution, Tracking, Documents and Finance; each has a stable `AUTH-*` case, plus 18 adversarial `AUTH-X-*` cases. Role templates are not employment titles and do not grant unconditional access.
+**Supersedes the earlier 24/36-policy v1 for future design.** [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json) define 67 draft policy rows over Tenancy, Commercial, Fleet, Booking, Execution, Tracking, Documents and Finance; each has a stable `AUTH-*` case, plus 27 adversarial `AUTH-X-*` cases. Role templates are not employment titles and do not grant unconditional access.
 
 - `KX-ACCESS-V2-001` (R0 P0): subject-type separation (platform operator / tenant member / external customer / partner / driver / receiver / service principal), explicit resource grants, deny-by-default. Acceptance: AUTH-X-001..004,012,014,015.
 - `KX-ACCESS-V2-002` (R0 P0): ordinary scoped access guard is distinct from human approval; independent price exception and payment approval; legal customer signatory evidence. Acceptance: AUTH-COM-005..007, AUTH-FIN-003, AUTH-X-005,013.
@@ -154,6 +154,19 @@ Acceptance statuses are **planned**, not green TDD tests. Thresholds, signatory 
 - `KX-ACCESS-V2-006` (R0 P0): Booking/Fleet/Driver/Receiver/Finance source-owned state guards, no quote=booking, GPS=POD, delivery=paid shortcuts. Acceptance: AUTH-FLT-001..002, AUTH-BKG-001..002, AUTH-EXE-001..003, AUTH-FIN-001..003, AUTH-X-016.
 
 **No tests have been implemented or executed.** External customer legal status and quote signing policies need business review; negative tests require real PostgreSQL/RLS and scope-projected HTTP assertions.
+
+## Second review — Access Governance v2.1 correctness, ownership and test coverage
+
+Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machine JSON v2.1](contracts/access-policy-matrix.v2.json) supersede v2.0 draft in-place (source remains `access-policy-matrix.v2.json`; schemaVersion `2.1.0`). Current matrix: **67 policy rows / 27 adversarial tests**, still **planned**.
+
+- `KX-ACCESS-V21-001` R0 P0: `quote:decline` is a state-changing command; separate from read, exact version and actor. Acceptance `AUTH-COM-008`, `AUTH-X-019`.
+- `KX-ACCESS-V21-002` R0 P0: external customer has independently granted viewer/requester/signatory/feedback capabilities, with provider-specific `My RFQs/My Orders` query scope. Acceptance `AUTH-EXT-014..017`, `AUTH-X-023,025`.
+- `KX-ACCESS-V21-003` R0 P0: tenant inbound RFQ supports assignment + clarification and concurrency without cross-branch leakage. Acceptance `AUTH-COM-014,018,019`, `AUTH-X-022`.
+- `KX-ACCESS-V21-004` R0 P0: customer cancellation is request-only and Booking-owned; personal portal revoke does not delete organizational relationship. Acceptance `AUTH-EXT-012,013`, `AUTH-BKG-003`, `AUTH-X-020,021`.
+- `KX-ACCESS-V21-005` R0 P0: Finance approval is not bank settlement, requires source-verified reconciliation and no duplicate allocation; early service issue intake independent of verified feedback. Acceptance `AUTH-FIN-003,004`, `AUTH-EXT-016,017`, `AUTH-X-024,026`.
+- `KX-ACCESS-V21-006` R0 P0: Portal composition uses exported public APIs; PlatformJob operator metadata/replay is technical scope, not a Tenancy-owned business write. Acceptance `AUTH-X-023,027` and Modulith verification.
+
+**Sign-off dependencies:** customer signatory evidence; account ownership rules; cancellation fees; verification of bank/ERP reference; issue resolution owner and escalation. These gaps must be closed prior to claiming acceptance or implementation readiness.
 
 ## Acceptance status
 
