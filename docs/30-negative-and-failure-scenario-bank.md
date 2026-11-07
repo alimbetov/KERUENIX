@@ -724,3 +724,7 @@ These selected intersections should be executed as integrated stress/failure cas
 - Which customer details can appear in support logs and signed URL generation, including after a grant revoke?
 
 **No code or test execution is claimed.** The original 84 cases remain unchanged as historical test design; the 48 new cases and 8 MIX intersection specifications are supplementary, not additional implementation/release achievements.
+
+## 9. Uniform HTTP error contract as an additional acceptance dimension
+
+The 48 `NEG-R0-*` cases must assert a stable [RFC 9457 Problem Details standard](31-unified-error-handling-standard.md), [21-code catalog](contracts/api-error-catalog.v1.json) and a server-generated `requestId` whenever the failure crosses the REST boundary. In a foreign CustomerAccount or Tenant access denial, a protected resource must be indistinguishable from missing even by **machine code** (same public `KX-GEN-404-001`), with internal audit kept separate. No raw SQL, exception, rejected validation input, JWT, driver GPS or customer finance details enter the public problem response. HTTP-denial tests remain insufficient without verifying canonical DB, Outbox/Inbox and user-visible state. Error-only backend handler scaffold is committed but not CI-qualified; business acceptance tests are still planned.
