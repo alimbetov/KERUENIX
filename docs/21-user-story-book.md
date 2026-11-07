@@ -1,10 +1,12 @@
 # 21 — KERUENIX User Story Book: Role-Based Scenario Bank
 
-**Version:** 0.4 — ITERATION 1 REWORK / ACCESS POLICY V2.1 SECOND REVIEW. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
+**Version:** 0.5 — BUSINESS PASS 2 / CROSS-ROLE SCENARIOS & EXCEPTION REFINEMENT. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
 
 **Purpose:** Maintain a single versioned, traceable bank of actor-centered scenarios; build it incrementally in several iterations, *then* derive acceptance tests, TDD unit tests and integration/E2E cases. Do not confuse role catalog with a list of software privileges or tenant membership.
 
 **Canonical authorization matrix (v2.1):** [24 — Access Governance & TDD](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json). **External customer journey:** [23 — External Customer Portal](23-external-customer-portal.md). The [v1 matrix](22-role-permission-scope-approval-matrix.md) is retained as historical draft.
+
+**Business Scenario Book (pass 2):** [25 — Business Scenario Book](25-business-scenario-book.md). Eleven cross-role scenario narratives with proposed acceptance; no additional normative status enums.
 
 **Based on:** [operational journeys](../idea/04-operational-workflows.md), [dispatcher day](../idea/17-forwarder-dispatcher-day-simulation.md), [commercial lifecycle](10-commercial-execution-lifecycle-v1.md), [existing lifecycle test plan](11-commercial-execution-acceptance-v1.md), [requirements matrix](04-requirements-traceability.md), [engineering TDD standard](20-mapstruct-tdd-engineering-standard.md).
 
@@ -54,8 +56,8 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 
 | Pass | Focus | Deliverable | Stop condition |
 |---|---|---|---|
-| 1 (this revision) | Role catalog + 37 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
-| 2 | SHP/SAL/PLN/CAR: RFQ, quote, vehicle hold/Booking | Full main/alternate/negative paths, state guards and documents | Commercial/legal actor responsibilities agreed |
+| 1 (documented) | Role inventory and 40 original story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
+| 2 (current) | Customer/forwarder/carrier business exception and lifecycle design | 11 scenarios + 18 story candidates | Business/legal responsibilities and grants reviewed |
 | 3 | DSP/DRV/RCV: Trip, pickup, cargo custody, POD, tracking | Evidence rules, offline replay, partial/failed delivery | Logistics/operations signatures and derived status reviewed |
 | 4 | FIN/TEN/SUP: reconciliation, permissions, recovery | Finance-lite, tenant isolation, ops exceptions | Security + finance business review |
 | 5 | WHS/COM/OWN/MKT/MLS and cross-border extensions | Prioritized R1/R2 story catalog | Strictly no R0 scope inflation |
@@ -63,7 +65,7 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 
 Subsequent passes may revisit earlier stories when discoveries change assumptions. Do not treat a pass as delivered software.
 
-## 4. First-pass scenario inventory (12 story seeds)
+## 4. First-pass scenario inventory (original 12 story seeds)
 
 All entries: `status=DRAFT`, `evidence=NOT EXECUTED`. Synthetic tenant IDs and shipment facts only. These entries are **story sketches**; full acceptance criteria and tests are developed later.
 
@@ -114,7 +116,7 @@ These **seven additional DRAFT story seeds** extend the first pass; acceptance r
 
 `APR` and `PRC` are permission/role templates that may be assigned to existing staff within scoped tenant policy, not mandatory separate employees. For R0, one person may combine SAL/PRC, but cannot approve their own exception above policy limits.
 
-**Reference:** [machine-readable role permissions](contracts/role-permission-scope-approval.v1.json) defines 24 draft policies and planned acceptance IDs `AUTH-TEN-*` / `AUTH-COM-*`. Story acceptance is approved in business review before becoming TDD test code.
+**Historical reference:** [v1 role matrix](contracts/role-permission-scope-approval.v1.json) was the initial design. The [v2.1 matrix](contracts/access-policy-matrix.v2.json) is the current canonical draft for new permissions and TDD.
 
 ## 4C. External Customer, provider Inbox and sensitive approvals — v2 extension
 
@@ -154,7 +156,36 @@ These stories address gaps discovered in [24 — Access Governance v2.1](24-acce
 
 **Rights clarification:** a verified external customer account may have distinct capability grants `CUSTOMER_VIEWER`, `CUSTOMER_REQUESTER`, `CUSTOMER_SIGNATORY`, and `CUSTOMER_FEEDBACK_AUTHOR`. These are not four new mandatory role templates. A customer who can create RFQ cannot automatically accept a legally significant QuoteVersion or publish a review. Closing an external user's session is not deleting the customer organization or its coworkers.
 
-**Coverage:** 40 unique story seeds, 67 draft policy rows, 27 cross-cutting negative tests. No executed code or tests; business approval is still required.
+**Baseline (before pass 2):** 40 existing stories, 67 draft policies and 27 negative security cases. Pass 2 adds 18 discovery stories. No software/tests qualified.
+
+## 4E. Third business analysis pass — operational gaps and additional story candidates
+
+The **18 new DISCOVERED stories** below extend the original 40 and remain candidates until business/security approval. They have **not** been granted permissions automatically. See [25 — Business Scenario Book](25-business-scenario-book.md) for multi-actor evidence, alternate flows and Given/When/Then acceptance.
+
+| ID | Actor | Business outcome | Release | Domain owner | Scenario | Permission / gap |
+|---|---|---|---|---|---|---|
+| `USB-EXC-011` | EXC | Изменить отправленный RFQ через версию и повторную квалификацию | R0 | Commercial | BSC-002 | PENDING: amend submitted |
+| `USB-SAL-006` | SAL | Запросить критические уточнения и квалифицировать RFQ без binding Quote | R0 | Commercial | BSC-002 | COM-19 |
+| `USB-APR-002` | APR | Согласовать/отклонить исключительную цену с причиной и своим лимитом | R0 | Commercial | BSC-003 | COM-06; reject guard pending |
+| `USB-PRC-002` | PRC | Выбрать замену при истечении или отзыве предложения перевозчика | R0 | Commercial | BSC-004 | PENDING: supplier exception |
+| `USB-CAR-002` | CAR | Отказаться/отозвать ещё не подтверждённое предложение или ресурс | R0 | Commercial/Fleet | BSC-004/BSC-010 | PENDING: carrier decline |
+| `USB-PLN-002` | PLN | Запретить назначение несовместимых груза, автомобиля и маршрута | R0 | Cargo/Fleet/Compliance | BSC-004 | FLT-01; compliance guard |
+| `USB-DSP-004` | DSP | Переподтвердить заменённый ресурс до начала рейса | R0 | Booking/Fleet | BSC-010 | BKG-01/02; replace pending |
+| `USB-DSP-005` | DSP | Обработать задержку, устаревший GPS и оповестить ответственного | R0 | Tracking/Execution | BSC-006 | TRK-01; issue:create pending |
+| `USB-DRV-002` | DRV | Передать офлайн pickup/custody событие без дублирования | R0 | Execution | BSC-005 | EXE-02 + idempotency |
+| `USB-RCV-002` | RCV | Подписать частичную приёмку/повреждение и учесть остаток | R0 | Execution | BSC-007 | EXE-03 + cargo conservation |
+| `USB-DOC-002` | DOC | Вернуть неполный пакет на исправление и проверить новую версию | R0 | Documents | BSC-008 | DOC-01; reject/release pending |
+| `USB-FIN-002` | FIN | Оспорить неподтверждённую доплату подрядчика | R0 | Finance | BSC-008 | FIN-02; dispute pending |
+| `USB-FIN-003` | FIN | Сверить аванс, частичную оплату и корректировку без двойных аллокаций | R0 | Finance | BSC-008 | FIN-04 |
+| `USB-COM-001` | COM | Блокировать назначение при DENY/критическом UNKNOWN нормативных требований | R0 safety-only | Compliance | BSC-004 | PENDING: independent compliance, no automatic override |
+| `USB-WHS-001` | WHS | Подтвердить складскую передачу CargoUnits с количеством/custody evidence | R1 | Warehouse/Execution | Later pass | PENDING (R1) |
+| `USB-OWN-001` | OWN | Получить ограниченные KPI по факту доставок, затрат, сроков и претензий | R1 | Finance/Reporting | Later pass | PENDING (R1) |
+| `USB-EXC-012` | EXC | Управлять уведомлениями по собственным заказам и каналами доставки | R1 | Tracking/Notifications | BSC-006 | PENDING (R1) |
+| `USB-EXC-013` | EXC | Оспорить или исправить отзыв через версионирование и модерацию | R1 | Commercial | BSC-009 | PENDING (R1) |
+
+**Policy control:** `PENDING` means the business story is **not authorization-ready**. Create a precisely scoped policy/test entry in the [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) *only after* the business actor, legal effect and denial cases are approved. Do not implement pending R1 UI in R0. Preserve stable story identifiers if a story is later split, merged or deferred (mark superseded rather than reusing an ID).
+
+**Scenario-to-TDD:** `BSC-001..011` are multi-role narratives, `BSC-...-AC-nn` are proposed acceptance outcomes, existing `AUTH-*` assert access rules and `LFC-*` assert domain invariants. All are draft; no test executed.
 
 ## 5. Detailed seed example — USB-DSP-001 (ready for business elaboration, NOT ready for TDD)
 
@@ -199,4 +230,4 @@ Iteration 1 is accepted for **documentation review**, not business sign-off, whe
 
 **Questions for role interviews:** who legally commits expeditor and carrier, who may approve price deviations, who signs pickup/POD and when, how independent carrier gets a grant, when customer sees GPS, who verifies bank/ERP payment reference, what support may view without impersonation.
 
-**Next planned pass:** `PASS-2 — Commercial & Booking` expands `USB-SHP-001/002`, `USB-SAL-001`, `USB-CAR-001`, `USB-PLN-001`, `USB-DSP-001` with fully typed main/alternative/negative steps and business-owned acceptance. Do not fabricate approval or production test results.
+**Next planned pass:** run a cross-functional business workshop on [25 — BSC-001..011](25-business-scenario-book.md), resolve the open decision log and permission gaps for the chosen R0 slice. Only business-reviewed stories may be used as authoritative TDD input; no test/CI results are claimed.
