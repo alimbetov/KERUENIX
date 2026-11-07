@@ -213,3 +213,11 @@ KERUENIX позволяет нескольким независимым комп
 ## Addendum — international identification and expert-reviewed regulatory rules
 
 New P0 needs: `ID-01` typed external identifiers (GS1/ISO/UN), `ID-02` verifiable SSCC logistics labels and internal-LPN fallback, `DOC-02` lane-specific document requirement matrix, `REG-01` source-versioned jurisdiction/mode/effective-date rules. Initial acceptance tests should cover invalid identifiers, legal vs internal barcode, customs release hold, country/mode route changes, ADR regulation changes and cross-tenant scan leakage. See [21 — Standards Council](21-expert-council-logistics-compliance.md), [22 — Global IDs](22-global-cargo-identification-and-marking.md), [23 — Registry](23-cross-border-regulatory-compliance-registry.md).
+
+## Addendum v0.2 — актуализация системного анализа после идей 19–24
+
+С момента первоначального анализа в проектную базу добавлены клиентский Shipment Tracking, проверка VehicleCombination/массы/кубатуры/спецтехники, международная идентификация GS1/ISO/UN/HS, виртуальный экспертный совет и реестр правил Казахстана/ЕАЭС. Эти темы нельзя считать отсутствующими **на уровне идей**; однако они ещё не имеют подтверждённой реализации, подписанного регуляторного датасета или реального пилота.
+
+**Текущая интегрированная матрица требований:** [docs/04](../docs/04-requirements-traceability.md). **Граница рабочего MVP:** [docs/05](../docs/05-mvp-qualification.md). **Открытые решения:** [docs/07](../docs/07-decisions-and-risks.md).
+
+Наибольшие текущие неопределённости остаются коммерческим процессом экспедитора (переговоры, подтверждение подрядчиков, ответственность, документы, AR/AP), правовой применимостью маршрутов и разрешений, экономикой провайдеров и доступностью реальных внешних интерфейсов. Нельзя объявлять «готовность логистической платформы» по одной полноте каталога требований.

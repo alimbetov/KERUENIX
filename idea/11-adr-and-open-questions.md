@@ -2,6 +2,8 @@
 
 All items are **proposed**, not ratified. Record decision owner, date, alternatives, consequences, migration path and decision status in dedicated ADR files when approved.
 
+**Current consolidated decision & risk tracker:** [docs/07 — Decisions and Risks](../docs/07-decisions-and-risks.md). `PROPOSED` remains the status of every ADR in this file until a real approval process is completed.
+
 | ID | Topic | Recommended starting decision | Revisit trigger |
 |---|---|---|---|
 | ADR-001 | Product scope | Road-freight/mixed-fleet TMS first, multimodal model ready | Pilot proof and demand |
@@ -31,6 +33,8 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-025 | International identifiers & labels | GS1 identifiers/SSCC where legitimately issued, own UUID/LPN fallback, external code namespaces, EPCIS 2.0 adapter | GS1 issuer policy / label pilot |
 | ADR-026 | Regulatory rule lifecycle | Jurisdiction/mode/date-specific source-versioned rules and required documents with expert approval; critical uncertainty fails closed | First real cross-border lane/legal opinion |
 | ADR-027 | Customs and transport documents | Separate customs release, eCMR, TIR/eTIR and contract terms; no assumed official API | Approved provider/corridor compliance tests |
+| ADR-028 | Documentation governance | `idea/` remains hypothesis and source; `docs/` carries consolidated draft requirements and release gates | Product-owner and domain-expert review |
+| ADR-029 | Release 0 boundary | Road-freight E2E with tenant isolation, cargo safety, client tracking, POD and financial evidence; regulated integrations phased | Pilot contract/customer selection |
 
 ## Questions to settle before code
 

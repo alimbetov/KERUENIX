@@ -113,3 +113,7 @@
 **P2:** rail/sea/air danger goods, multimodal documents, certified labeling automation, national track-and-trace connectors.
 
 См. [22 — Global identifiers](22-global-cargo-identification-and-marking.md), [23 — Regulatory registry](23-cross-border-regulatory-compliance-registry.md), [24 — International test day](24-international-cargo-simulation.md).
+
+## Следующая стадия — реальные approvals
+
+Этот протокол представляет **виртуальную ролевую оценку**, а не привлечение сотрудников государственных органов, DGSA или таможенных брокеров. Порядок регистрации официальных источников, версионирования, dual approval и тестовой квалификации описан в [docs/06 — Standards & Compliance Governance](../docs/06-standards-compliance-governance.md). До утверждения конкретного коридора/груза все нормативные наборы остаются предложениями.

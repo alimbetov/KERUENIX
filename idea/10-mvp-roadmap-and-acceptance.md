@@ -2,6 +2,8 @@
 
 **Status:** proposal. Dates and effort are deliberately not promised before pilot resources are known.
 
+**Documentation reconciliation v0.2:** this is the original multi-phase roadmap and expanded idea inventory. The **current recommended scoped Release 0 and qualification gates** are maintained in [docs/05 — MVP Qualification](../docs/05-mvp-qualification.md); [docs/04 — Requirements](../docs/04-requirements-traceability.md) separates mandatory P0 domain/safety contracts from fully delivered user interfaces. Phase labels in this older idea document are **not** all first-release commitments.
+
 ## Phase 0 — foundations and discovery
 
 **Needs-analysis gate:** before coding quote/booking workflows, qualify RFQ inputs, counterparty verification, contractual approval of changes, delivered-vs-invoiced-vs-paid states, and credit/cash exposure. The gaps and scenario acceptance are tracked in [16 — System Needs & Gap Analysis](16-system-needs-gap-analysis.md) and [17 — Day-in-Life Simulation](17-forwarder-dispatcher-day-simulation.md).
