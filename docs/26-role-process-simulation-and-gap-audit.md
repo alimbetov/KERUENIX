@@ -122,7 +122,7 @@ marketplace or intelligence advanced capability.
 
 ## 4. One end-to-end replay as each actor sees it
 
-**Context:** a normal cargo request by CustomerOrg-X to Tenant-A; Tenant-C provides truck. Ten serialized checkpoints shown for readability as 28 role actions. Events between aggregate owners should travel through exported module APIs and reliable event/outbox infrastructure. This is a **conceptual simulation**, not proof the integration already works.
+**Context:** a normal cargo request by CustomerOrg-X to Tenant-A; Tenant-C provides truck. A sequential illustration of 28 role actions. Events between aggregate owners should travel through exported module APIs and reliable event/outbox infrastructure. This is a **conceptual simulation**, not proof the integration already works.
 
 | # | Role | What user does / sees | Authoritative business owner | Evidence / mandatory denial |
 |---:|---|---|---|---|
@@ -197,7 +197,7 @@ Severity meaning: **BLOCKER** = legal/business/security contract must be decided
 | `GAP-32` | R2 | **Public marketplace ratings fraud** — Private verified review should not automatically become public trust signal. | Marketplace + Legal: Independent moderation, complaint/appeal, counterparty verification | SIM-33,39 |
 | `GAP-33` | R2 | **ML data lineage and consent** — Sensitive telemetry and customer data should not be pooled across tenants by default. | Intelligence + Security: Verified lineage/tenant grants, point-in-time holdout, no training on unapproved data | SIM-40 |
 
-<escape>**Count by category:**</escape> `BLOCKER` 12 · `R0-SAFETY` 14 · `R1` 5 · `R2` 2. Many gaps are already partly addressed in other documentation; the deficit is that the specific **end-to-end business acceptance and authorization decision** remains open.
+**Count by category:** `BLOCKER` 12 · `R0-SAFETY` 14 · `R1` 5 · `R2` 2. Many gaps are already partly addressed in other documentation; the deficit is that the specific **end-to-end business acceptance and authorization decision** remains open.
 
 ## 6. Have we covered all variants? Coverage matrix and reduction strategy
 
