@@ -17,8 +17,6 @@ public enum ErrorCode {
         "Valid authentication is required to access this resource.", false),
     PERMISSION_DENIED("KX-AUTH-403-001", HttpStatus.FORBIDDEN, "Permission denied",
         "You do not have permission to perform this operation.", false),
-    RESOURCE_HIDDEN("KX-AUTH-404-001", HttpStatus.NOT_FOUND, "Resource not found",
-        "The requested resource was not found.", false),
     RESOURCE_NOT_FOUND("KX-GEN-404-001", HttpStatus.NOT_FOUND, "Resource not found",
         "The requested resource was not found.", false),
     METHOD_NOT_ALLOWED("KX-GEN-405-001", HttpStatus.METHOD_NOT_ALLOWED, "Method not allowed",
