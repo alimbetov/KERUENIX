@@ -182,12 +182,38 @@
       ]
     },
     {
+      "id": "intelligence",
+      "phase": "R0_DESIGN_R1_IMPLEMENT",
+      "allowedDirectDependencies": [
+        "tenancy"
+      ],
+      "owns": [
+        "HistoricalMLProjection",
+        "FeatureDefinition",
+        "FeatureSnapshot",
+        "DatasetVersion",
+        "TrainingJob",
+        "ExperimentRun",
+        "ModelVersion",
+        "ModelDeployment",
+        "PredictionAudit",
+        "DriftReport"
+      ],
+      "publicContracts": [
+        "IntelligencePredictionApi",
+        "TrainingManagementApi",
+        "ModelRegistryQueryApi",
+        "IntelligenceEventIngestApi"
+      ]
+    },
+    {
       "id": "optimization",
       "phase": "R1",
       "allowedDirectDependencies": [
         "fleet",
         "cargo",
-        "compliance"
+        "compliance",
+        "intelligence"
       ],
       "owns": [
         "OptimizationJob",
