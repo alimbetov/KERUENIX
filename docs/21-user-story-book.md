@@ -54,7 +54,7 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 
 | Pass | Focus | Deliverable | Stop condition |
 |---|---|---|---|
-| 1 (this revision) | Role catalog + 35 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
+| 1 (this revision) | Role catalog + 37 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
 | 2 | SHP/SAL/PLN/CAR: RFQ, quote, vehicle hold/Booking | Full main/alternate/negative paths, state guards and documents | Commercial/legal actor responsibilities agreed |
 | 3 | DSP/DRV/RCV: Trip, pickup, cargo custody, POD, tracking | Evidence rules, offline replay, partial/failed delivery | Logistics/operations signatures and derived status reviewed |
 | 4 | FIN/TEN/SUP: reconciliation, permissions, recovery | Finance-lite, tenant isolation, ops exceptions | Security + finance business review |
@@ -118,10 +118,11 @@ These **seven additional DRAFT story seeds** extend the first pass; acceptance r
 
 ## 4C. External Customer, provider Inbox and sensitive approvals — v2 extension
 
-These **13 additional DRAFT stories** supply missing external-client/product and access-governance roles; not tested or legally accepted. Details: [23 — Customer Portal](23-external-customer-portal.md), [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md).
+These **15 additional DRAFT stories** supply missing external-client/product and access-governance roles; not tested or legally accepted. Details: [23 — Customer Portal](23-external-customer-portal.md), [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md).
 
 | Story ID | Actor | Business outcome | Critical rule |
 |---|---|---|---|
+| USB-TEN-005 | TEN | Invite a verified external customer to a provider-scoped CustomerAccount | No provider employee membership, no email-domain autojoin |
 | USB-EXC-001 | EXC | Activate portal through verified provider/customer relationship | No internal provider Tenant membership |
 | USB-EXC-002 | EXC | Submit idempotent RFQ to selected provider | Own customer account, correct cargo/route fields; never directly Booking |
 | USB-EXC-003 | EXC | Browse and open own requests/orders | CustomerOrg + providerTenant + exact resource; no foreign records |
@@ -132,13 +133,14 @@ These **13 additional DRAFT stories** supply missing external-client/product and
 | USB-EXC-008 | EXC | Revoke own provider relationship safely | Revoke future access without granting admin controls |
 | USB-EXC-009 | EXC | Request contractual cancellation of confirmed order | Booking owner decides under cancellation policy |
 | USB-SAL-003 | SAL | Work provider Tenant inbound customer RFQ queue | Assignee/branch and customer data scope |
-| USB-SAL-004 | SAL | Respond to private verified customer review | No editing original text/score; R1 |
+| USB-SAL-004 | SAL | Read and, when permitted, respond to private verified customer review | No editing original text/score; R1 |
+| USB-SAL-005 | SAL | Read verified customer feedback scoped to provider company | No foreign provider/customer reviews or edit of original content |
 | USB-DOC-001 | DOC | Verify document package before business use/release | Exact package, evidence and immutable version |
 | USB-FAP-001 | FAP | Approve valid payable by policy and amount | Initiator cannot self-approve same payment |
 
 **Interpretation:** `FIN` can prepare accounting evidence; `FAP` is a separate **approval capability** (may belong to another appointed person, not automatically a separate headcount). `SHP` and `EXC` must never be used interchangeably in security decisions. A person with several roles still cannot approve their own exception.
 
-**Traceability:** all existing `USB-*` identifiers are preserved; v2 maps `55` draft policy rows and `16` cross-cutting adversarial cases. See [policy JSON](contracts/access-policy-matrix.v2.json). Approval and acceptance requirements must be reviewed before turning into executable `TDD-USB-*` tests.
+**Traceability:** all existing `USB-*` identifiers are preserved; v2 maps `57` draft policy rows and `18` cross-cutting adversarial cases. See [policy JSON](contracts/access-policy-matrix.v2.json). Approval and acceptance requirements must be reviewed before turning into executable `TDD-USB-*` tests.
 
 ## 5. Detailed seed example — USB-DSP-001 (ready for business elaboration, NOT ready for TDD)
 
