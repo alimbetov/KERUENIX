@@ -6,6 +6,10 @@
 
 **Data/GIS qualification:** добавить [PostGIS + Read Models + GPS partition architecture](15-data-platform-partitioning-postgis.md) в foundation. Для `R0` достаточно PostGIS provisioning, корректного spatial smoke, RLS и ограниченного metadata/ETA projection. Автоматическое партиционирование GPS обязательно **с реальным потоком телеметрии**; если первый MVP работает на ручных этапах без GPS, отложить физические partitions до GPS ingestion slice, но сохранить контракт и тест-план. Не партиционировать все коммерческие таблицы.
 
+## Audited R0 TDD Delivery Roadmap
+
+[33 — TDD Roadmap v1.1](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) define **13 R0 stage gates**, 21 independently testable PR outcomes and real RLS/Outbox/Modulith, cross-role API+UI and exact-SHA qualification. R0 events and retries begin at RD-01, **not** at late RD-10. Each irreversible operation is fail-closed until the applicable BR signoff. No stage is deemed complete from this planning document, and no migration, booking, custody or finance integration is qualified yet.
+
 ## Error-handling foundation qualification (code exists, tests not run)
 
 The platform has an initial [Java21/Spring Boot4.1.2 unified error-handler scaffold](../backend/README.md) and a [GitHub Actions Maven verification workflow](../.github/workflows/backend-error-contract.yml). [31 — RFC 9457 standard](31-unified-error-handling-standard.md) defines the shared `ProblemDetail` contract for REST, Spring Security `401/403`, and servlet `/error` fallback. **Important:** the code is an error-only bootstrap with deny-all business security; it is NOT an authenticated Tenancy implementation or a complete application. 15 handler contract tests and Java/JSON parity passed on commit `ac459923` (GitHub Actions #22); future changes need requalification on exact SHA. Before merging to production: run exact-SHA Maven CI and 401/403/error fallback contract tests; then prove PostgreSQL RLS/Booking/Finance negative effects in their owning modules.
@@ -63,7 +67,7 @@ DELLA-подобная открытая биржа не входит в R0. Дл
 
 | Релиз | Содержание | Gate |
 |---|---|---|
-| R1 — Commercial/Exception | Переговоры/доп.условия, claims, cancellation, частичные доставки, оповещения | Full day-in-life E2E |
+| R1 — Commercial/Exception | Расширенные переговоры, claims resolution, cancellation tariffs, сложные partial returns/split workflows, уведомления; **минимальный безопасный partial POD 8/10 обязателен уже в R0** | Full day-in-life E2E |
 | R2 — Multi-Load & Rescue | Несколько заказов на машину, Timefold, возвратные грузы, внутренняя замена/проверенные партнёры | Feasibility + no custody-loss |
 | R3 — Warehouse Hub | ASN, scan/SSCC, ledger, cross-docking, dock scheduling, charging | Stock balance + custody + tenant safety |
 | R4 — Regulated Corridors | Правила ADR/ТН ВЭД/CMR/eCMR/eTIR по конкретной стране и виду, интеграция официальных статусов | Экспертное approval + юридический/операционный пилот |
