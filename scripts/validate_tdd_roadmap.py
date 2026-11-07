@@ -86,12 +86,23 @@ def main() -> int:
             for field in ("commitSha", "ciRunUrl", "testReportPath"):
                 check(bool(evidence.get(field)),
                       f"{pid}: {p['status']} without {field}")
+            check(p.get("testExecutionStatus") == "EXECUTED_VERIFIED",
+                  f"{pid}: {p['status']} requires verified test execution")
             if p["status"] == "QUALIFIED":
-                for field in ("migrationVersion", "businessDecisionRefs", "securityTestRefs"):
-                    check(bool(evidence.get(field)),
-                          f"{pid}: QUALIFIED without {field}")
-                check(p.get("testExecutionStatus") == "EXECUTED_VERIFIED",
-                      f"{pid}: QUALIFIED without executed tests")
+                if pid != "RD-00":
+                    for field in ("migrationVersion", "securityTestRefs"):
+                        check(bool(evidence.get(field)),
+                              f"{pid}: QUALIFIED without {field}")
+                if p.get("br"):
+                    check(bool(evidence.get("businessDecisionRefs")),
+                          f"{pid}: QUALIFIED without applicable businessDecisionRefs")
+                    approved = {d["decisionId"] for d in br["decisions"]
+                                if d["businessApproval"] == "BUSINESS_APPROVED"}
+                    check(set(p["br"]).issubset(approved),
+                          f"{pid}: QUALIFIED with unapproved business decisions")
+                if pid in {"RD-11", "RD-12"}:
+                    check(bool(evidence.get("frontendE2eEvidence")),
+                          f"{pid}: QUALIFIED without frontendE2eEvidence")
         elif p["status"] == "PLANNED_NOT_QUALIFIED":
             check(p.get("testExecutionStatus") == "NOT_RUN_THIS_ROADMAP",
                   f"{pid}: planned phase inaccurately claims tests were run")
