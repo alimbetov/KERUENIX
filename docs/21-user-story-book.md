@@ -133,7 +133,7 @@ These **15 additional DRAFT stories** supply missing external-client/product and
 | USB-EXC-008 | EXC | Revoke own provider relationship safely | Revoke future access without granting admin controls |
 | USB-EXC-009 | EXC | Request contractual cancellation of confirmed order | Booking owner decides under cancellation policy |
 | USB-SAL-003 | SAL | Work provider Tenant inbound customer RFQ queue | Assignee/branch and customer data scope |
-| USB-SAL-004 | SAL | Read and, when permitted, respond to private verified customer review | No editing original text/score; R1 |
+| USB-SAL-004 | SAL | Respond to private verified customer review after authorized release (R1) | No editing original text/score; R1 |
 | USB-SAL-005 | SAL | Read verified customer feedback scoped to provider company | No foreign provider/customer reviews or edit of original content |
 | USB-DOC-001 | DOC | Verify document package before business use/release | Exact package, evidence and immutable version |
 | USB-FAP-001 | FAP | Approve valid payable by policy and amount | Initiator cannot self-approve same payment |
