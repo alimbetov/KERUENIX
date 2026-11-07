@@ -198,20 +198,20 @@ These cases prevent incorrect/silent effects while exceptional workflow UI is no
 
 | TDD case | GAP | Given | Then | Test level |
 |---|---|---|---|---|
-| `TDD-SIM-042-S04-01` | GAP-04 | Sales records verified-attribution phone/email request; customer has not accepted anything | Record assisted RFQ with origin and no customer impersonation; acceptance requires separate signer evidence | Commercial + HTTP |
-| `TDD-SIM-034-S06-01` | GAP-06 | External contact revoked but colleagues share CustomerOrg-X | Target only member grant revocation, keep other active users and audit stale tokens | Tenancy + RLS |
-| `TDD-SIM-008-S07-01` | GAP-07 | Incoming RFQ has absent assignee and two Sales workers | Reassign under branch and expectedVersion; no lost unassigned jobs, never cross-branch | Commercial + PG concurrency |
-| `TDD-SIM-015-S10-01` | GAP-10 | Carrier without paid Tenant sends confirmation through approved constrained channel | Record explicit verified counterparty evidence and grant, no automatic internal carrier membership | Commercial + HTTP |
-| `TDD-SIM-017-S11-01` | GAP-11 | Provider uses own truck with no external CarrierOffer | Fleet exclusive hold/confirm succeeds without fictitious third-party offer | Fleet/Booking + PG |
-| `TDD-SIM-023-S14-01` | GAP-14 | Driver discovers wrong weight/units or broken seal on pickup | Do not create IN_CUSTODY; create auditable mismatch/incident for owner review | Execution + JUnit |
-| `TDD-SIM-025-S16-01` | GAP-16 | Assigned vehicle breaks down with cargo already in custody | Append incident and handover/RecoveryCase; do not overwrite original carrier, keep custodian known | Execution + PG |
-| `TDD-SIM-027-S17-01` | GAP-17 | Receiver absent or declines to sign | Failed DeliveryAttempt and continued named custody, not Shipment.DELIVERED | Execution + HTTP |
-| `TDD-SIM-029-S19-01` | GAP-19 | Guest POD recipient has expired/guessed delivery link | DENY unless exactly scoped authorized recipient, immutable evidence | Documents + HTTP |
-| `TDD-SIM-030-S20-01` | GAP-20 | Verified POD access revoked while old presigned URL exists | Protected API denies immediately; signed URL exposure bounded/documented; never claim hard revoke without proxy | Documents + RustFS/HTTP |
-| `TDD-SIM-031-S23-01` | GAP-23 | Carrier claims disputed surcharge after original Invoice issued | Block auto payable and in-place invoice edits, preserve independent dispute | Finance + PG |
-| `TDD-SIM-026-S24-01` | GAP-24 | GPS cache is stale and partner grant revoked | Customer sees stale/unavailable time marked; no foreign live coordinates or post-revoke updates | Tracking + HTTP |
-| `TDD-SIM-029-S25-01` | GAP-25 | Customer reports cargo issue before completion | Accept scoped issue with evidence, keep review eligibility independent | Commercial/Execution + HTTP |
-| `TDD-SIM-035-S26-01` | GAP-26 | Job handler retries after user membership revoke | Re-check service scope and resource grant; deny stale authority, preserve dedup and audit | Jobs + PG/RLS |
+| `TDD-SIM-42-S04-01` | GAP-04 | Sales records verified-attribution phone/email request; customer has not accepted anything | Record assisted RFQ with origin and no customer impersonation; acceptance requires separate signer evidence | Commercial + HTTP |
+| `TDD-SIM-34-S06-01` | GAP-06 | External contact revoked but colleagues share CustomerOrg-X | Target only member grant revocation, keep other active users and audit stale tokens | Tenancy + RLS |
+| `TDD-SIM-08-S07-01` | GAP-07 | Incoming RFQ has absent assignee and two Sales workers | Reassign under branch and expectedVersion; no lost unassigned jobs, never cross-branch | Commercial + PG concurrency |
+| `TDD-SIM-15-S10-01` | GAP-10 | Carrier without paid Tenant sends confirmation through approved constrained channel | Record explicit verified counterparty evidence and grant, no automatic internal carrier membership | Commercial + HTTP |
+| `TDD-SIM-17-S11-01` | GAP-11 | Provider uses own truck with no external CarrierOffer | Fleet exclusive hold/confirm succeeds without fictitious third-party offer | Fleet/Booking + PG |
+| `TDD-SIM-23-S14-01` | GAP-14 | Driver discovers wrong weight/units or broken seal on pickup | Do not create IN_CUSTODY; create auditable mismatch/incident for owner review | Execution + JUnit |
+| `TDD-SIM-25-S16-01` | GAP-16 | Assigned vehicle breaks down with cargo already in custody | Append incident and handover/RecoveryCase; do not overwrite original carrier, keep custodian known | Execution + PG |
+| `TDD-SIM-27-S17-01` | GAP-17 | Receiver absent or declines to sign | Failed DeliveryAttempt and continued named custody, not Shipment.DELIVERED | Execution + HTTP |
+| `TDD-SIM-29-S19-01` | GAP-19 | Guest POD recipient has expired/guessed delivery link | DENY unless exactly scoped authorized recipient, immutable evidence | Documents + HTTP |
+| `TDD-SIM-30-S20-01` | GAP-20 | Verified POD access revoked while old presigned URL exists | Protected API denies immediately; signed URL exposure bounded/documented; never claim hard revoke without proxy | Documents + RustFS/HTTP |
+| `TDD-SIM-31-S23-01` | GAP-23 | Carrier claims disputed surcharge after original Invoice issued | Block auto payable and in-place invoice edits, preserve independent dispute | Finance + PG |
+| `TDD-SIM-26-S24-01` | GAP-24 | GPS cache is stale and partner grant revoked | Customer sees stale/unavailable time marked; no foreign live coordinates or post-revoke updates | Tracking + HTTP |
+| `TDD-SIM-29-S25-01` | GAP-25 | Customer reports cargo issue before completion | Accept scoped issue with evidence, keep review eligibility independent | Commercial/Execution + HTTP |
+| `TDD-SIM-35-S26-01` | GAP-26 | Job handler retries after user membership revoke | Re-check service scope and resource grant; deny stale authority, preserve dedup and audit | Jobs + PG/RLS |
 
 ## 5. Cross-role real user acceptance — 10 E2E scenarios
 
