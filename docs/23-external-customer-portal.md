@@ -55,6 +55,7 @@ An external `New RFQ` is not inserted directly into a provider's confirmed `Book
 
 | Story ID | Role | User outcome | Priority |
 |---|---|---|---|
+| USB-TEN-005 | TEN | Invite verified external customer to provider-specific customer account | R0 |
 | USB-EXC-001 | EXC | Activate customer portal via verified invitation/customer relationship without becoming provider Tenant staff | R0 |
 | USB-EXC-002 | EXC | Submit RFQ to selected provider tenant with cargo/route/window details and get tracking reference | R0 |
 | USB-EXC-003 | EXC | Browse/filter **My RFQs / My Orders** and open details, no access to other customer accounts | R0 |
@@ -63,6 +64,7 @@ An external `New RFQ` is not inserted directly into a provider's confirmed `Book
 | USB-EXC-006 | EXC | Leave one attributable, auditable post-service review of a verified fulfilled order | R0 minimal |
 | USB-EXC-007 | EXC | Withdraw/amend an RFQ before binding agreement under version/state rules | R0 |
 | USB-SAL-003 | SAL | Handle incoming customer RFQs in the provider tenant with assignment and conversion to verified quote | R0 |
+| USB-SAL-005 | SAL | Read customer review scoped to the provider and service | R0 |
 | USB-SAL-004 | SAL | Respond to a customer's eligible review without editing their original feedback | R1 |
 
 **Ownership:** `Commercial` owns inbound RFQs/customer quotes and a minimal private `ServiceReview` aggregate; `Tracking` owns authorized shipment projection; `Documents` owns evidence access; `Execution` owns verified completion facts; `Booking` owns confirmed service agreement. No global `OrderStatus` table and no duplicate shipment truth.
