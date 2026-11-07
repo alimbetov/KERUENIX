@@ -5,12 +5,14 @@ on:
     paths:
       - 'docs/**'
       - 'scripts/validate_tdd_roadmap.py'
+      - 'scripts/test_validate_tdd_roadmap.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
   push:
     branches: [main, docs/idea-multitenant-foundation]
     paths:
       - 'docs/**'
       - 'scripts/validate_tdd_roadmap.py'
+      - 'scripts/test_validate_tdd_roadmap.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
   workflow_dispatch:
 
@@ -23,5 +25,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Validate roadmap graph, ownership, BR and test references
+      - name: Test roadmap validator failure detection
+        run: python3 -m unittest discover -s scripts -p 'test_validate_tdd_roadmap.py' -v
+      - name: Validate roadmap graph, per-PR test/permission/UI and Markdown parity
         run: python3 scripts/validate_tdd_roadmap.py
