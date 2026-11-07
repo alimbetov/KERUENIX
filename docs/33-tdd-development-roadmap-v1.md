@@ -4,7 +4,7 @@
 
 **Цель:** поэтапно реализовать KERUENIX как один надёжный Spring Modulith modular monolith в Java 21, от имеющегося error bootstrap до полной, безопасной и воспроизводимой автомобильной перевозки между независимыми компаниями. Технические решения и бизнес-требования должны квалифицироваться через TDD, реальные PostgreSQL/PostGIS транзакции, RLS, API и cross-role E2E. Не заявлять готовность по наличию документации, mock-тестов или единичного happy path.
 
-**Audit:** [34 — TDD Roadmap Technical Audit](34-tdd-roadmap-technical-audit.md) — 13 findings resolved in proposed roadmap, not business signoff. **Machine roadmap:** [tdd-development-roadmap.v1.json](contracts/tdd-development-roadmap.v1.json). Эта JSON-модель содержит единые ID этапов, связи, owners, scope, связанные BSC/BR и gates. Это план, не GitHub Actions/issue tracker и не CI evidence.
+**Audit:** [34 — TDD Roadmap Technical Audit](34-tdd-roadmap-technical-audit.md) — 27 design audit findings documented (implementation pending), not business signoff. **Machine roadmap:** [tdd-development-roadmap.v1.json](contracts/tdd-development-roadmap.v1.json). Эта JSON-модель содержит единые ID этапов, связи, owners, scope, связанные BSC/BR и gates. Это план, не GitHub Actions/issue tracker и не CI evidence.
 
 **Опорные спецификации:**
 - [32 — Scenario-Driven Backend Design](32-scenario-driven-backend-design-v1.md) + [query/soft delete contract](contracts/backend-query-soft-delete.v1.json): DDD, command/query repositories, DTO/MapStruct, controllers, pagination, filters, Soft Delete.
@@ -69,14 +69,14 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 |---|---|---|---|
 | `RD-00` | Discovery → Testable Contracts | Параллельный старт | tenancy, commercial, fleet, booking, execution, documents, finance |
 | `RD-01` | Build + Platform Foundation (Outbox/Inbox baseline) | Параллельный старт | platform infrastructure (not business tenancy) |
-| `RD-02` | Tenancy + Identity + Customer Scope | `RD-01` | tenancy, commercial |
+| `RD-02` | Tenancy + Identity + Customer Scope | `RD-01` | tenancy grants + commercial CustomerAccount (separate writers) |
 | `RD-03` | Commercial RFQ + Customer Inbox | `RD-02` | commercial, tenancy |
 | `RD-04` | Commercial Quote + Approvals | `RD-03` | commercial, tenancy |
 | `RD-05` | Fleet + Cargo + Compliance + PostGIS (**3 owner PRs**) | `RD-02` | cargo, compliance, fleet (independent owners) |
 | `RD-06` | Booking Process + External Carrier | `RD-04`, `RD-05` | booking, fleet, commercial |
 | `RD-07` | Execution + Custody + Partial POD | `RD-06` | execution, cargo, compliance |
 | `RD-08` | Tracking + Documents + Query/Soft Delete Qualification | `RD-07` | tracking, documents, fleet, execution |
-| `RD-09` | Finance-lite + Verified Settlement | `RD-06`, `RD-07`, `RD-08` | finance, commercial, booking, documents |
+| `RD-09` | Finance-lite + Verified Settlement (**2 PRs**) | `RD-06`, `RD-07`, `RD-08` | finance only writes ledger; other modules via exported facts |
 | `RD-10` | **Jobs Resilience Hardening** + Subscription Safety | `RD-02`, `RD-06`, `RD-07`, `RD-09` | platform jobs + scoped tenancy/execution/finance; not first Outbox deployment |
 | `RD-11` | R0 Full E2E + Recovery + Performance | `RD-03`, `RD-04`, `RD-05`, `RD-06`, `RD-07`, `RD-08`, `RD-09`, `RD-10` | tenancy, commercial, fleet, cargo, compliance, booking, execution, tracking, documents, finance |
 | `RD-12` | Pilot Acceptance + Release Qualification | `RD-11`, `RD-00` | tenancy, commercial, fleet, booking, execution, tracking, documents, finance |
@@ -159,7 +159,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-01`. **Ответственные модули:** `tenancy`, `commercial`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Tenant/LegalEntity, Member/RoleAssignment, Provider↔CustomerOrg relationship, CustomerAccount grants, PartnerGrant, invitation, verified identity, customer vs tenant employee, revoke/suspension, SoD. Разделить identity/authorization grant (Tenancy) и commercial relationship facts (Commercial).
+**Scope и результат:** Tenant/LegalEntity, Member/RoleAssignment, PartnerGrant, invitation, verified identity, customer vs tenant employee, revoke/suspension, SoD. **Commercial PR-03C** owns canonical CustomerAccount business relationship and emits a neutral versioned account event; **Tenancy PR-03** owns only grants/membership/revocation referencing that account ID. Tenancy cannot import Commercial internals or query Commercial tables; prerequisite ADR owner signoff remains required. Разделить identity/authorization grant (Tenancy) и commercial relationship facts (Commercial).
 
 **Изменения в коде/артефактах:**
 - domain aggregates and repository ports
@@ -321,7 +321,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-06`, `RD-07`, `RD-08`. **Ответственные модули:** `finance`, `commercial`, `booking`, `documents`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Только Finance владеет/изменяет Invoice, AR/AP, Allocation, advance, approval. Сведения Booking/Documents поступают через согласованные published snapshots/events, без JPA внутренних зависимостей. Exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or legally/business-approved audited manual verification, not GPS or user toggle. Independent finance approver. Вне согласованного R0 корректировки/credit notes не включать без отдельного решения; безопасный отказ допустим.
+**Scope и результат:** **PR-17** устанавливает Finance invoice/AR/AP и approvals без объявления денег поступившими; **PR-17S** отдельно подключает verified bank/ERP evidence, unique allocations, partial settlement and reversal. Только Finance владеет/изменяет Invoice, AR/AP, Allocation, advance, approval. Сведения Booking/Documents поступают через согласованные published snapshots/events, без JPA внутренних зависимостей. Exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or legally/business-approved audited manual verification, not GPS or user toggle. Independent finance approver. Вне согласованного R0 корректировки/credit notes не включать без отдельного решения; безопасный отказ допустим.
 
 **Изменения в коде/артефактах:**
 - Finance domain aggregates/ledger, repository
@@ -649,9 +649,9 @@ Minimum contents: pinned supported Java/Boot/Modulith/MapStruct/Flyway/Testconta
 **Then:** RD-02 Tenancy, RD-03 customer/provider RFQ with query+soft-delete rules, RD-04 and RD-05 after signoffs, converging at RD-06 Booking. The first material release proof is **one real fully scoped business vertical slice**, not the number of created packages.
 
 
-## 15. Technical re-audit v1.1 — corrected planning and anti-risk decisions
+## 15. Technical re-audit v1.3 — corrected planning and anti-risk decisions
 
-This audit is attached as [34 — Roadmap Technical Audit](34-tdd-roadmap-technical-audit.md). **Changes to this roadmap are proposals, not implementation, not business/finance/legal signoff, and not passing Testcontainers.** The existing verified handler-only CI cannot qualify any RD-01..RD-12 business milestone.
+This audit is attached as [34 — Roadmap Technical Audit](34-tdd-roadmap-technical-audit.md). **Audit register has 27 findings; 14–27 are further corrections to the initial thirteen.** **Changes to this roadmap are proposals, not implementation, not business/finance/legal signoff, and not passing Testcontainers.** The existing verified handler-only CI cannot qualify any RD-01..RD-12 business milestone.
 
 | Finding | Severity | Original risk | v1.1 remedy |
 |---|---|---|---|
@@ -668,10 +668,17 @@ This audit is attached as [34 — Roadmap Technical Audit](34-tdd-roadmap-techni
 | AUD-RD-11 | P1 | No executable roadmap JSON/ID consistency gate | New stdlib roadmap validator & CI workflow; cross-check modules, phases, story/test catalogs |
 | AUD-RD-12 | P0 | Status might be promoted from previously green handler SHA | Per-phase evidence manifest: exact SHA, artifact digest, RLS/restore/UI/legal evidence; stage remains planned until that evidence exists |
 | AUD-RD-13 | P0 | 21 PR cuts had no explicit per-PR prerequisites | Each PR has `dependsOnPrs` and an acyclic DAG; prerequisite code-qualified before merge |
+| AUD-RD-14..21 | Mixed P0/P1 | RFQ submit split, ownership/ADR, evidence provenance, user-facing PR coverage, real test anchors, customer account isolation, verified settlement, validator self-tests | Recorded in technical audit §2 and machine roadmap §audit; no implementation claimed |
+| AUD-RD-22 | P0 | CI schema mismatch: JSON v1.2/21 findings vs validator v1.1/13, actual failed run | Schema and all views synchronized; validator checks machine+Markdown and future approved evidence states |
+| AUD-RD-23 | P0 | Commercial CustomerAccount canonical writer had no PR before Tenancy grants | Add PR-03C commercial CustomerAccount registry and published account-id event; PR-03 tenancy grants consume exported-neutral event, no Tenancy->Commercial import |
+| AUD-RD-24 | P0 | RD-00 documents ALL BR-01..12 but generic qualifier demanded all signed for RD-00 before PR-02 | RD-00 records BR review state/evidence without declaring approval; per irreversible PR activationGate governs signoff |
+| AUD-RD-25 | P0 | Execution proofs depended on future Documents and risked cyclic module dependency | Platform EvidenceBlobGateway verifies staged bytes and checksums, Execution owns custody receipt, Documents later owns package via Execution exported event |
+| AUD-RD-26 | P0 | Finance PR-17 mixes bookkeeping with external payment verification and paid status | Split PR-17 invoice/AR/AP from PR-17S verified settlement/reversal, both with distinct TDD and mock≠PAID |
+| AUD-RD-27 | P1 | Roadmap validator did not verify criticalCaseIds, activation/UI field correctness or PR Markdown dependency parity | Strengthen CI contract validator with per-PR case existence, dependency parity, required fields and deterministic negative mutation tests |
 
 **R0 contract truth:** `CustomerPortalApi` and `PlatformJobs` are technical integration surfaces, not 18th/19th business modules. The 17-domain catalog stays fixed. RD-01 Platform baseline is infrastructure, not a Tenancy feature.
 
-## 16. Executable delivery increments — 21 small PR cuts
+## 16. Executable delivery increments — 23 small PR cuts
 
 A phase is an **epic with exit criteria**, not a requirement to implement all participating modules in one PR. Each row below is one recommended **independently testable small PR or smaller**. Early PRs may be separate focused branches but must build/test on the target baseline; dependents cannot merge on red integration.
 
@@ -679,10 +686,11 @@ A phase is an **epic with exit criteria**, not a requirement to implement all pa
 |---|---|---|---|---|
 | `PR-00` | `RD-00` | `architecture` | Parallel foundation start | traceability validator, signoff ledger and phase-by-phase test selection. **Gate:** catalog IDs and BR status truthful |
 | `PR-01` | `RD-01` | `platform` | Parallel foundation start | Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox. **Gate:** verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic |
-| `PR-02` | `RD-02` | `tenancy` | `PR-00`, `PR-01` | tenant/legal entity and verified identity/invitation/grants. **Gate:** real JWT or verified auth adapter + multi-grant denial + SoD |
-| `PR-03` | `RD-02` | `tenancy` | `PR-02` | provider-customer organization grants and revoke. **Gate:** Customer-X/Y negative list/detail, warm cache, RLS context reset |
-| `PR-04` | `RD-03` | `commercial` | `PR-03` | RFQ **DRAFT only** + scoped Customer My RFQs; Submit DENY until owner permission approval. **Gate:** negative submit/no outbox + tenant/account paging and idempotency |
-| `PR-05` | `RD-03` | `commercial` | `PR-04` | RFQ Submit **only after approved permission** + Provider Inbox/assignment/clarification. **Gate:** actor+resource scope, branch CAS, deny without signoff |
+| `PR-02` | `RD-02` | `tenancy` | `PR-00`, `PR-01` | tenant/legal entity and verified identity/invitation/grants and exported AccountRelationship grant interface. **Gate:** real JWT or verified auth adapter + multi-grant denial + SoD |
+| `PR-03C` | `RD-02` | `commercial` | `PR-02` | canonical CustomerAccount business relationship, provider legal entity binding and versioned AccountRegistered integration event. **Gate:** customer-org/provider uniqueness, no cross-tenant inference; public event to Tenancy projection with no reverse dependency; ADR approved |
+| `PR-03` | `RD-02` | `tenancy` | `PR-03C` | Tenancy CustomerAccount member grants/revoke referencing commercial account ID via neutral verified event, never a second CustomerAccount table. **Gate:** Customer-X/Y negative list/detail, warm cache, RLS context reset |
+| `PR-04` | `RD-03` | `commercial` | `PR-03` | RFQ DRAFT creation + Customer My RFQs list/detail/filter; submit remains fail-closed until separate permission accepted. **Gate:** scoped DRAFT create+list; no write on unauthorized submit; pagination, outbox atomic and key conflict |
+| `PR-05` | `RD-03` | `commercial` | `PR-04` | scoped RFQ submit (after explicit permission decision) + provider Inbox assignment/clarification. **Gate:** submit permission approved+negative; exact CustomerAccount, stable Inbox, branch CAS assignment, no false legally accepted Quote |
 | `PR-06` | `RD-04` | `commercial` | `PR-05` | immutable QuoteVersion issue/supersede, independent price approval. **Gate:** version race + SoD; no binding acceptance without BR-01 |
 | `PR-07` | `RD-04` | `commercial` | `PR-06` | authorized customer Quote accept/decline with evidence. **Gate:** BR-01/02/05 acceptance, exact signer, termsHash and expiry |
 | `PR-08` | `RD-05` | `cargo` | `PR-02` | CargoProfile/identified units and physical compatibility inputs. **Gate:** mass/quantity/identity/value invariants |
@@ -690,18 +698,19 @@ A phase is an **epic with exit criteria**, not a requirement to implement all pa
 | `PR-10` | `RD-05` | `fleet` | `PR-08`, `PR-09` | vehicle/driver/trailer registry and atomic capacity holding. **Gate:** PostgreSQL exclusion/locked-slot race, hold expiry fencing BR-07 |
 | `PR-11` | `RD-06` | `commercial` | `PR-03`, `PR-06` | carrier sourced offer+withdrawal/ack and own-fleet alternative. **Gate:** partner grants, no margin disclosure, no false capacity, BR-06 |
 | `PR-12` | `RD-06` | `booking` | `PR-07`, `PR-10`, `PR-11` | Booking pending→confirmed via accepted quote and confirmed exclusive capacity. **Gate:** process crash/replay, stale quote/carrier, no phantom Booking |
-| `PR-13` | `RD-07` | `execution` | `PR-12` | Trip/pickup offline custody + **original verified evidence receipt**. **Gate:** hash/bytes/actor/assignment, object exists, orphan/replay recovery, BR-09 |
+| `PR-13` | `RD-07` | `execution` | `PR-12` | Trip+pickup offline custody and signed evidence references; implement verified original evidence receipts (not bare URL) before document packaging. **Gate:** historical authority, late replay, one custodian, BR-09; hash/size/signer/object existence/orphan replay tests |
 | `PR-14` | `RD-07` | `execution` | `PR-13` | delivery attempts, partial/refused POD and compensating disposition. **Gate:** 8/10 conservation, receiver evidence and proof immutability, BR-10 |
 | `PR-15` | `RD-08` | `tracking` | `PR-13` | customer-scoped timeline and ETA freshness. **Gate:** stale cache, wrong-customer cursor, no GPS-derived POD |
 | `PR-16` | `RD-08` | `documents` | `PR-14` | verified POD/document package and bounded download. **Gate:** verified version, revoked grant, legal hold, no generic soft delete |
-| `PR-17` | `RD-09` | `finance` | `PR-07`, `PR-14`, `PR-16` | AR/AP/Invoice + verified financial settlement. **Gate:** SoD, FX/allocation, source evidence; mock != production PAID, BR-11/12 |
-| `PR-18` | `RD-10` | `platform` | `PR-13`, `PR-17` | advanced job fencing, timeout, crash and safe SaaS continuity. **Gate:** replay/failover + BR-04 in-flight evidence after suspension |
-| `PR-19` | `RD-11` | `cross-functional` | `PR-12`, `PR-14`, `PR-15`, `PR-16`, `PR-17`, `PR-18` | full customer→forwarder→carrier→driver→receiver→finance real E2E. **Gate:** accepted P0 negative, RLS, outage recovery, UI states and artifact evidence |
+| `PR-17` | `RD-09` | `finance` | `PR-07`, `PR-14`, `PR-16` | Finance invoice, AR/AP and independently approved payable/receivable; outstanding and partial states only. **Gate:** immutable invoice, Money decimal and legal-entity scope, SoD approvals and no mock/approval to PAID |
+| `PR-17S` | `RD-09` | `finance` | `PR-17` | verified bank/ERP payment evidence, unique allocations, partial settlement, reversal and reconciliation. **Gate:** verified source transaction identity+currency+legal entity; at-most-one allocation; reversal; no PAID based on sandbox callback |
+| `PR-18` | `RD-10` | `platform` | `PR-13`, `PR-17S` | advanced job fencing, timeout, crash and safe SaaS continuity. **Gate:** replay/failover + BR-04 in-flight evidence after suspension |
+| `PR-19` | `RD-11` | `cross-functional` | `PR-12`, `PR-14`, `PR-15`, `PR-16`, `PR-18`, `PR-17S` | full customer→forwarder→carrier→driver→receiver→finance real E2E. **Gate:** accepted P0 negative, RLS, outage recovery, UI states and artifact evidence |
 | `PR-20` | `RD-12` | `release` | `PR-00`, `PR-19` | pilot signoff, container, SBOM, restore drill and release artifact. **Gate:** same SHA/digest, no open P0, signed applicable BR |
 
 **PR DAG rule:** Every `dependsOnPrs` edge denotes a prerequisite **qualified implementation artifact**, not merely a completed document; CI validates no orphan dependency or cycle. Technical parallelism is allowed only where dependencies and security contracts permit.
 
-**Critical path:** `PR-00/01` parallel → `PR-02/03` → `PR-04/05` → `PR-06/07` and `PR-08/09/10` parallel → `PR-11/12` → `PR-13/14` → `PR-15/16/17` as business dependencies permit → `PR-18` hardening → `PR-19` actual E2E → `PR-20` pilot. A dependency is a tested API/data/contract prerequisite, not a calendar estimate.
+**Critical path:** `PR-00/01` parallel → `PR-02/03C/03` → `PR-04/05` → `PR-06/07` and `PR-08/09/10` parallel → `PR-11/12` → `PR-13/14` → `PR-15/16/17/17S` as business dependencies permit → `PR-18` hardening → `PR-19` actual E2E → `PR-20` pilot. A dependency is a tested API/data/contract prerequisite, not a calendar estimate.
 
 **Correct implementation order of business writes:** `RFQ state + audit + Outbox` must be in one transaction from RD-03; the general infrastructure comes first in RD-01. Capacity reservation must use real PG exclusivity, not Redis lock. Driver pickup/receiver POD must not rely on Tracking/GPS as source of truth. Money allocation cannot derive paid status from an internal approval.
 
@@ -808,3 +817,31 @@ Design-only corrections: not implemented behavior, real stakeholder approval, or
 Start PR-00 and PR-01 in parallel (traceability/validator plus Boot, Modulith, Flyway, real Postgres/PostGIS/RLS/Outbox). Then PR-02/03 Tenancy and CustomerAccount ownership ADR, PR-04 **Draft**, PR-05 **approved submit**/Inbox, PR-06/07 Quote, PR-08/09/10 Cargo/Compliance/Fleet, PR-11/12 Carrier/Booking, PR-13/14 verified custody/POD, PR-15/16 Tracking/Documents, PR-17 true Finance evidence, PR-18 recovery, PR-19 real multi-role API/UI E2E, PR-20 signed pilot.
 
 All 17 existing business modules remain in the architecture map. This version is a **proposal and CI-verifiable documentary plan**, not a completed business backend.
+
+## 20. Second audit v1.3 — critical design corrections
+
+**Verified observed defect in prior HEAD:** Roadmap contract was `schemaVersion=1.2.0` with 21 audit findings while `validate_tdd_roadmap.py` enforced `1.1.0` and 13 findings. GitHub Actions run [42403111243](https://github.com/alimbetov/KERUENIX/actions/runs/42403111243) **FAILED** on these two comparisons. This is a *real documentation CI defect*, not an application defect. The v1.3 machine and Markdown contracts, validator, and synthetic negative validator self-tests are required for correction. Do not claim newest SHA qualified until new CI finishes.
+
+### 20.1 Owner-safe customer onboarding, not duplicate CustomerAccount
+
+`PR-02` is Tenancy identity and verified provider membership. `PR-03C` creates canonical `CustomerAccount` and business provider/customer relationship in **Commercial** after real provider authority/business rule verification, then emits a versioned, tenant-scoped account-registered **integration envelope**. `PR-03` is **Tenancy** external grant (subject → provider/customer account) based on the verified account reference; no direct Tenancy → Commercial class import or repository read is allowed. Commercial may depend on Tenancy exported authorization services, per module boundaries. Integration event schema/producer/consumer and at-least-once/duplicate/revoke tests must be approved before any grant is activated. CustomerOrg-X and Y share provider Tenant-A but must never see each other's RFQs, detail, totals, exports or evidence. PostgreSQL tenant RLS alone is insufficient; scoped predicate/permission contract is mandatory.
+
+**ADR gate:** `CustomerAccount` canonical ownership is still a **proposed** architecture decision, not automatically approved by this edit. `Order` source-of-truth remains `PENDING_ADR` and must be resolved before Booking PR-12 migration. The PR DAG provides technical ordering, not acceptance of these ADRs.
+
+### 20.2 Evidence provenance without Execution ↔ Documents cycle
+
+`PR-13` calls an infrastructure-level `EvidenceBlobGateway` through an exported/own port (not a new business module), stages/uploads original proof bytes, checks object presence, MIME/scan policy, SHA-256, byte size and actor authority. Execution commits verified `ProofReceipt` + custody transition + Outbox atomically *after* externally stored evidence is validated; orphan blobs and uncertain cleanup have explicit reconciliation. `PR-16` Documents consumes Execution's published proof receipt or exported API and assembles versioned immutable `DocumentPackage`. **No Execution→Documents direct module import**, which would contradict the allowed `documents → execution` dependency. An arbitrary signed URL is not legal/operational proof of POD.
+
+### 20.3 Invoice ≠ settled payment — split the finance slice
+
+`PR-17` delivers accurate Finance-owned Invoice, AR/AP, payable approvals, outstanding/partial amounts and immutable originals; `PR-17S` delivers verified bank/ERP transaction ingestion, unique allocation, replay/reversal handling and guarded `SETTLED`. PR-17 may be qualified with no live bank integration **only as an invoicing slice**, while PR-17S and R0 finance E2E may not be qualified by mock/sandbox callback claiming real production payment. Actual payment source, currency/legal-entity matching and independent approver remain business/legal/operational gates.
+
+### 20.4 Workflow/approval status are not global blockers
+
+`RD-00` owns the list of all 12 `BR` decisions and reviews their actual statuses, **not the requirement to get all 12 signatures before PR-01**. It can qualify truthful documentation even while BRs remain `PENDING_REAL_STAKEHOLDER`. For each irreversible command, `activationGate.br` and owner-approved specific policy determine readiness; unknown client RFQ submit permission remains DENY without altering the approved CREATE_DRAFT capability.
+
+### 20.5 Gate design: no silent pass and no status fabrication
+
+The v1.3 validator must check **all 23 PRs**, PR DAG and Markdown parity, `criticalCaseIds` against actual 132 IDs, actor/client scope and `uiAcceptance` fields, `activationGate` known BR, consistent primary owner, and status evidence. Implement positive and deliberate negative/mutation tests for the validator. A case count alone is not meaningful coverage. A declared `ciRunUrl` string is not proof the job passed: that needs GitHub-required check status and artifact/SHA verification outside static JSON validation.
+
+Do not invent green Java or PostgreSQL coverage from successful validation of these documents. The true next R0 implementation gate remains **`PR-00 + PR-01`** on a qualified build, with stakeholder workshops progressing independently.
