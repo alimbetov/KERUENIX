@@ -51,7 +51,8 @@
     "codeRuntime": "ONE_MODULAR_SPRING_BOOT_21_WITH_MODULE_SPECIFIC_OWNERS",
     "softDeletePolicy": "OPT_IN_DRAFT_ONLY_NO_FINANCE_BOOKING_POD_LEDGER_DELETE",
     "failureResponse": "RFC9457_FROM_EXISTING_API_ERROR_CATALOG",
-    "r0ReleaseRule": "NO_P0_RED_OR_UNSIGNED_RELEVANT_BUSINESS_RULE"
+    "r0ReleaseRule": "NO_P0_RED_OR_UNSIGNED_RELEVANT_BUSINESS_RULE",
+    "frontendStrategy": "CONTRACT_FIRST_FRONTENDS_BY_ROLE; FRAMEWORK_CHOICE_AFTER_POC; UI_TESTS_ASSERT_BUSINESS_TRUTH"
   },
   "workstreams": {
     "R0": [
@@ -194,7 +195,8 @@
       ],
       "gate": "Два Tenant + минимум два CustomerOrg в одном provider не видят чужих записей; сквозной authorization HTTP→DB подтверждён.",
       "next": "RD-03, RD-05.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Вход/выбор подтверждённого Tenant или CustomerAccount; запрет доступа к чужому кабинету и безопасная обработка истёкших приглашений."
     },
     {
       "id": "RD-03",
@@ -228,7 +230,8 @@
       ],
       "gate": "External customer sees only own RFQs; provider only allowed Inbox; pagination/count and DTO no leak; one logical create/submit effect.",
       "next": "RD-04.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Customer My Requests: создание/отправка RFQ, фильтры, сортировка, пагинация, empty/error states; Provider Incoming RFQs: только разрешённый inbox."
     },
     {
       "id": "RD-04",
@@ -264,7 +267,8 @@
       ],
       "gate": "Only authorized exact current quote version can be accepted; never mutate issued terms; no implicit Booking.CONFIRMED.",
       "next": "RD-06 (with RD-05).",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Разные экраны просмотра и правомерного акцепта QuoteVersion; состояние awaiting resource confirmation не отображается как confirmed booking."
     },
     {
       "id": "RD-05",
@@ -302,7 +306,8 @@
       ],
       "gate": "No double hold in DB, no unsafe UNKNOWN release, correct coordinate/units and geo tenant isolation; real concurrency test green.",
       "next": "RD-06.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Операционный shortlist автомобилей с freshness/eligibility; UNKNOWN compliance — заблокированная кнопка с объяснением, не фиктивная автоматическая проверка."
     },
     {
       "id": "RD-06",
@@ -342,7 +347,8 @@
       ],
       "gate": "Confirmed Booking always has valid evidence of Quote + exclusive CapacityReservation + compliance; crash/retry converges and cleans hold.",
       "next": "RD-07.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Provider/Carrier Booking workflow: hold, pending, confirmation, rejection/cancel request; при конфликте UI показывает актуальную версию после повторного чтения."
     },
     {
       "id": "RD-07",
@@ -380,7 +386,8 @@
       ],
       "gate": "No custody loss or forged POD; verified cargo-unit reconciliation and negative/replay invariants pass.",
       "next": "RD-08.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Driver offline pickup/POD draft queue + receiver evidence; после устаревшей роли/assignment показать requires reconciliation, не silently delivered."
     },
     {
       "id": "RD-08",
@@ -416,7 +423,8 @@
       ],
       "gate": "No raw GPS/foreign documents, truthful freshness, no erased legal evidence, cursor cannot cross authorizations.",
       "next": "RD-09.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Customer Tracking + POD/documents, явная свежесть ETA, строгий customer-visible field allowlist, истекшая ссылка не открывает чужой документ."
     },
     {
       "id": "RD-09",
@@ -456,7 +464,8 @@
       ],
       "gate": "No fictitious PAID or duplicate money effect; financial balance and independent approval verified on real PostgreSQL.",
       "next": "RD-10/11.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Finance office AR/AP + evidence status; approval и posting отделены, paid не доступен как произвольный ручной переключатель."
     },
     {
       "id": "RD-10",
@@ -498,7 +507,8 @@
       ],
       "gate": "No lost committed event or job, no duplicate logical effect, no cross-tenant worker privilege, operable degraded state.",
       "next": "RD-11.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Состояния долгой операции, retry/failed, graceful degradation и безопасная операционная непрерывность при недоступности внешних сервисов."
     },
     {
       "id": "RD-11",
@@ -556,7 +566,8 @@
       ],
       "gate": "Every accepted P0 applicable contract green on exact SHA, zero known P0 leak/dup booking/custody/finance bug, documented SLO from measured benchmark; no mock-only release claim.",
       "next": "RD-12.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "Сквозная browser/UI и при необходимости offline device simulation: customer→provider→carrier→driver→receiver→finance, все негативные видимые состояния."
     },
     {
       "id": "RD-12",
@@ -596,7 +607,8 @@
       ],
       "gate": "Signed business/legal/finance acceptance where required, exact release SHA artifacts/CI green, operational recovery proved; otherwise NO RELEASE.",
       "next": "Enable RX work by measured demand.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "frontendAcceptance": "User acceptance workshop, accessibility/responsive baseline и документирование наблюдаемых ограничений перед публикацией."
     },
     {
       "id": "RX-01",
@@ -703,7 +715,8 @@
     "API_EVENT_CONTRACT",
     "E2E_MULTI_ACTOR",
     "FAULT_RECOVERY",
-    "PERF_EXPLAIN"
+    "PERF_EXPLAIN",
+    "ROLE_BASED_UI_ACCEPTANCE_WHEN_UI_EXISTS"
   ],
   "prChecklist": [
     "all impacted BR review status known",
