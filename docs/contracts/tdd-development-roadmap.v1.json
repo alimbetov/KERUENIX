@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "1.2.0",
-  "documentStatus": "AUDITED_V1_1_PROPOSED_NO_R0_BUSINESS_IMPLEMENTATION_QUALIFIED",
+  "schemaVersion": "1.3.0",
+  "documentStatus": "SECOND_AUDIT_V1_3_PROPOSED_NO_R0_BUSINESS_IMPLEMENTATION_QUALIFIED",
   "date": "2026-11-07",
   "roadmapRef": "docs/33-tdd-development-roadmap-v1.md",
   "baselineRef": "docs/32-scenario-driven-backend-design-v1.md",
@@ -25,8 +25,8 @@
       "additionalSdbTraceAnchors": 20
     },
     "priorHandlerCi": "Backend Error Contract on PR HEAD 964eaec3: completed success as observed before v1.1 update; only error-contract scope",
-    "lastAuditedHead": "964eaec3f061ee38cc2accedcdf0d65c40ae2d28",
-    "roadmapContractValidation": "NOT_YET_EXECUTED",
+    "lastAuditedHead": "5beab03f3b4ea511a68dcad3436a2d0f6d4fda16",
+    "roadmapContractValidation": "FAILED_ON_SHA_5beab03f_BAD_SCHEMA_AND_FINDINGS_UNTIL_V1_3_CORRECTION",
     "applicationModuleTests": "NOT_EXECUTED",
     "realPostgresqlRls": "NOT_IMPLEMENTED",
     "frontendBusinessJourneys": "NOT_IMPLEMENTED"
@@ -135,7 +135,7 @@
         "documentation JSON validation, uniqueness and cross-reference",
         "negative-case coverage mapping (not executable business acceptance)"
       ],
-      "gate": "Для каждого функционального среза — подтверждённые actor/resource scope, бизнес-владелец, AC, отказ и legal/finance signoff, где необходим; не подписанный BR не превращается в продуктовый allow.",
+      "gate": "Для каждого функционального среза — подтверждённые actor/resource scope, бизнес-владелец, AC, отказ и legal/finance signoff, где необходим; не подписанный BR не превращается в продуктовый allow. RD-00 is a traceability/signoff-status registry: valid pending BR is acceptable for RD-00 QUALIFIED if no privileged/irreversible business transition is activated.",
       "next": "RD-01 возможен параллельно; бизнес-срезы используют только подписанные правила.",
       "status": "PLANNED_NOT_QUALIFIED",
       "primaryWriteOwners": [
@@ -203,7 +203,7 @@
       "br": [
         "BR-03"
       ],
-      "scope": "Tenant/LegalEntity, Member/RoleAssignment, Provider↔CustomerOrg relationship, CustomerAccount grants, PartnerGrant, invitation, verified identity, customer vs tenant employee, revoke/suspension, SoD. Разделить identity/authorization grant (Tenancy) и commercial relationship facts (Commercial).",
+      "scope": "Tenant/LegalEntity, Member/RoleAssignment, Provider↔CustomerOrg relationship, CustomerAccount grants, PartnerGrant, invitation, verified identity, customer vs tenant employee, revoke/suspension, SoD. Разделить identity/authorization grant (Tenancy) и commercial relationship facts (Commercial). Commercial CustomerAccount canonical record creation via PR-03C must precede Tenancy grants PR-03; neutral event projection to Tenancy, no runtime Tenancy->Commercial dependency.",
       "code": [
         "domain aggregates and repository ports",
         "verified principal context + transaction-scoped RLS",
@@ -222,12 +222,14 @@
       "status": "PLANNED_NOT_QUALIFIED",
       "frontendAcceptance": "Вход/выбор подтверждённого Tenant или CustomerAccount; запрет доступа к чужому кабинету и безопасная обработка истёкших приглашений.",
       "primaryWriteOwners": [
-        "tenancy"
+        "tenancy",
+        "commercial"
       ],
       "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
-      "tddRiskNotes": "Verified principal/JWT and provider-customer grants must precede exposing scoped REST and customer UI; no hidden tenant header override. BR-03 / CustomerAccount writer split and same-provider Customer-X/Y scope: tenant-only RLS is insufficient.",
+      "tddRiskNotes": "Verified principal/JWT and provider-customer grants must precede exposing scoped REST and customer UI; no hidden tenant header override. BR-03 / CustomerAccount writer split and same-provider Customer-X/Y scope: tenant-only RLS is insufficient. Explicit ADR confirmation for CustomerAccount source owner prior to PR-03C.",
       "deliveryPrs": [
         "PR-02",
+        "PR-03C",
         "PR-03"
       ],
       "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
@@ -449,7 +451,7 @@
         "BR-09",
         "BR-10"
       ],
-      "scope": "Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered. Use a versioned evidence pointer/public Documents API contract in RD-07, never silently publish unsigned POD. Documents publication later in RD-08. PR-13 must verify original evidence bytes/hash/size/source/signature/assignment and persist immutable receipt before authoritative custody transition; Documents PR-16 later packages it.",
+      "scope": "Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered. Use a versioned evidence pointer/public Documents API contract in RD-07, never silently publish unsigned POD. Documents publication later in RD-08. PR-13 must verify original evidence bytes/hash/size/source/signature/assignment and persist immutable receipt before authoritative custody transition; Documents PR-16 later packages it. Platform EvidenceBlobGateway (infrastructure adapter) validates original proof bytes before Execution receipt; Documents later consumes exported Execution evidence refs, never reverse module import.",
       "code": [
         "Execution state machines and custody ledger",
         "offline command intake with verifier and quarantine",
@@ -548,7 +550,7 @@
         "BR-11",
         "BR-12"
       ],
-      "scope": "Distinct invoice, receivable, payable, payment allocation, advance, claim references and approval; exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or audited manual verification, not GPS or user toggle. Independent finance approver. Finance owns its ledger; Booking/Documents data via versioned public events/snapshots, not direct queries to internal tables. Advanced credit note beyond agreed pilot scope fails safely or is deferred.",
+      "scope": "Distinct invoice, receivable, payable, payment allocation, advance, claim references and approval; exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or audited manual verification, not GPS or user toggle. Independent finance approver. Finance owns its ledger; Booking/Documents data via versioned public events/snapshots, not direct queries to internal tables. Advanced credit note beyond agreed pilot scope fails safely or is deferred. Separate invoice/AR/AP (PR-17) from verified bank/ERP source and allocation reconciliation (PR-17S); simulated bank callbacks never count as actual PAID.",
       "code": [
         "Finance domain aggregates/ledger, repository",
         "immutable Invoice, controlled correction/credit note",
@@ -560,7 +562,8 @@
         "duplicate bank callback, amount precision, currency mismatch",
         "approve own payment denied; no over-allocation",
         "delivered!=paid, advanced funds!=performed service",
-        "unknown banking result reconciliation, not blind retry"
+        "unknown banking result reconciliation, not blind retry",
+        "PR-17S: bank duplicate transaction reference, 2 workers, source authentication, reversal, unsupported provider fail-closed"
       ],
       "gate": "No fictitious PAID or duplicate money effect; financial balance and independent approval verified on real PostgreSQL. Production PAID forbidden without verified real settlement evidence; sandbox/mock result is SIMULATED and cannot silently become PAID.",
       "next": "RD-10/11.",
@@ -572,7 +575,8 @@
       "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
       "tddRiskNotes": "Finance is the ONLY canonical finance table writer. References to Booking/Documents use published snapshot/events from their owners; never import foreign internal repositories. Paid status requires verified cash fact.",
       "deliveryPrs": [
-        "PR-17"
+        "PR-17",
+        "PR-17S"
       ],
       "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
@@ -909,9 +913,9 @@
   ],
   "noAutoActivationOfExtensionModules": true,
   "audit": {
-    "version": "1.2",
+    "version": "1.3",
     "source": "docs/34-tdd-roadmap-technical-audit.md",
-    "findingsTotal": 21,
+    "findingsTotal": 27,
     "releaseBlockers": [
       "business signoff for irreversible contracts",
       "real RLS and Booking/Fleet/Custody/Finance consistency",
@@ -936,7 +940,51 @@
       "18 Executable per-PR critical negative-case anchors and schema validation, not merely 132 aggregate count",
       "19 CustomerAccount scope inside provider Tenant requires separate DB/query isolation; tenant RLS alone insufficient",
       "20 Payment PAID requires authoritative external/manual verified evidence, mocks cannot claim settlement",
-      "21 Roadmap validator is self-tested and compares PR Markdown/dependency contract, not ID-only inclusion"
+      "21 Roadmap validator is self-tested and compares PR Markdown/dependency contract, not ID-only inclusion",
+      "AUD-RD-22 CI schema mismatch: JSON v1.2/21 findings vs validator v1.1/13, actual failed run",
+      "AUD-RD-23 Commercial CustomerAccount canonical writer had no PR before Tenancy grants",
+      "AUD-RD-24 RD-00 documents ALL BR-01..12 but generic qualifier demanded all signed for RD-00 before PR-02",
+      "AUD-RD-25 Execution proofs depended on future Documents and risked cyclic module dependency",
+      "AUD-RD-26 Finance PR-17 mixes bookkeeping with external payment verification and paid status",
+      "AUD-RD-27 Roadmap validator did not verify criticalCaseIds, activation/UI field correctness or PR Markdown dependency parity"
+    ],
+    "followupFindings": [
+      {
+        "code": "AUD-RD-22",
+        "severity": "P0",
+        "gap": "CI schema mismatch: JSON v1.2/21 findings vs validator v1.1/13, actual failed run",
+        "resolution": "Schema and all views synchronized; validator checks machine+Markdown and future approved evidence states"
+      },
+      {
+        "code": "AUD-RD-23",
+        "severity": "P0",
+        "gap": "Commercial CustomerAccount canonical writer had no PR before Tenancy grants",
+        "resolution": "Add PR-03C commercial CustomerAccount registry and published account-id event; PR-03 tenancy grants consume exported-neutral event, no Tenancy->Commercial import"
+      },
+      {
+        "code": "AUD-RD-24",
+        "severity": "P0",
+        "gap": "RD-00 documents ALL BR-01..12 but generic qualifier demanded all signed for RD-00 before PR-02",
+        "resolution": "RD-00 records BR review state/evidence without declaring approval; per irreversible PR activationGate governs signoff"
+      },
+      {
+        "code": "AUD-RD-25",
+        "severity": "P0",
+        "gap": "Execution proofs depended on future Documents and risked cyclic module dependency",
+        "resolution": "Platform EvidenceBlobGateway verifies staged bytes and checksums, Execution owns custody receipt, Documents later owns package via Execution exported event"
+      },
+      {
+        "code": "AUD-RD-26",
+        "severity": "P0",
+        "gap": "Finance PR-17 mixes bookkeeping with external payment verification and paid status",
+        "resolution": "Split PR-17 invoice/AR/AP from PR-17S verified settlement/reversal, both with distinct TDD and mock≠PAID"
+      },
+      {
+        "code": "AUD-RD-27",
+        "severity": "P1",
+        "gap": "Roadmap validator did not verify criticalCaseIds, activation/UI field correctness or PR Markdown dependency parity",
+        "resolution": "Strengthen CI contract validator with per-PR case existence, dependency parity, required fields and deterministic negative mutation tests"
+      }
     ]
   },
   "executionGovernance": {
@@ -977,7 +1025,11 @@
     "financialSourceOfTruth": "PAID only with independently authenticated bank/ERP statement or explicit separately approved independently verified manual settlement; simulation is SIMULATED, unverified remains OUTSTANDING",
     "documentEvidence": "Execution owns custody/pickup factual record, proof hashes, signer/time/context and replay quarantine; Documents owns object/package retention & verified access via published adapter contract",
     "tenantScopes": "Provider tenant RLS by itself insufficient for multiple CustomerAccounts in same provider; all customer-facing SQL/count/export and object access must independently enforce verified account/grant and revocation",
-    "frontendGates": "UI code and browser/offline acceptance planned in same feature PR or explicitly linked qualified UI PR; backend-only results cannot promote user journey or R0 release"
+    "frontendGates": "UI code and browser/offline acceptance planned in same feature PR or explicitly linked qualified UI PR; backend-only results cannot promote user journey or R0 release",
+    "brReadiness": "RD-00 is knowledge/control record, NOT approval of every BR; its qualification checks traceability and honest PENDING flags. Only relevant PR activationGate and domain transition demand a signed, evidence-backed BR.",
+    "customerAccountOrdering": "Commercial PR-03C first writes CustomerAccount, then Tenancy PR-03 grants; no duplicate table and no reverse direct dependency.",
+    "financialStaging": "PR-17 can qualify invoice/AR/AP outstanding states without bank PAID; PR-17S cannot qualify settlement until source evidence verified; release still requires accepted pilot finance path.",
+    "errors": "Documentation CI success does not prove backend migration, RLS, email/phone identity, legal signature or payment truth."
   },
   "trackOwnership": {
     "concept": "A stage may involve multiple modules, but only the owning module can write its canonical tables; each PR declares exactly one primary write owner or a platform technical owner.",
@@ -1044,7 +1096,7 @@
       "id": "PR-02",
       "phase": "RD-02",
       "owner": "tenancy",
-      "outcome": "tenant/legal entity and verified identity/invitation/grants",
+      "outcome": "tenant/legal entity and verified identity/invitation/grants and exported AccountRelationship grant interface",
       "testGate": "real JWT or verified auth adapter + multi-grant denial + SoD",
       "dependsOnPrs": [
         "PR-00",
@@ -1071,13 +1123,43 @@
       "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
+      "id": "PR-03C",
+      "phase": "RD-02",
+      "owner": "commercial",
+      "outcome": "canonical CustomerAccount business relationship, provider legal entity binding and versioned AccountRegistered integration event",
+      "testGate": "customer-org/provider uniqueness, no cross-tenant inference; public event to Tenancy projection with no reverse dependency; ADR approved",
+      "dependsOnPrs": [
+        "PR-02"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-007",
+        "NEG-R0-008"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_OWNER_ADR_AND_RELATED_BR",
+        "br": [
+          "BR-03"
+        ],
+        "effect": "no provider/customer account binding or grants until relationship verified"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Provider customer account onboarding/relationship verification or safe pending workflow"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Catalog anchors are minimum; per-PR applicability expands through signed acceptance"
+    },
+    {
       "id": "PR-03",
       "phase": "RD-02",
       "owner": "tenancy",
-      "outcome": "provider-customer organization grants and revoke",
+      "outcome": "Tenancy CustomerAccount member grants/revoke referencing commercial account ID via neutral verified event, never a second CustomerAccount table",
       "testGate": "Customer-X/Y negative list/detail, warm cache, RLS context reset",
       "dependsOnPrs": [
-        "PR-02"
+        "PR-03C"
       ],
       "criticalCaseIds": [
         "NEG-R0-005",
@@ -1488,8 +1570,8 @@
       "id": "PR-17",
       "phase": "RD-09",
       "owner": "finance",
-      "outcome": "distinct AR/AP/Invoice and verified payment reconciliation",
-      "testGate": "money/SoD, allocation uniqueness, reversal, BR-11/12; mock != paid; verified source proof required",
+      "outcome": "Finance invoice, AR/AP and independently approved payable/receivable; outstanding and partial states only",
+      "testGate": "immutable invoice, Money decimal and legal-entity scope, SoD approvals and no mock/approval to PAID",
       "dependsOnPrs": [
         "PR-07",
         "PR-14",
@@ -1497,9 +1579,7 @@
       ],
       "criticalCaseIds": [
         "NEG-R0-033",
-        "NEG-R0-034",
-        "NEG-R0-035",
-        "NEG-R0-036"
+        "NEG-R0-035"
       ],
       "activationGate": {
         "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
@@ -1507,16 +1587,47 @@
           "BR-11",
           "BR-12"
         ],
-        "effect": "reversal/accounting and verified financial settlement"
+        "effect": "terms for invoicing and payable approvals but not bank settlement"
       },
       "uiAcceptance": {
         "required": true,
         "deliverables": [
-          "Finance AR/AP/Invoice and verified settlement; manual approval distinct from PAID"
+          "Finance invoice and AR/AP outstanding status, approval separate from settlement"
         ],
         "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
       },
       "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
+    },
+    {
+      "id": "PR-17S",
+      "phase": "RD-09",
+      "owner": "finance",
+      "outcome": "verified bank/ERP payment evidence, unique allocations, partial settlement, reversal and reconciliation",
+      "testGate": "verified source transaction identity+currency+legal entity; at-most-one allocation; reversal; no PAID based on sandbox callback",
+      "dependsOnPrs": [
+        "PR-17"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-034",
+        "NEG-R0-035",
+        "NEG-R0-036",
+        "TDD-R0-E2E-06"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF_AND_VERIFIED_SOURCE",
+        "br": [
+          "BR-12"
+        ],
+        "effect": "PAID/SETTLED only from accepted verified bank/ERP evidence"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Verified payment reconciliation and evidence/partial/reversed/error states"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Bank/ERP truth must be independently verified; sandbox callbacks are simulated"
     },
     {
       "id": "PR-18",
@@ -1526,7 +1637,7 @@
       "testGate": "replay/failover + BR-04 in-flight evidence after suspension",
       "dependsOnPrs": [
         "PR-13",
-        "PR-17"
+        "PR-17S"
       ],
       "criticalCaseIds": [
         "NEG-R0-037",
@@ -1563,8 +1674,8 @@
         "PR-14",
         "PR-15",
         "PR-16",
-        "PR-17",
-        "PR-18"
+        "PR-18",
+        "PR-17S"
       ],
       "criticalCaseIds": [
         "TDD-R0-E2E-01",
@@ -1656,7 +1767,8 @@
       "offline custody authority and CargoUnit conservation",
       "bank allocation unique reference",
       "outbox/inbox replay and subscription continuity"
-    ]
+    ],
+    "prEligibilityRule": "Case criticalCaseIds must exist in original 132, PR activationGate BR refer to known BR, UI acceptance required for business-facing PR; build does not grant legal rights."
   },
   "earlyInfrastructure": [
     {
@@ -1716,9 +1828,9 @@
       "canonicalWriter": "commercial",
       "otherOwner": "tenancy",
       "otherResponsibility": "trusted identities, provider/customer relationship access grants, membership, revocation",
-      "decision": "PROPOSED_AWAITING_ADR",
-      "integration": "Commercial publishes business account identity; Tenancy exports verified grant bound to account ID; bootstrap sequencing must avoid cross-module transaction cycle",
-      "noGo": "No duplicate canonical CustomerAccount table or cross-module foreign SQL"
+      "decision": "PROPOSED_ADR_REQUIRED_BEFORE_PR_03C",
+      "integration": "PR-03C Commercial creates canonical CustomerAccount and emits versioned neutral AccountRegistered integration event; PR-03 Tenancy consumes account-id projection and creates external-user grant. Tenancy must not import Commercial classes or query commercial tables; Commercial uses Tenancy exported auth API only.",
+      "noGo": "Do not create Tenancy CustomerAccount entity; Tenancy owns memberships/grants, Commercial owns business relationship; ADR business approval required before PR-03C"
     },
     {
       "resource": "Order",
@@ -1726,7 +1838,7 @@
       "otherOwner": "commercial/booking/execution",
       "otherResponsibility": "Decide authoritative aggregate or composed read model before migrations",
       "decision": "PENDING_ADR",
-      "noGo": "No multiple writers or phantom Order lifecycle"
+      "noGo": "Resolve if Order is an aggregate or customer-facing composition before PR-12 Booking migration and public route; one canonical writer only."
     },
     {
       "resource": "Invoice",
@@ -1740,9 +1852,10 @@
       "resource": "CustodyEvidence",
       "canonicalWriter": "execution",
       "otherOwner": "documents",
-      "otherResponsibility": "Documents owns immutable proof object storage/package; Execution records verified receipt/reference/hash and handover state only through exported proof API",
-      "decision": "PROPOSED_AWAITING_ADR",
-      "noGo": "No signed placeholder pointer accepted as actual evidence"
+      "otherResponsibility": "Platform-owned evidence blob adapter stages/scans/checksums immutable bytes; Execution owns custody receipt and state; Documents owns later document package by consuming Execution public proof event",
+      "decision": "PROPOSED_ADR_REQUIRED_BEFORE_PR_13",
+      "noGo": "No signed placeholder pointer accepted as actual evidence",
+      "integration": "Execution -> platform EvidenceBlobGateway (infrastructure port, not another business module). Documents -> Execution exported proof event/API. No Execution->Documents dependency"
     }
   ],
   "authorizationGates": {
@@ -1783,7 +1896,7 @@
     "id": "EVD-R0-001",
     "scope": "RD-07/PR-13 and PR-14 before RD-08/PR-16",
     "writeOwner": "execution",
-    "immutableObjectOwner": "documents via exported proof storage interface or dedicated versioned adapter contract",
+    "immutableObjectOwner": "platform infrastructure EvidenceBlobGateway for staged immutable bytes; Documents owns packages only",
     "required": [
       "verified original bytes or signed source claim",
       "SHA-256 content digest and byte size",
@@ -1797,7 +1910,7 @@
       "access authorization and scan/quarantine for uploaded media"
     ],
     "risk": "No POD accepted from bare unverified URI, from a future document package or from GPS",
-    "storageTransactionRule": "External blob upload cannot be atomically committed with PostgreSQL; stage/quarantine blob, verify hash/authority, then write durable receipt + transition/outbox in one PG transaction; retry/cleanup orphan safely",
+    "storageTransactionRule": "External blob upload cannot be atomically committed with PostgreSQL; stage/quarantine blob, verify hash/authority, then write durable receipt + transition/outbox in one PG transaction; retry/cleanup orphan safely Execution->Documents compile dependency is forbidden; Documents reads Execution's exported proof event/contract, never the reverse.",
     "testAnchors": [
       "NEG-R0-025",
       "NEG-R0-026",
