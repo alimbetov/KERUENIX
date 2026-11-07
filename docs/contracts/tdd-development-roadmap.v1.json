@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.1.0",
+  "schemaVersion": "1.2.0",
   "documentStatus": "AUDITED_V1_1_PROPOSED_NO_R0_BUSINESS_IMPLEMENTATION_QUALIFIED",
   "date": "2026-11-07",
   "roadmapRef": "docs/33-tdd-development-roadmap-v1.md",
@@ -225,7 +225,7 @@
         "tenancy"
       ],
       "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
-      "tddRiskNotes": "Verified principal/JWT and provider-customer grants must precede exposing scoped REST and customer UI; no hidden tenant header override.",
+      "tddRiskNotes": "Verified principal/JWT and provider-customer grants must precede exposing scoped REST and customer UI; no hidden tenant header override. BR-03 / CustomerAccount writer split and same-provider Customer-X/Y scope: tenant-only RLS is insufficient.",
       "deliveryPrs": [
         "PR-02",
         "PR-03"
@@ -247,7 +247,7 @@
         "BSC-002"
       ],
       "br": [],
-      "scope": "Создать Draft RFQ, submit/clarification/qualification по принятому lifecycle; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие. Public submit/ discard MUST remain denied pending explicit owner permission from SDB contract; no implicit template grant.",
+      "scope": "Разделить безопасное создание Draft RFQ (PR-04) и отдельный авторизованный submit/clarification/inbox (PR-05) по принятому lifecycle; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие. Public submit/ discard MUST remain denied pending explicit owner permission from SDB contract; no implicit template grant.",
       "code": [
         "RFQ aggregate and transitions",
         "command + query repositories, Flyway and RLS",
@@ -262,7 +262,7 @@
         "cross-account filtering before COUNT/OFFSET; SQL EXPLAIN",
         "double submit changed payload conflict; draft deletion/quote issuance race if enabled"
       ],
-      "gate": "External customer sees only own RFQs; provider only allowed Inbox; pagination/count and DTO no leak; one logical create/submit effect. Submit enabled only after verified scoped permission and approved source-of-truth actor.",
+      "gate": "PR-04 может быть CODE_VERIFIED_DENY_ONLY только для Draft+My RFQs. Полная RD-03 QUALIFIED требует явного решения по submit permission, успешного scoped submit и разрешённого Provider Inbox; фильтрация/COUNT/RLS и DTO без утечек.",
       "next": "RD-04.",
       "status": "PLANNED_NOT_QUALIFIED",
       "frontendAcceptance": "Customer My Requests: создание/отправка RFQ, фильтры, сортировка, пагинация, empty/error states; Provider Incoming RFQs: только разрешённый inbox.",
@@ -270,7 +270,7 @@
         "commercial"
       ],
       "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
-      "tddRiskNotes": "RFQ submit permission remains PENDING in SDB v1; do not implement public write until explicit permission and negative test. Soft delete is opt-in only.",
+      "tddRiskNotes": "RFQ submit permission remains PENDING in SDB v1; do not implement public write until explicit permission and negative test. Soft delete is opt-in only. PR-04 must never emit RFQSubmitted event on denied submit. PR-05 blocks if owner/security approval absent.",
       "deliveryPrs": [
         "PR-04",
         "PR-05"
@@ -449,7 +449,7 @@
         "BR-09",
         "BR-10"
       ],
-      "scope": "Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered. Use a versioned evidence pointer/public Documents API contract in RD-07, never silently publish unsigned POD. Documents publication later in RD-08.",
+      "scope": "Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered. Use a versioned evidence pointer/public Documents API contract in RD-07, never silently publish unsigned POD. Documents publication later in RD-08. PR-13 must verify original evidence bytes/hash/size/source/signature/assignment and persist immutable receipt before authoritative custody transition; Documents PR-16 later packages it.",
       "code": [
         "Execution state machines and custody ledger",
         "offline command intake with verifier and quarantine",
@@ -562,7 +562,7 @@
         "delivered!=paid, advanced funds!=performed service",
         "unknown banking result reconciliation, not blind retry"
       ],
-      "gate": "No fictitious PAID or duplicate money effect; financial balance and independent approval verified on real PostgreSQL.",
+      "gate": "No fictitious PAID or duplicate money effect; financial balance and independent approval verified on real PostgreSQL. Production PAID forbidden without verified real settlement evidence; sandbox/mock result is SIMULATED and cannot silently become PAID.",
       "next": "RD-10/11.",
       "status": "PLANNED_NOT_QUALIFIED",
       "frontendAcceptance": "Finance office AR/AP + evidence status; approval и posting отделены, paid не доступен как произвольный ручной переключатель.",
@@ -682,7 +682,7 @@
         "two independent DB sessions plus network failure matrix",
         "restore persisted facts and document checksums"
       ],
-      "gate": "Every accepted P0 applicable contract green on exact SHA, zero known P0 leak/dup booking/custody/finance bug, documented SLO from measured benchmark; no mock-only release claim.",
+      "gate": "Every accepted P0 applicable contract green on exact SHA, zero known P0 leak/dup booking/custody/finance bug, documented SLO from measured benchmark; no mock-only release claim. Every required per-PR UI deliverable must be linked to a verified UI test/artifact, not just an API test.",
       "next": "RD-12.",
       "status": "PLANNED_NOT_QUALIFIED",
       "frontendAcceptance": "Сквозная browser/UI и при необходимости offline device simulation: customer→provider→carrier→driver→receiver→finance, все негативные видимые состояния.",
@@ -909,9 +909,9 @@
   ],
   "noAutoActivationOfExtensionModules": true,
   "audit": {
-    "version": "1.1",
+    "version": "1.2",
     "source": "docs/34-tdd-roadmap-technical-audit.md",
-    "findingsTotal": 13,
+    "findingsTotal": 21,
     "releaseBlockers": [
       "business signoff for irreversible contracts",
       "real RLS and Booking/Fleet/Custody/Finance consistency",
@@ -927,7 +927,17 @@
       "no accepted business policy inferred from future passing tests"
     ],
     "prDag": "Explicit dependencies of 21 independent PR cuts; CI fails cycles or orphan refs",
-    "findingAdded": "AUD-RD-13: PR-level DAG absent in original v1.1 first cut, now enforced"
+    "findingAdded": "AUD-RD-13: PR-level DAG absent in original v1.1 first cut, now enforced",
+    "findingsAdded": [
+      "14 RFQ draft versus submit authorization must be separate; PR-04 draft-safe, PR-05 explicit submit decision",
+      "15 CustomerAccount commercial relationship writer versus Tenancy identity/grants ownership",
+      "16 Original custody evidence integrity/authorization is required before Documents package",
+      "17 Per-PR role UI deliverables and browser/offline acceptance ownership",
+      "18 Executable per-PR critical negative-case anchors and schema validation, not merely 132 aggregate count",
+      "19 CustomerAccount scope inside provider Tenant requires separate DB/query isolation; tenant RLS alone insufficient",
+      "20 Payment PAID requires authoritative external/manual verified evidence, mocks cannot claim settlement",
+      "21 Roadmap validator is self-tested and compares PR Markdown/dependency contract, not ID-only inclusion"
+    ]
   },
   "executionGovernance": {
     "statusTruth": "Do not mark stage QUALIFIED from plan or a previous commit; require exact SHA + job logs + migration and fixtures",
@@ -954,7 +964,20 @@
       "DEFERRED_WITH_APPROVED_RATIONALE",
       "BLOCKED"
     ],
-    "prDependency": "Only merge after prerequisite PRs have been code-qualified on current target baseline, not merely approved documentation"
+    "prDependency": "Only merge after prerequisite PRs have been code-qualified on current target baseline, not merely approved documentation",
+    "deliveryQualificationModes": [
+      "DOCUMENTATION_VALIDATED",
+      "CODE_VERIFIED_DENY_ONLY",
+      "API_VERIFIED",
+      "USER_JOURNEY_VERIFIED",
+      "BUSINESS_QUALIFIED",
+      "RELEASE_QUALIFIED"
+    ],
+    "gateRule": "CODE_VERIFIED_DENY_ONLY never permits PENDING business action. QUALIFIED phase only after applicable irreversible effect signoff and real DB/UI proof; planned stages not upgraded from previous CI.",
+    "financialSourceOfTruth": "PAID only with independently authenticated bank/ERP statement or explicit separately approved independently verified manual settlement; simulation is SIMULATED, unverified remains OUTSTANDING",
+    "documentEvidence": "Execution owns custody/pickup factual record, proof hashes, signer/time/context and replay quarantine; Documents owns object/package retention & verified access via published adapter contract",
+    "tenantScopes": "Provider tenant RLS by itself insufficient for multiple CustomerAccounts in same provider; all customer-facing SQL/count/export and object access must independently enforce verified account/grant and revocation",
+    "frontendGates": "UI code and browser/offline acceptance planned in same feature PR or explicitly linked qualified UI PR; backend-only results cannot promote user journey or R0 release"
   },
   "trackOwnership": {
     "concept": "A stage may involve multiple modules, but only the owning module can write its canonical tables; each PR declares exactly one primary write owner or a platform technical owner.",
@@ -979,7 +1002,19 @@
       "owner": "architecture",
       "outcome": "traceability validator, signoff ledger and phase-by-phase test selection",
       "testGate": "catalog IDs and BR status truthful",
-      "dependsOnPrs": []
+      "dependsOnPrs": [],
+      "criticalCaseIds": [],
+      "activationGate": {
+        "mode": "DOCUMENTATION_ONLY",
+        "br": [],
+        "effect": "no business write"
+      },
+      "uiAcceptance": {
+        "required": false,
+        "deliverables": [],
+        "requiredTest": "NOT_APPLICABLE_INFRA_OR_PURE_DOMAIN"
+      },
+      "caseCoverageNote": "Static docs/JSON and signoff registry; no business test case executable."
     },
     {
       "id": "PR-01",
@@ -987,7 +1022,23 @@
       "owner": "platform",
       "outcome": "Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox",
       "testGate": "verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic",
-      "dependsOnPrs": []
+      "dependsOnPrs": [],
+      "criticalCaseIds": [
+        "NEG-R0-041",
+        "NEG-R0-042",
+        "NEG-R0-043"
+      ],
+      "activationGate": {
+        "mode": "FOUNDATION_FAIL_CLOSED",
+        "br": [],
+        "effect": "no business write"
+      },
+      "uiAcceptance": {
+        "required": false,
+        "deliverables": [],
+        "requiredTest": "NOT_APPLICABLE_INFRA_OR_PURE_DOMAIN"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-02",
@@ -998,7 +1049,26 @@
       "dependsOnPrs": [
         "PR-00",
         "PR-01"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-001",
+        "NEG-R0-002",
+        "NEG-R0-003",
+        "NEG-R0-004"
+      ],
+      "activationGate": {
+        "mode": "POLICY_SCOPED",
+        "br": [],
+        "effect": "identity/grants only; no implicit role templates"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Verified sign-in / tenant selection and denial states"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-03",
@@ -1008,27 +1078,84 @@
       "testGate": "Customer-X/Y negative list/detail, warm cache, RLS context reset",
       "dependsOnPrs": [
         "PR-02"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-006",
+        "NEG-R0-007",
+        "NEG-R0-008"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-03"
+        ],
+        "effect": "provider-customer relationship must be verified"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Customer/provider relationship invitation and revoke states"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-04",
       "phase": "RD-03",
       "owner": "commercial",
-      "outcome": "RFQ creation+submit+customer My RFQs",
-      "testGate": "idempotency conflict + scoped list/pagination + first real outbox",
+      "outcome": "RFQ DRAFT creation + Customer My RFQs list/detail/filter; submit remains fail-closed until separate permission accepted",
+      "testGate": "scoped DRAFT create+list; no write on unauthorized submit; pagination, outbox atomic and key conflict",
       "dependsOnPrs": [
         "PR-03"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-008",
+        "NEG-R0-011"
+      ],
+      "activationGate": {
+        "mode": "SAFE_DRAFT_ONLY",
+        "br": [],
+        "effect": "create draft only; submit rejected until separate permission"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Customer RFQ draft editor, My RFQs list/filter/empty/denied; submit remains disabled"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-05",
       "phase": "RD-03",
       "owner": "commercial",
-      "outcome": "provider Inbox assignment, clarification/qualify",
-      "testGate": "branch restriction, CAS assignment, no unapproved quote",
+      "outcome": "scoped RFQ submit (after explicit permission decision) + provider Inbox assignment/clarification",
+      "testGate": "submit permission approved+negative; exact CustomerAccount, stable Inbox, branch CAS assignment, no false legally accepted Quote",
       "dependsOnPrs": [
         "PR-04"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-009",
+        "NEG-R0-011"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_PERMISSION_APPROVED",
+        "br": [],
+        "effect": "RFQ submit+inbox publication only after explicit policy decision"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Authorized submit confirmation and provider Inbox/assignment/clarification"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-06",
@@ -1038,7 +1165,26 @@
       "testGate": "version race + SoD; no binding acceptance without BR-01",
       "dependsOnPrs": [
         "PR-05"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-010",
+        "NEG-R0-009"
+      ],
+      "activationGate": {
+        "mode": "FAIL_CLOSED_LEGAL_SIGNOFF",
+        "br": [
+          "BR-05"
+        ],
+        "effect": "Quote issue and exception approval only under accepted rules; do not bind customer"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Provider versioned quote draft/approval screen with independent approver"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-07",
@@ -1048,7 +1194,30 @@
       "testGate": "BR-01/02/05 acceptance, exact signer, termsHash and expiry",
       "dependsOnPrs": [
         "PR-06"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-009",
+        "NEG-R0-010",
+        "NEG-R0-012",
+        "TDD-SIM-13-G01-01"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-01",
+          "BR-02",
+          "BR-05"
+        ],
+        "effect": "binding quote acceptance and optional decline"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Customer exact QuoteVersion review/consent and expiry/stale error display"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-08",
@@ -1058,7 +1227,19 @@
       "testGate": "mass/quantity/identity/value invariants",
       "dependsOnPrs": [
         "PR-02"
-      ]
+      ],
+      "criticalCaseIds": [],
+      "activationGate": {
+        "mode": "PURE_DOMAIN_INPUT",
+        "br": [],
+        "effect": "cargo master input only"
+      },
+      "uiAcceptance": {
+        "required": false,
+        "deliverables": [],
+        "requiredTest": "NOT_APPLICABLE_INFRA_OR_PURE_DOMAIN"
+      },
+      "caseCoverageNote": "Pure cargo Value Object and conservation JUnit/property tests until integrated POD cases in PR-14; no standalone existing NEG bank case maps 1:1."
     },
     {
       "id": "PR-09",
@@ -1068,7 +1249,26 @@
       "testGate": "qualified source / correct HOLD, BR-08 signoff where binding",
       "dependsOnPrs": [
         "PR-08"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-021",
+        "NEG-R0-022",
+        "NEG-R0-023",
+        "NEG-R0-024"
+      ],
+      "activationGate": {
+        "mode": "FAIL_CLOSED_LEGAL_SIGNOFF",
+        "br": [
+          "BR-08"
+        ],
+        "effect": "critical UNKNOWN remains HOLD"
+      },
+      "uiAcceptance": {
+        "required": false,
+        "deliverables": [],
+        "requiredTest": "NOT_APPLICABLE_INFRA_OR_PURE_DOMAIN"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-10",
@@ -1079,7 +1279,27 @@
       "dependsOnPrs": [
         "PR-08",
         "PR-09"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-017",
+        "NEG-R0-018",
+        "NEG-R0-019"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-07"
+        ],
+        "effect": "capacity exclusive hold/confirm"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Fleet candidate/hold board showing compliance HOLD and capacity conflict"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-11",
@@ -1090,7 +1310,28 @@
       "dependsOnPrs": [
         "PR-03",
         "PR-06"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-013",
+        "NEG-R0-014",
+        "NEG-R0-015",
+        "NEG-R0-016"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-06"
+        ],
+        "effect": "carrier offer/ack/withdrawal semantics"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Carrier offer review and withdrawal/revoke scoped to partner"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-12",
@@ -1102,17 +1343,59 @@
         "PR-07",
         "PR-10",
         "PR-11"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-017",
+        "NEG-R0-020",
+        "NEG-R0-045"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-06",
+          "BR-07"
+        ],
+        "effect": "booking CONFIRMED guarded by quote+fleet"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Booking pending/confirmed/conflict state based on authoritative backend"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-13",
       "phase": "RD-07",
       "owner": "execution",
-      "outcome": "Trip+pickup offline custody and signed evidence references",
-      "testGate": "historical authority, late replay, one custodian, BR-09",
+      "outcome": "Trip+pickup offline custody and signed evidence references; implement verified original evidence receipts (not bare URL) before document packaging",
+      "testGate": "historical authority, late replay, one custodian, BR-09; hash/size/signer/object existence/orphan replay tests",
       "dependsOnPrs": [
         "PR-12"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-025",
+        "NEG-R0-026",
+        "NEG-R0-027",
+        "NEG-R0-028"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-09"
+        ],
+        "effect": "custody pickup evidence"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Driver offline pickup evidence queue and conflict/reconciliation state"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-14",
@@ -1122,7 +1405,27 @@
       "testGate": "8/10 conservation, receiver evidence and proof immutability, BR-10",
       "dependsOnPrs": [
         "PR-13"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-029",
+        "NEG-R0-030",
+        "NEG-R0-031"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-10"
+        ],
+        "effect": "partial POD and custodian reconciliation"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Scoped receiver/driver proof and partial POD 8/10 conservation UI"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-15",
@@ -1132,7 +1435,25 @@
       "testGate": "stale cache, wrong-customer cursor, no GPS-derived POD",
       "dependsOnPrs": [
         "PR-13"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-006",
+        "NEG-R0-044"
+      ],
+      "activationGate": {
+        "mode": "POLICY_SCOPED",
+        "br": [],
+        "effect": "customer projection read only"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Customer tracking timeline with freshness and no hidden raw GPS"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-16",
@@ -1142,19 +1463,60 @@
       "testGate": "verified version, revoked grant, legal hold, no generic soft delete",
       "dependsOnPrs": [
         "PR-14"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-006",
+        "NEG-R0-029",
+        "NEG-R0-031",
+        "NEG-R0-032"
+      ],
+      "activationGate": {
+        "mode": "POLICY_SCOPED",
+        "br": [],
+        "effect": "signed proof and retrieval only"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Signed POD/document list, access denied and expiring downloads"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-17",
       "phase": "RD-09",
       "owner": "finance",
       "outcome": "distinct AR/AP/Invoice and verified payment reconciliation",
-      "testGate": "money/SoD, allocation uniqueness, reversal, BR-11/12",
+      "testGate": "money/SoD, allocation uniqueness, reversal, BR-11/12; mock != paid; verified source proof required",
       "dependsOnPrs": [
         "PR-07",
         "PR-14",
         "PR-16"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-033",
+        "NEG-R0-034",
+        "NEG-R0-035",
+        "NEG-R0-036"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-11",
+          "BR-12"
+        ],
+        "effect": "reversal/accounting and verified financial settlement"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Finance AR/AP/Invoice and verified settlement; manual approval distinct from PAID"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-18",
@@ -1165,7 +1527,30 @@
       "dependsOnPrs": [
         "PR-13",
         "PR-17"
-      ]
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-037",
+        "NEG-R0-038",
+        "NEG-R0-039",
+        "NEG-R0-040",
+        "NEG-R0-041",
+        "NEG-R0-042"
+      ],
+      "activationGate": {
+        "mode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+        "br": [
+          "BR-04"
+        ],
+        "effect": "subscription safety continuity only if SaaS enabled"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Operator failed/retry/reconcile dashboard with safe error details"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-19",
@@ -1180,7 +1565,34 @@
         "PR-16",
         "PR-17",
         "PR-18"
-      ]
+      ],
+      "criticalCaseIds": [
+        "TDD-R0-E2E-01",
+        "TDD-R0-E2E-02",
+        "TDD-R0-E2E-03",
+        "TDD-R0-E2E-04",
+        "TDD-R0-E2E-05",
+        "TDD-R0-E2E-06",
+        "TDD-R0-E2E-07",
+        "TDD-R0-E2E-08",
+        "TDD-R0-E2E-09",
+        "TDD-R0-E2E-10",
+        "NEG-R0-047",
+        "NEG-R0-048"
+      ],
+      "activationGate": {
+        "mode": "RELEASE_ACCEPTANCE",
+        "br": [],
+        "effect": "no new domain mutation; full E2E"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Actual browser/offline E2E multi-role journey across all actor interfaces"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     },
     {
       "id": "PR-20",
@@ -1191,7 +1603,25 @@
       "dependsOnPrs": [
         "PR-00",
         "PR-19"
-      ]
+      ],
+      "criticalCaseIds": [
+        "TDD-R0-E2E-01",
+        "TDD-R0-E2E-04",
+        "TDD-R0-E2E-06"
+      ],
+      "activationGate": {
+        "mode": "RELEASE_SIGNOFF",
+        "br": [],
+        "effect": "pilot release no open P0"
+      },
+      "uiAcceptance": {
+        "required": true,
+        "deliverables": [
+          "Pilot UAT usability/error/accessibility and release artifact reproducibility"
+        ],
+        "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
+      },
+      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
     }
   ],
   "testSelection": {
@@ -1279,5 +1709,139 @@
       "explicit pilot legal/counterparty signoff for irreversible effects",
       "zero known critical bugs and no silent test skips"
     ]
+  },
+  "domainOwnershipDecisions": [
+    {
+      "resource": "CustomerAccount",
+      "canonicalWriter": "commercial",
+      "otherOwner": "tenancy",
+      "otherResponsibility": "trusted identities, provider/customer relationship access grants, membership, revocation",
+      "decision": "PROPOSED_AWAITING_ADR",
+      "integration": "Commercial publishes business account identity; Tenancy exports verified grant bound to account ID; bootstrap sequencing must avoid cross-module transaction cycle",
+      "noGo": "No duplicate canonical CustomerAccount table or cross-module foreign SQL"
+    },
+    {
+      "resource": "Order",
+      "canonicalWriter": "PENDING_ADR",
+      "otherOwner": "commercial/booking/execution",
+      "otherResponsibility": "Decide authoritative aggregate or composed read model before migrations",
+      "decision": "PENDING_ADR",
+      "noGo": "No multiple writers or phantom Order lifecycle"
+    },
+    {
+      "resource": "Invoice",
+      "canonicalWriter": "finance",
+      "otherOwner": "commercial/booking",
+      "otherResponsibility": "Only snapshots/contracts, not foreign financial SQL writes",
+      "decision": "PROPOSED_AWAITING_MODULE_CATALOG_UPDATE",
+      "noGo": "No duplicate finance authoritative invoice"
+    },
+    {
+      "resource": "CustodyEvidence",
+      "canonicalWriter": "execution",
+      "otherOwner": "documents",
+      "otherResponsibility": "Documents owns immutable proof object storage/package; Execution records verified receipt/reference/hash and handover state only through exported proof API",
+      "decision": "PROPOSED_AWAITING_ADR",
+      "noGo": "No signed placeholder pointer accepted as actual evidence"
+    }
+  ],
+  "authorizationGates": {
+    "rfqDraft": {
+      "permission": "customer:rfq:create",
+      "catalogRef": "EXT-02",
+      "operation": "CREATE_DRAFT",
+      "productionCandidate": "AFTER_AUTH_TENANCY_AND_VALID_RELATIONSHIP",
+      "scope": "Exact provider tenant + CustomerAccount + current grant"
+    },
+    "rfqSubmit": {
+      "permission": "PENDING_SEPARATE_SUBMIT_OR_SIGNED_EXTENSION_OF_CREATE",
+      "operation": "SUBMIT_DRAFT",
+      "currentPolicy": "NOT_GRANTED_BY_EXISTING_MATRIX",
+      "activation": "DENY_UNTIL_OWNER_AND_SECURITY_ACCEPT",
+      "negativeCases": [
+        "NEG-R0-009",
+        "NEG-R0-011"
+      ],
+      "auditAndOutbox": "NONE_ON_DENY"
+    },
+    "rfqList": {
+      "permission": "customer:rfq:list",
+      "catalogRef": "EXT-14"
+    },
+    "rfqDetail": {
+      "permission": "customer:rfq:read",
+      "catalogRef": "EXT-15"
+    },
+    "providerInbox": {
+      "permission": "rfq:inbox:read",
+      "catalogRef": "COM-14"
+    },
+    "scopeSource": "Only validated principal→provider membership/customer relationship grant; never request tenantId; token issuance and every object query revalidate context",
+    "scopeSeparation": "RLS tenant isolation AND CustomerAccount/PartnerGrant allowlisted SQL security restrictions; same provider Tenant X/Y negative tests including count and export"
+  },
+  "proofIntegrityProtocol": {
+    "id": "EVD-R0-001",
+    "scope": "RD-07/PR-13 and PR-14 before RD-08/PR-16",
+    "writeOwner": "execution",
+    "immutableObjectOwner": "documents via exported proof storage interface or dedicated versioned adapter contract",
+    "required": [
+      "verified original bytes or signed source claim",
+      "SHA-256 content digest and byte size",
+      "captureAt and receivedAt with clock/source semantics",
+      "verified signer/actor/assignment at execution time",
+      "linked Shipment/DeliveryAttempt/CargoUnit and scope",
+      "proof receipt status VERIFIED/PENDING_RECONCILIATION/REJECTED",
+      "idempotency + immutable version/replay invariant",
+      "object existence/checksum check before business transition",
+      "safe orphan cleanup and missing object recovery",
+      "access authorization and scan/quarantine for uploaded media"
+    ],
+    "risk": "No POD accepted from bare unverified URI, from a future document package or from GPS",
+    "storageTransactionRule": "External blob upload cannot be atomically committed with PostgreSQL; stage/quarantine blob, verify hash/authority, then write durable receipt + transition/outbox in one PG transaction; retry/cleanup orphan safely",
+    "testAnchors": [
+      "NEG-R0-025",
+      "NEG-R0-026",
+      "NEG-R0-029",
+      "NEG-R0-031"
+    ]
+  },
+  "financeSettlementGate": {
+    "id": "FIN-GATE-R0-001",
+    "scope": "PR-17/RD-09",
+    "paidAllowedOnlyIf": "verified bank/ERP settlement or independently approved signed manual verification with source ID/amount/currency/timestamp, uniqueness and chargeback/reversal handling",
+    "mockRule": "MOCK_OR_SANDBOX callbacks may test state machine but MUST NOT label actual production invoice PAID; synthetic scenario label SIMULATED",
+    "withoutVerifiedProvider": "Issue invoice and track outstanding/partial, but paid/settled status blocked",
+    "tests": [
+      "NEG-R0-033",
+      "NEG-R0-034",
+      "NEG-R0-035",
+      "NEG-R0-036",
+      "TDD-R0-E2E-06"
+    ]
+  },
+  "tddExecutableSelection": {
+    "status": "PROPOSED_MANIFEST_RULE_NOT_EXECUTED",
+    "rule": "criticalCaseIds are minimum existing catalog anchors, not full case applicability; per PR an explicit manifest must classify all impacted 132 specs or state reason before code qualification",
+    "requiredManifestFields": [
+      "prCutId",
+      "storyIds",
+      "brDecisionVersions",
+      "caseId",
+      "applicabilityStatus",
+      "reason",
+      "unitClass",
+      "pgIntegrationClass",
+      "e2eClass",
+      "ciRunUrl",
+      "exactSha"
+    ],
+    "statuses": [
+      "APPLICABLE_APPROVED",
+      "APPLICABLE_FAIL_CLOSED",
+      "BLOCKED_PENDING_BR",
+      "DEFERRED_R1_R2",
+      "NOT_APPLICABLE_WITH_REASON"
+    ],
+    "releaseRule": "All accepted applicable P0 test cases green with no silent skips; approval still required regardless of test result"
   }
 }
