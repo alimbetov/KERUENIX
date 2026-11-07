@@ -261,6 +261,12 @@ The 12 `BLOCKER` gaps `GAP-01/02/03/05/08/09/12/13/15/18/21/22` now each have ex
 
 [28 — R0 TDD Bank](28-r0-tdd-acceptance-bank.md) supplies 60 blocker-level tests, 14 R0 safety tests (one for each safety gap) and 10 cross-role end-to-end checks. [29 — Stakeholder Workshop Kit](29-r0-business-acceptance-workshop-kit.md) provides five review sessions; neither test implementation nor approval is claimed. R1/R2 gap entries remain deferred.
 
+## 7B. Negative scenario hardening after fifth review
+
+The [30 — Negative & Failure Bank](30-negative-and-failure-scenario-bank.md) adds 48 concrete test designs (12 fault families) to 84 existing proposals, for 132 planned individual cases, plus eight uncounted mixed-failure executions. Each `NEG-R0-*` retains links to `USB-*`, `SIM-*`, `GAP-*` and an existing `AUTH/LFC/TDD` anchor. All tests are still **NOT EXECUTED**. No original blocker severity is declared closed by the existence of test specifications; real company/legal signoff remains required.
+
+The most important new acceptance requirement is **no false business state after a refused or interrupted command**: not merely status 403/409, but no unauthorized DB mutation, no phantom capacity/custody/payment effect, no false Outbox/notification, and no customer UI misrepresentation. See mixed-race `MIX-01..08` in doc 30.
+
 ## 8. Outstanding workshop questions
 
 - Which documents prove authority for customer signatory, carrier capacity confirmation and POD recipient in the Kazakhstan R0 corridor?
