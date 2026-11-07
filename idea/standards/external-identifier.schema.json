@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alimbetov/KERUENIX/blob/docs/idea-multitenant-foundation/idea/standards/external-identifier.schema.json",
+  "title": "KERUENIX ExternalIdentifier v0.1 (draft)",
+  "description": "Data contract only. Further semantic validation requires issuer, format-specific checksum and applicable legal rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "codeSystem",
+    "value",
+    "objectType",
+    "issuer",
+    "verificationStatus",
+    "recordedAt"
+  ],
+  "properties": {
+    "codeSystem": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64
+    },
+    "value": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "objectType": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+    },
+    "issuer": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 256
+    },
+    "verificationStatus": {
+      "enum": [
+        "DECLARED",
+        "FORMAT_VALID",
+        "ISSUER_VERIFIED",
+        "REGULATORY_VERIFIED",
+        "EXPIRED",
+        "REVOKED",
+        "UNKNOWN"
+      ]
+    },
+    "codeListVersion": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 80
+    },
+    "validFrom": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "validTo": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "verifiedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidenceRef": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 512
+    },
+    "tenantScopeId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    },
+    "ownerRef": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128
+    }
+  }
+}

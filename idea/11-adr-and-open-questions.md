@@ -28,6 +28,9 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-022 | Cargo classification and compatibility | Deterministic versioned rule engine, four-state decision, physical adjacency and jurisdiction/mode rules; ML cannot authorize | Approved legal/quality data and mixed-load pilot |
 | ADR-023 | Customer shipment tracking | Shipment-centric permission-filtered timeline and ETA; vehicle GPS not proof of cargo custody, optional scoped guest link | Shipper/consignee privacy and pilot review |
 | ADR-024 | Vehicle capability and capacity | Model tractor/trailer/body, payload and internal dimensions independently; specialized refrigerated/tank capabilities require verified equipment and legal compliance | Pilot fleet data and cargo classification review |
+| ADR-025 | International identifiers & labels | GS1 identifiers/SSCC where legitimately issued, own UUID/LPN fallback, external code namespaces, EPCIS 2.0 adapter | GS1 issuer policy / label pilot |
+| ADR-026 | Regulatory rule lifecycle | Jurisdiction/mode/date-specific source-versioned rules and required documents with expert approval; critical uncertainty fails closed | First real cross-border lane/legal opinion |
+| ADR-027 | Customs and transport documents | Separate customs release, eCMR, TIR/eTIR and contract terms; no assumed official API | Approved provider/corridor compliance tests |
 
 ## Questions to settle before code
 

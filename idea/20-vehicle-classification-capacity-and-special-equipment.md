@@ -202,3 +202,7 @@ References:
 4. **P3:** historical suitability/failed-load analytics, optimization performance and ML demand forecasts; **not** ML determination of legal permission.
 
 **Gate:** 20 test cases above must pass for the implemented profile types and clearly return NEEDS_REVIEW for unsupported/unknown regulated combinations.
+
+## Cross-border and hazardous transport marking
+
+Body/tank/trailer matching alone does not establish legal right to carry regulated goods. Require country/mode/date-specific compliance results with vehicle/tank permissions, ADR labels/placards and paperwork as applicable, oversized permits and customs rules; container ID follows ISO 6346 where used. See [23 — Regulatory Registry](23-cross-border-regulatory-compliance-registry.md).

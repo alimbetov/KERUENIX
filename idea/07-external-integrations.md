@@ -78,3 +78,7 @@ Normalize event sources from GPS, warehouse, carrier, driver and POD into confir
 ## Specialized vehicle equipment and capacity adapters
 
 Model tractor+trailer registration/verification, refrigeration units, cold-chain temperature telemetry, tank inspection/product approval, tank level/meters and axle scales through provider-neutral adapters. Preserve calibration/source, event timestamps, freshness, warranty and authorization; never accept supplier-advertised “20t / 82m3” as a verified legal or physical rating. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).
+
+## GS1, international document and customs connectors
+
+Separate adapters for GS1 identifiers/SSCC issuance (only if issuer rights exist), EPCIS events, route/regulatory datasets, CMR/eCMR, TIR/eTIR, governmental customs systems such as Kazakhstan KEDEN (only via authorized integration), and category-specific national marking. Validate legal availability and provider API terms per corridor. Treat barcode/QR as data carriers, not proof of customs release or contractual permission. See [22](22-global-cargo-identification-and-marking.md), [23](23-cross-border-regulatory-compliance-registry.md).

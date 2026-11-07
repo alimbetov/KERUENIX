@@ -31,6 +31,12 @@ KERUENIX — многоклиентская платформа управлен�
 | [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md) | Классы грузов, товарное соседство, правила перевозки и хранения, нормативные профили |
 | [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md) | Клиентские статусы, ETA, этапы маршрута, трекинг груза и защита данных |
 | [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md) | Грузоподъёмность, кубатура, рефрижераторы, цистерны, бензовозы, ограничения загрузки |
+| [21 — Logistics Standards Council](21-expert-council-logistics-compliance.md) | Виртуальное заседание экспертов: международная логистика, дорожные правила, таможня, WMS, безопасность |
+| [22 — Global Cargo Identification](22-global-cargo-identification-and-marking.md) | Международная маркировка, GS1 SSCC/GTIN/GLN, штрихкоды, контейнеры и события EPCIS |
+| [23 — Cross-border Regulatory Registry](23-cross-border-regulatory-compliance-registry.md) | Правила Казахстана, ЕАЭС, ADR, CMR, TIR/eTIR, таможня и документы |
+| [24 — International Cargo Simulation](24-international-cargo-simulation.md) | Четыре сценария квалификации международных грузовых операций |
+| [standards/identifier-catalog.v0.1.json](standards/identifier-catalog.v0.1.json) | Machine-readable namespace catalog, валидация форматов и источники |
+| [standards/external-identifier.schema.json](standards/external-identifier.schema.json) | JSON Schema для записи внешнего идентификатора с issuer/verified/evidence |
 
 ## Неизменные правила дизайна
 

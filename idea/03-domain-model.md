@@ -84,3 +84,7 @@ Customer tracking is a permission-filtered read model derived from Order, Shipme
 ## Vehicle/trailer/body capability and capacity
 
 Do not store vehicle capacity as a single payload_ton or volume_m3 flag. Model VehicleCombination, Body/Trailer, compartment dimensions, remaining physical capacity, pallet placements, axle loads and specialty capabilities for cold chain, bulk and regulated tanks. Driver/tractor/attached trailer configuration is time-versioned. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).
+
+## International identifiers, legal sources and custody
+
+Handle external keys as typed scoped identifiers (`GS1_SSCC`, `GS1_GTIN`, `GS1_GLN`, `ISO6346_CONTAINER`, `WCO_HS6`, `EAEU_TNVED10`, `UN_DANGEROUS_GOODS`, `UNECE_UNLOCODE`) plus immutable internal UUIDs. Never use a product trade code as the physical HandlingUnit identity. Store verification/evidence, source/version/effective date, GS1 supply-chain events, customs holds and country/mode-specific requirements. See [22 — Global Cargo Identification](22-global-cargo-identification-and-marking.md) and [23 — Regulatory Registry](23-cross-border-regulatory-compliance-registry.md).

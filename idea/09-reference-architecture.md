@@ -57,6 +57,9 @@ Broker selection (Kafka, RabbitMQ or Postgres-backed jobs) must follow measured 
         warehouse_tasks/   # receiving, putaway, pick, cross-dock, ship
         integrations/      # supplier adapters and webhooks
         audit/             # sensitive actions and compliance
+        identifiers/       # GS1, ISO container and external code namespaces
+        regulatory/        # source-versioned country/mode rules & document checks
+        labels/            # versioned GS1/internal templates and scanners
       clients/web/
       clients/driver/
       infra/

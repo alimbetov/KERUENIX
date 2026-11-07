@@ -92,3 +92,7 @@ Customer opens an authenticated portal, selects authorized Shipment, sees versio
 ## Journey K — capacity, frozen goods and fuel tanker suitability
 
 At quote, verify declared cargo weight/volume/dimensions/pallet positions against a specific vehicle+trailer combination, loading opening, axles, route, cargo neighborhood and specialized equipment. Frozen goods require verified refrigeration capacity and a monitoring/handling plan; fuel tankers require product/tank compartment suitability, volumes AND mass, permits and inspections. Re-assess when driver changes trailer or Rescue transfers the goods. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).
+
+## Journey L — cross-border international identifiers and documentation
+
+Customer requests an international delivery; classify product by trade item/HS/TNVED and hazardous/temperature dimensions separately. Warehouse scans verifiable HandlingUnit ID/optional GS1 SSCC. Route compliance computes jurisdiction/mode-specific legal checks and CMR/customs permits as applicable. The customs release is authorized only by verified source, not from vehicle GPS. A transloading or rescue keeps Shipment/HandlingUnit identities and versioned evidence. See [21 — Standards Council](21-expert-council-logistics-compliance.md), [22 — Global Cargo Identification](22-global-cargo-identification-and-marking.md), [23 — Regulatory Registry](23-cross-border-regulatory-compliance-registry.md).

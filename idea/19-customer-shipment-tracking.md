@@ -202,3 +202,7 @@ Localization KZ/RU/EN for statuses, timezone-aware time representation and acces
 7. Can recipient request delivery rescheduling through portal, and whose approval is binding?
 
 **Recommendation:** MVP shipping status + confirmed milestones + ETA freshness. Map and public link are valuable, but should not be prerequisites for a reliable first release.
+
+## Label QR vs tracking authorization
+
+A GS1 SSCC identifies a HandlingUnit; it does not authorize the person who scans it to view a shipment. If a public/private QR resolves a shipment URL, issue separate scoped, short-lived access grants (or require account login), not a token derived from SSCC or predictable code. Keep regulatory/GS1 label data independent from customer tracking fields. See [22 — Global Identification](22-global-cargo-identification-and-marking.md).

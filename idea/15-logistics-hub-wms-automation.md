@@ -205,3 +205,7 @@ Stock allocation, cross-docking and putaway require a separate cargo-compliance 
 ## Vehicle body and warehouse dock compatibility
 
 Gate/yard/dock scheduling checks measured truck/trailer dimensions, door/loading orientation, temperature-controlled docking, tank transfer equipment and site access. Temperature-sensitive cross-dock cannot rely on unverified “reefer” category; liquid fuels and hazardous tanks use a physically and legally permitted specialized loading/unloading zone. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).
+
+## GS1 international warehouse marking and tracking
+
+Use `HandlingUnit UUID` as internal identity and a valid, issuer-authorized `GS1 SSCC` when available; otherwise use clearly distinct internal LPN labeling. GS1-128 AI (00) must not be faked. Scanner events may later map to EPCIS 2.0 and GS1 CBV, preserving aggregation, stock ledger and cross-tenant visibility policy. Hazard signs and national regulated DataMatrix marking are separate from SSCC. See [22 — Global Identification](22-global-cargo-identification-and-marking.md).

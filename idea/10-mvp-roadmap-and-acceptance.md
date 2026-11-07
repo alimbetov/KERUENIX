@@ -95,3 +95,7 @@ Cargo attributes and manufacturer/dangerous goods declarations are explicitly va
 ## Mandatory vehicle suitability baseline
 
 Vehicle classification supports payload (kg), verified usable cubic volume, internal dimensions, pallet spaces, doors, equipment/availability, trailer configuration and hard route/cargo constraints. Tankers and refrigerated/freezer bodies are represented via optional specialized capabilities, not merely generic category labels. Pilot qualification must reject cargo that fits by weight but not dimensions/pallet layout, exceeds axle limits, lacks verified cold-chain capability or cannot legally use a tank. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).
+
+## International identity and legal control qualification
+
+For international or multi-owner cargo workflows, add typed external identifiers, optional GS1 SSCC input/verification with safe internal-LPN fallback, HS6/TNVED10 separation, customs-held goods release check, regulated dangerous-goods labeling requirements and immutable custody event mapping. Country-specific permissions and transport documents are expert-reviewed for the first selected corridor. Never claim automated legal compliance by importing a standards catalog. See [21 — Standards Council](21-expert-council-logistics-compliance.md), [22 — Global IDs](22-global-cargo-identification-and-marking.md), [23 — Registry](23-cross-border-regulatory-compliance-registry.md), [24 — Simulation](24-international-cargo-simulation.md).

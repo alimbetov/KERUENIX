@@ -232,3 +232,7 @@ public record CompatibilityDecision(
 ## Equipment-specific constraint data
 
 CargoCompatibilityPort combines cargo-side legal, sanitary and handling requirements with verified VehicleCapabilityPort attributes from a specific tractor/body/trailer/tank/reefer configuration. Two cargoes may be compatible in general but infeasible in one trailer due to compartment count, temp, pallet layout, total/axle weight, tank-product approval, cleaning, loading order or site equipment. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).
+
+## International code and regulatory registry boundary
+
+Store commodity HS6/TNVED10 classification independently from GS1 GTIN/SSCC and hazardous-goods UN number/packing classification. Compatibility decisions use country, mode and effective date, with approved source-versioned rule sets and traceable evidence; no inferred legal permission from a scanned barcode. See [22 — Global Identification](22-global-cargo-identification-and-marking.md), [23 — Regulatory Registry](23-cross-border-regulatory-compliance-registry.md).
