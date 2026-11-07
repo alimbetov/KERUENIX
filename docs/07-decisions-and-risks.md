@@ -12,7 +12,7 @@
 
 ## Access Governance v2 — текущий проектный стандарт
 
-Первый role/permission security review выявил недоопределённость внешних заказчиков, доступа к `My Orders`, входящих заявок Tenant, отзывов, роли независимого Finance Approver, прав POD и реальных scopes/approval. Обновлённый [Access Governance v2](24-access-control-tdd-matrix-v2.md) с [machine contract](contracts/access-policy-matrix.v2.json) теперь является базой для дальнейшего TDD-проектирования. В нём 57 проектных policy entries и 18 adversarial scenarios; требуется согласование полномочий подписанта, лимитов, и юридического статуса отзывов до реализации. v1 сохранён исторически; тесты не выполнялись.
+Первый role/permission security review выявил недоопределённость внешних заказчиков, доступа к `My Orders`, входящих заявок Tenant, отзывов, роли независимого Finance Approver, прав POD и реальных scopes/approval. Обновлённый [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) с [machine contract](contracts/access-policy-matrix.v2.json) теперь является базой для дальнейшего TDD-проектирования. После повторного аудита v2.1 содержит 67 проектных policy entries и 27 adversarial scenarios; требуется согласование полномочий подписанта, лимитов, и юридического статуса отзывов до реализации. v1 сохранён исторически; тесты не выполнялись.
 
 ## Новое архитектурное решение — модульная стратегия
 
