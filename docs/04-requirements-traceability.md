@@ -168,6 +168,18 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 
 **Sign-off dependencies:** customer signatory evidence; account ownership rules; cancellation fees; verification of bank/ERP reference; issue resolution owner and escalation. These gaps must be closed prior to claiming acceptance or implementation readiness.
 
+## Business Scenario Book — second-pass cross-role traceability
+
+[25 — Business Scenario Book](25-business-scenario-book.md) expands the [User Story Book](21-user-story-book.md) from **40 existing** to **58 total candidate stories** (18 new `DISCOVERED`), covering 11 multi-actor scenario flows and 38 *proposed* Given/When/Then-style business acceptance cases `BSC-001..011-AC-nn`. These are **not executed or legally signed off**.
+
+- `KX-BSC-001` R0 P0: Customer onboarding, complete RFQ, provider inbound assignment and clarification; contracts/grants verified for two independent CustomerOrg cases. BSC-001,002; tests AUTH-TEN-012, AUTH-EXT-001/002/014/015, AUTH-COM-018/019, LFC-002/036.
+- `KX-BSC-002` R0 P0: Quote approval, authorized customer acceptance, carrier sourcing and exclusive capacity confirmation; `ISSUED/ACCEPTED` do not equal `Booking.CONFIRMED`. BSC-003,004; AUTH-COM-005..011, LFC-003..007.
+- `KX-BSC-003` R0 P0: Driver pickup/custody offline replay, permission-filtered GPS freshness, partial/refused POD and customer issue intake. BSC-005,006,007; LFC-011..015, LFC-035.
+- `KX-BSC-004` R0 P0: Verified document version, independently approved finance, real-bank/ERP settlement evidence, supplier surcharge dispute. BSC-008; AUTH-FIN-001..004, LFC-021..028.
+- `KX-BSC-005` R0 P0: Customer cancellation is request-only, replacement capacity requires renewed confirmation, revoked rights prevent future access; private review only of eligible service. BSC-009,010,011; AUTH-X-007/020/024, LFC-034.
+
+**Unapproved policy gaps:** new story commands to amend submitted RFQ, withdraw carrier offer, replace reserved resource, create incident, reject document package, open surcharge dispute and compliance hold resolution need business sign-off and individual `AUTH-*` definitions. The existing 67-entry Access Governance v2.1 is **not automatically expanded**. Warehouse and executive KPI candidate stories stay R1.
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.
