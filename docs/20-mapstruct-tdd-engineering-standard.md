@@ -86,3 +86,7 @@ Avoid a global mapping service, runtime reflection mapper, shared model DTO bag,
 - **A4+:** expand property-based, performance and resilience tests where measured complexity justifies it.
 
 See [19 — Architecture Hardening](19-architecture-hardening-priorities.md), [14 — Delivery Blueprint](14-modular-delivery-blueprint.md), [04 — Traceability](04-requirements-traceability.md).
+
+## 8. User Story Book → TDD input contract
+
+Use [21 — User Story Book](21-user-story-book.md) as source of actor-centered business scenarios. Only business-reviewed stories with tenant scope, main and negative flow, invariants and accepted `USB-*-AC-*` criteria can become `ACCEPTED_FOR_TDD`. Derive `TDD-USB-*` tests at unit, PostgreSQL concurrency/RLS and E2E levels as applicable. Draft stories are not executable specifications.
