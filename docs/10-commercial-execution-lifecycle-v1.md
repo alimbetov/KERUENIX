@@ -163,6 +163,9 @@
 
 ## 4. Роли, полномочия и SoD
 
+**Реестр проектных access и approval policies:** [22 — Role/Permission Matrix](22-role-permission-scope-approval-matrix.md), включая `AUTH-COM-001..013` и строгие различия `quote:draft`, `quote:issue`, `quote:approve_exception`, `quote:accept` и `carrier_offer:select`. Полномочия оцениваются с tenant/legal-entity/assignment/PartnerGrant scope, policy limit и Separation of Duties. Это матрица для бизнес-проверки, не утверждённые юридические обязанности.
+
+
 | Действие | Инициатор | Обязательное право/подтверждение |
 |---|---|---|
 | Создать/уточнить RFQ | Клиент, sales, экспедитор по полномочию | Own customer/tenant scope |
