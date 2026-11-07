@@ -197,3 +197,7 @@
 - [GS1 EPCIS 2.0 visibility standard](https://support.gs1.org/support/solutions/articles/43000755325-what-is-electronic-product-code-information-services-epcis-)
 - [SAP EWM — Yard, dock and shipping/receiving](https://learning.sap.com/courses/advanced-customizing-in-sap-s-4hana-ewm/managing-shipping-and-receiving)
 - [Kazakhstan Committee of State Revenues — temporary storage](https://www.gov.kz/org/kgd/press/article/details/230315?lang=ru)
+
+## Warehouse commodity neighborhood and compatibility rules
+
+Stock allocation, cross-docking and putaway require a separate cargo-compliance check: owner/quantity and storage status alone do not prove commodity coexistence is safe. `WarehouseZoneCapability`, `BinAdjacency`, shared airflow and temperature/humidity zones must be evaluated against `CargoComplianceProfile`, packaging, cleaning history and currently occupied neighbors. Customs/quality hold independently blocks release. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).

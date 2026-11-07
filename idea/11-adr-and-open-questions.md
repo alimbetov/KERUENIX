@@ -25,6 +25,7 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-019 | Yard/WMS/SVH boundaries | WMS+YMS interfaces in modular core, customs hold with verified release, hardware adapters | Warehouse operations and legal qualification |
 | ADR-020 | Commercial lifecycle | Separate RFQ, conditional quote, offer, confirmed booking, delivery, documents and finance states | Expeditor workshop and pilot |
 | ADR-021 | Financial exposure | Separate cost/margin from AR/AP, advances, credit limits and cash exposure; ERP can remain source of truth | Finance model and first-customer ERP integration |
+| ADR-022 | Cargo classification and compatibility | Deterministic versioned rule engine, four-state decision, physical adjacency and jurisdiction/mode rules; ML cannot authorize | Approved legal/quality data and mixed-load pilot |
 
 ## Questions to settle before code
 

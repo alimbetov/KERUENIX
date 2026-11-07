@@ -72,3 +72,7 @@ A breakdown may interrupt a Trip without canceling the commercial Order or physi
 ## Warehouse inventory and hub domain
 
 WarehouseFacility, FacilityZone, BinLocation, HandlingUnit, StockMovement/Line, StockBalance, InventoryReservation, WarehouseTask, DockAppointment and CustodyHandover are separate from Trip, Shipment and CargoOwner. Ownership, actual custody and inventory visibility are independent. Stock changes through append-only correction movements with transactional balance/reservation checks; customs and quality holds block dispatch. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).
+
+## Cargo compliance and segregation invariants
+
+Commercial product category, dangerous goods classification, manufacturer handling profile, packaging, temperature and contamination risk are separate dimensions. A `CargoComplianceProfile` and versioned `CompatibilityAssessment` are linked to CargoUnit/Shipment; load/warehouse placement uses compartment/zone adjacency and time overlap. Hard legal rules cannot be bypassed by optimizer or dispatcher; unknown critical data does not mean compatible. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).

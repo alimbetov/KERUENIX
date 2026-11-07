@@ -205,3 +205,7 @@ KERUENIX позволяет нескольким независимым комп
 **Рекомендуемое следующее техническое задание:** `KERUENIX Commercial & Execution Lifecycle v1`, включающее RFQ, QuoteVersion, CarrierOffer, Booking, Trip/Shipment events, POD, invoice/AR/AP states, discrepancies и approvals.
 
 *Связанные документы:* [04 — Workflows](04-operational-workflows.md), [06 — Economics](06-pricing-fuel-and-settlements.md), [10 — MVP](10-mvp-roadmap-and-acceptance.md), [11 — ADR](11-adr-and-open-questions.md), [17 — Day-in-life simulation](17-forwarder-dispatcher-day-simulation.md).
+
+## Addendum — overlooked product and storage compatibility
+
+**New P0 requirement `CMP-01`:** classify goods beyond catalog category (food, dangerous goods identifiers, manufacturer environment/handling profile, packaging, quality). **New P0 requirement `CMP-02`:** deterministic jurisdiction/mode/version-aware co-load and warehouse-neighborhood rules with four outcomes ALLOW, ALLOW_WITH_CONTROLS, DENY and NEEDS_REVIEW. **New P1 requirement `CMP-03`:** compatibility recalculation on partial load changes, rescue transfer, cross-dock, temperature excursions and reallocation. Acceptance scenario must forbid unknown-class auto-approval, incompatible temperatures in one shared compartment and unauthorized waiver of legal DENY. Full model: [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).

@@ -78,3 +78,7 @@ Use async job execution for expensive optimization, with cancellation, deadline,
 ## Proof of usefulness
 
 Compare 50–100 historical completed trips and prospective pilot results against dispatcher decisions with comparable constraints; measure feasibility, cost, empty distance, lateness, runtime and quality of explanations. Test stale traffic, closures, no viable route, missing vehicle restrictions, inconsistent provider estimates, solver timeout and fallback.
+
+## Cargo compatibility as a hard constraint
+
+Fleet optimizer must query `CargoCompatibilityPort` for every candidate vehicle/compartment, planned co-load, ordered stop timeline and route jurisdiction. Rules are mode- and time-aware and stored in `CompatibilityAssessment` snapshots. A solver cannot lower a hard legal or hygiene prohibition into a soft optimization penalty. Tribuo predicts risks, not compliance permissions. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).

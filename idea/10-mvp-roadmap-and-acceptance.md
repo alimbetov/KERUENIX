@@ -87,3 +87,7 @@ Pilot reference dataset: 2 tenants, 10 trucks in total, 20 orders, at least 3 pa
 ## Warehouse Hub optional vertical slice and gates
 
 To prove a 3PL transit warehouse, add a deliberately bounded pilot: 2 cargo owners at the same facility, 1 dock, 20 labeled pallets, ASN receipt, one discrepancy, putaway/cross-dock, concurrent pick attempt, outbound loading and custody handover. The Warehouse Hub is a modular extension of road-freight MVP, not a mandatory full WMS implementation before first logistics acceptance. Never ship regulated SVH functions without dedicated legal and operational qualification. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).
+
+## Mandatory cargo compatibility gates
+
+Cargo attributes and manufacturer/dangerous goods declarations are explicitly validated at RFQ/booking. First mixed-load or multi-owner warehouse pilot requires deterministic CargoCompatibilityPort, source/versioned rules, an unknown-data stop, vehicle-compartment and warehouse-zone restrictions, and adversarial tests for temperature mismatch, cross-contamination, dangerous goods uncertainty, false GPS/container compatibility, rescue re-handover and warehouse holds. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).

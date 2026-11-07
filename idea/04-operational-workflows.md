@@ -80,3 +80,7 @@ Driver or telemetry reports a verified issue; dispatcher checks safety and wheth
 ## Journey H — multi-owner logistics hub operations
 
 Pre-advised inbound shipment -> dock slot -> gate/yard check-in -> actual SSCC/LPN scan -> discrepancy/quality checks -> putaway OR cross-dock -> stock ledger -> reserve/pick -> outbound loading manifest -> custody transfer -> gate-out -> charge reconciliation. Rescheduled vehicle ETA may change dock appointment but not actual stock/custody until confirmed scans. Holds, concurrent picks, offline duplicate events and mixed tenant-owned goods are mandatory adversarial cases. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).
+
+## Journey I — mixed cargo, vehicle and warehouse compatibility
+
+During RFQ, validate cargo classification and evidence; during quote/booking, assess vehicle type, cargo mix, packaging, temperature and road/mode rules. Before pickup and each warehouse putaway, dock transfer, load, rescue handover or modal change, re-evaluate active approved rule set against physical adjacency/compartments and actual cargo conditions. Incompatible combinations are blocked with reason codes; conditional allowances demand measured/verified controls. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).
