@@ -196,3 +196,7 @@ Use [22 — Role Permission Scope Approval Matrix](22-role-permission-scope-appr
 ## External Customer access and revised v2 Role Matrix
 
 R0 must include the minimum authenticated external customer portal `EXC` and provider Tenant inbound RFQ window, customer-safe My Orders, quote acceptance by verified signatory, permission-filtered delivery monitoring/POD and minimal private completion-based review. Implement these as experiences/projections across existing domains, not a new module or writable duplicate Booking/Shipment table. Follow [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md) and [23 — Customer Portal](23-external-customer-portal.md); historical [22 — v1 matrix](22-role-permission-scope-approval-matrix.md) is superseded. Separate scoped read guards from approval workflows. No new business module.
+
+## Business Story Pass 2 — cross-role journey before new code
+
+Use [25 — Business Scenario Book](25-business-scenario-book.md) to qualify role-based journeys and exceptions before implementation. 11 BSC scenarios cover customer/provider/carrier, booking, offline custody, tracking, partial POD, claims, finance, review, cancellation and access revocation; 38 proposed business acceptance outcomes. The [User Story Book](21-user-story-book.md) now has 58 stories (18 newly DISCOVERED). Implementation remains restricted to R0 vertical slices approved by real business owners, with independent `AUTH-*` policy review for proposed new commands; no new business modules or artificial workflow platform.
