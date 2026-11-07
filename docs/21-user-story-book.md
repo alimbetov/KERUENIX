@@ -1,8 +1,10 @@
 # 21 — KERUENIX User Story Book: Role-Based Scenario Bank
 
-**Version:** 0.1 — ITERATION 1 / ROLE INVENTORY + R0 STORY SEEDS. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
+**Version:** 0.2 — ITERATION 1 EXTENSION / ROLE AND APPROVAL MATRIX. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
 
 **Purpose:** Maintain a single versioned, traceable bank of actor-centered scenarios; build it incrementally in several iterations, *then* derive acceptance tests, TDD unit tests and integration/E2E cases. Do not confuse role catalog with a list of software privileges or tenant membership.
+
+**Authorization matrix:** [22 — Role / Permission / Scope / Approval / TDD](22-role-permission-scope-approval-matrix.md).
 
 **Based on:** [operational journeys](../idea/04-operational-workflows.md), [dispatcher day](../idea/17-forwarder-dispatcher-day-simulation.md), [commercial lifecycle](10-commercial-execution-lifecycle-v1.md), [existing lifecycle test plan](11-commercial-execution-acceptance-v1.md), [requirements matrix](04-requirements-traceability.md), [engineering TDD standard](20-mapstruct-tdd-engineering-standard.md).
 
@@ -26,6 +28,8 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 | PSA | Platform Super Administrator / KERUENIX operator | Provision tenant and first TENANT_OWNER; optional approved initial TENANT_ADMIN; recover ownership safely | Platform Control Plane, Tenancy | R0 |
 | TNO | Tenant Owner / authorized legal-entity representative | Accept control of company, appoint admins, transfer owner with verification | Tenancy | R0 |
 | SHP | Грузовладелец / customer logistics employee | Request, approve terms, track, accept evidence | Commercial, Tracking, Documents | R0 |
+| APR | Commercial Approver / лицо с лимитом утверждения | Approve exceptional client terms, independently of proposer | Commercial | R0 scoped permission template |
+| PRC | Carrier Procurement Manager / закупщик перевозок | Request/select offers within authorized supplier policy | Commercial, Fleet | R0 scoped permission template |
 | SAL | Экспедитор / коммерческий менеджер | Qualify RFQ, quote, customer commitments | Commercial | R0 |
 | PLN | Логист / транспортный планировщик | Determine eligible carrier/vehicle and route | Fleet, Booking, Compliance | R0 |
 | DSP | Диспетчер | Assign trip, monitor execution and exceptions | Booking, Execution, Tracking | R0 |
@@ -47,7 +51,7 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 
 | Pass | Focus | Deliverable | Stop condition |
 |---|---|---|---|
-| 1 (this revision) | Role catalog + 15 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
+| 1 (this revision) | Role catalog + 22 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
 | 2 | SHP/SAL/PLN/CAR: RFQ, quote, vehicle hold/Booking | Full main/alternate/negative paths, state guards and documents | Commercial/legal actor responsibilities agreed |
 | 3 | DSP/DRV/RCV: Trip, pickup, cargo custody, POD, tracking | Evidence rules, offline replay, partial/failed delivery | Logistics/operations signatures and derived status reviewed |
 | 4 | FIN/TEN/SUP: reconciliation, permissions, recovery | Finance-lite, tenant isolation, ops exceptions | Security + finance business review |
@@ -90,6 +94,24 @@ All scenarios below are `DRAFT`, not business accepted; no TDD tests executed. P
 **Actors:** `PLATFORM_SUPER_ADMIN` in platform control plane, invited `TENANT_OWNER` in new tenant. **Preconditions:** platform operator strong authentication, verified corporate identity and owner designation. **Main flow:** operator records/validates onboarding request → platform creates pending tenant with idempotency key → creates expiring owner invitation bound to intended verified identity → intended owner accepts and completes required authentication → platform enables tenant owner membership → emits audit/outbox event and notifies designated representatives. **Denials:** anonymous onboarding cannot grant PSA; failed identity verification cannot activate owner; replay cannot create duplicate tenant/membership; tenant admin cannot create a PSA; super-admin has no default read access to company invoices, cargo or GPS. **Open:** business verification SLA, legal identity evidence and dual-approval policy.
 
 **Candidate acceptance (not test code):** `USB-PSA-001-AC-01` verified first owner; `-AC-02` duplicate onboarding request; `-AC-03` wrong invitee/expired invite; `-AC-04` lost platform access during onboarding; `-AC-05` tenant-data isolation for super-admin. TDD later after actor and approval process sign-off.
+
+## 4B. Access governance and Commercial scenarios — iteration 1 extension
+
+These **seven additional DRAFT story seeds** extend the first pass; acceptance rules are in [22 — Role, Permission, Scope, Approval](22-role-permission-scope-approval-matrix.md). They do not constitute signed-off business policy or executable tests.
+
+| Story ID | Actor | User outcome | Critical decision / referenced approval |
+|---|---|---|---|
+| USB-TNO-002 | TNO | Transfer company ownership to verified successor without orphaning tenant | Owner authority; successor acceptance; no last-owner removal |
+| USB-TEN-002 | TEN | Invite an employee within delegated company/branch scope | Verified invitee and expiring one-time invitation |
+| USB-TEN-003 | TEN | Assign only permissible roles and bounded permissions | No self-escalation, owner creation, platform role grant |
+| USB-TEN-004 | TEN | Revoke terminated employee membership safely | Existing sessions/Jobs no longer grant future protected access |
+| USB-SAL-002 | SAL | Issue approved immutable QuoteVersion or publish amended version | Limits and policy; changed terms require new version |
+| USB-APR-001 | APR | Review/approve exceptional price or terms independently of author | Approval bound to quote version, amount, legal entity, person and expiry |
+| USB-PRC-001 | PRC | Request, compare and select carrier offers without binding vehicle availability | Partner scope, buy/sell confidentiality; SELECTED not CONFIRMED |
+
+`APR` and `PRC` are permission/role templates that may be assigned to existing staff within scoped tenant policy, not mandatory separate employees. For R0, one person may combine SAL/PRC, but cannot approve their own exception above policy limits.
+
+**Reference:** [machine-readable role permissions](contracts/role-permission-scope-approval.v1.json) defines 24 draft policies and planned acceptance IDs `AUTH-TEN-*` / `AUTH-COM-*`. Story acceptance is approved in business review before becoming TDD test code.
 
 ## 5. Detailed seed example — USB-DSP-001 (ready for business elaboration, NOT ready for TDD)
 
