@@ -146,6 +146,31 @@ def main() -> int:
     pr_ids = unique(cuts, "id", "PR cut")
     check(len(cuts) == 21, f"Expected 21 slices, got {len(cuts)}")
     check(pr_ids == {f"PR-{i:02d}" for i in range(21)}, "PR IDs missing or reused")
+    check(road["audit"]["findingsTotal"] == 13, "Expected 13 audited findings")
+    pr_map = {pr["id"]: pr for pr in cuts}
+    for pr in cuts:
+        for upstream in pr.get("dependsOnPrs", []):
+            check(upstream in pr_ids, f"{pr['id']}: unknown PR dependency {upstream}")
+            check(upstream != pr["id"], f"{pr['id']}: self dependency")
+
+    seen_pr: set[str] = set()
+    open_pr: set[str] = set()
+
+    def visit_pr(pr_id: str) -> None:
+        if pr_id in seen_pr:
+            return
+        if pr_id in open_pr:
+            problems.append(f"PR dependency cycle at {pr_id}")
+            return
+        open_pr.add(pr_id)
+        for ancestor in pr_map[pr_id].get("dependsOnPrs", []):
+            if ancestor in pr_map:
+                visit_pr(ancestor)
+        open_pr.remove(pr_id)
+        seen_pr.add(pr_id)
+
+    for pr_id in pr_ids:
+        visit_pr(pr_id)
     for pr in cuts:
         pid = pr["phase"]
         check(pid in phase_ids, f"{pr['id']}: unknown phase {pid}")
