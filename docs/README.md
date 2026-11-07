@@ -21,6 +21,8 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
+| 30 | [Negative & Failure Scenario Bank](30-negative-and-failure-scenario-bank.md) | 48 new negative/fault tests with DB/outbox/UI assertions, 8 MIX cases | Designed / not executed |
+| JSON | [Negative Test Bank v1](contracts/r0-negative-scenarios.v1.json) | Machine-readable 48 risk-selected cases, linked to USB/SIM/GAP/test anchors | Designed |
 | 29 | [R0 Business Acceptance Workshop Kit](29-r0-business-acceptance-workshop-kit.md) | Five role/party workshop packets; signoff and evidence matrix for 12 blockers | Ready for review / no approvals |
 | 28 | [R0 TDD Acceptance Bank](28-r0-tdd-acceptance-bank.md) | 60 blocker checks + 14 safety checks + 10 cross-role E2E = 84 planned tests | Designed / no code or CI |
 | JSON | [R0 TDD Cases v1](contracts/r0-tdd-scenarios.v1.json) | Machine test cases + synthetic PostgreSQL RLS fixture | Planned |
