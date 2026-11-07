@@ -21,12 +21,12 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
-| 24 | [Access Governance v2 — Role / Scope / Approval / TDD](24-access-control-tdd-matrix-v2.md) | Reworked access-control architecture; external customer, finance, operational roles, SoD, adversarial TDD | Design / business review |
-| JSON | [Access Policy Matrix v2](contracts/access-policy-matrix.v2.json) | Canonical machine-readable 57-policy contract + 18 cross-cutting tests | Draft |
+| 24 | [Access Governance v2.1 — Role / Scope / Approval / TDD](24-access-control-tdd-matrix-v2.md) | Reworked access-control architecture; external customer, finance, operational roles, SoD, adversarial TDD | Design / business review |
+| JSON | [Access Policy Matrix v2](contracts/access-policy-matrix.v2.json) | Canonical machine-readable 67-policy contract + 27 cross-cutting tests | Draft |
 | 23 | [External Customer Portal](23-external-customer-portal.md) | Customer My Orders, Tenant inbound queue, tracking and verified private feedback | Design / business review |
 | 22 | [Role / Permission / Scope / Approval / TDD Matrix](22-role-permission-scope-approval-matrix.md) | Historical v1 Tenancy/Commercial draft; replaced by 24 | Superseded |
 | JSON | [Role Permission Matrix v1](contracts/role-permission-scope-approval.v1.json) | Историческая версия; новые политики проектировать по v2 | Superseded |
-| 21 | [User Story Book](21-user-story-book.md) | 22 role personas, 37 draft stories including external customer, reviews and approval roles | Iteration 1 / Draft |
+| 21 | [User Story Book](21-user-story-book.md) | 22 role personas, 40 draft stories including external customer, reviews and approval roles | Iteration 1 / Draft |
 | 20 | [MapStruct + TDD Engineering Standard](20-mapstruct-tdd-engineering-standard.md) | Compile-time DTO mapping, TDD, integration tests and quality gates | Engineering direction agreed / implementation pending |
 | 19 | [Architecture Hardening Priorities](19-architecture-hardening-priorities.md) | Correctness First, Operational Reliability, Intelligence Ready; requirements and delivery gates | Design agreed / implementation pending |
 | 18 | [Platform Jobs, State Machines & Workflows](18-platform-jobs-state-machines-workflows.md) | Durable Job Engine, transitions, process managers and recovery | Design agreed / implementation pending |
