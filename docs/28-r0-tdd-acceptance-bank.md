@@ -300,3 +300,11 @@ High-risk specifically: quote expiry + signatory revocation + previous version; 
 - **Specified:** 60 blocker tests, 14 safety tests and 10 cross-role cases.
 - **Not done:** real end-user interviews/signoff; Spring Boot/Java test implementation; Testcontainers execution; RLS code qualification; integration E2E on exact SHA.
 - **Next code prerequisite:** Gradle/Maven project bootstrap (choose project standard: Maven Java21), Spring Modulith Tenancy/Commercial slice and database migrations. The absence of code is not a reason to falsely claim green tests.
+
+## 10. Supplemental negative/failure test bank — 48 additional cases
+
+The [30 — Negative & Failure Scenario Bank](30-negative-and-failure-scenario-bank.md) and [machine JSON](contracts/r0-negative-scenarios.v1.json) add **48 distinct** fault-focused R0 specifications grouped into 12 business/security families. They supplement, **not overwrite**, this book's original **84** tests. **Combined planned catalog: 132 cases, zero implemented/executed**. The new design specifies for every case: Given, When, authoritative Then, canonical DB state, Outbox/Inbox and other side effects, user-visible result, test layer and a `USB/SIM/GAP/AUTH/LFC` reference.
+
+The second bank also defines eight targeted `MIX-01..08` multi-fault combinations (not counted in the 132), including grant revoke+warm cache, Quote expiry+signer, carrier withdraw+hold-expiry, driver reassign+offline replay, partial POD+immutable documents, bank callback+FX reversal, suspended subscription+redacted support and Outbox replay+revoked job context.
+
+**Gates:** deny/invalid operations must produce no forbidden domain writes or success events, and UI must not imply successful Booking, Delivered or Settled. Continue to use real PostgreSQL/PostGIS with RLS/Testcontainers, application-role privileges, clock/transaction races and Outbox/Inbox. New cases are technical design candidates pending the applicable business/legal review; no CI results are claimed.
