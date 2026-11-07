@@ -229,6 +229,18 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 
 **`KX-ERR-004` P0:** Negative tests `ERR-001..012` must verify 401/403/404, 400 validation, 405/415 headers, 409 version conflict, safe 500, requestId propagation and no false DB/Outbox/UI state. First [backend error-only Java21 scaffold](../backend/README.md) and [CI workflow](../.github/workflows/backend-error-contract.yml) are committed; 15 handler contract tests and 21-code parity passed in GitHub Actions run #22 for SHA `ac459923`; newer revisions still require exact-SHA CI. These requirements do not mean 132 domain TDD cases were executed.
 
+## Development roadmap technical audit v1.1
+
+[33 — TDD Development Roadmap v1.1](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) revise R0 development sequencing after **12 documented technical findings** (10 P0 planning/qualification issues and 2 P1 design/validation issues). [Machine roadmap](contracts/tdd-development-roadmap.v1.json) contains 13 RD phases, three optional RX phases and **21 independent implementation PR cuts**.
+
+- `KX-ROAD-001` P0: RD-01 owns durable transactional Outbox/Inbox, RLS, data/migration foundation *before* RD-03 state writes. RD-10 performs hardening/recovery, not first Job implementation.
+- `KX-ROAD-002` P0: RD-05 is three independently qualified Cargo, Compliance, Fleet owner PRs; Booking and Finance cross-module references only through exported API/event/snapshot.
+- `KX-ROAD-003` P0: only accepted scoped RFQ submit policy unlocks write route; unsigned BR rules remain safe DENY/PENDING, not positive mocked behavior.
+- `KX-ROAD-004` P0: exact-SHA per-PR applicability across 132 existing draft TDD cases, 8 uncounted MIX and SDB 20 anchors, qualified PostgreSQL/RLS/negative tests and credible customer/carrier/driver/finance UI E2E.
+- `KX-ROAD-005` P1: [roadmap contract CI](../.github/workflows/tdd-roadmap-contract.yml) validates DAG, ownership, BR/BSC, phase and test references. A docs schema check is not Java/TDD evidence.
+
+**Status:** changes to planning/specification only; no real R0 business module, signed business approval, PostgreSQL acceptance, or end-to-end qualification has been established by this audit.
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.
