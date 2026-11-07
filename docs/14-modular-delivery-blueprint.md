@@ -200,3 +200,7 @@ R0 must include the minimum authenticated external customer portal `EXC` and pro
 ## Business Story Pass 2 — cross-role journey before new code
 
 Use [25 — Business Scenario Book](25-business-scenario-book.md) to qualify role-based journeys and exceptions before implementation. 11 BSC scenarios cover customer/provider/carrier, booking, offline custody, tracking, partial POD, claims, finance, review, cancellation and access revocation; 38 proposed business acceptance outcomes. The [User Story Book](21-user-story-book.md) now has 58 stories (18 newly DISCOVERED). Implementation remains restricted to R0 vertical slices approved by real business owners, with independent `AUTH-*` policy review for proposed new commands; no new business modules or artificial workflow platform.
+
+## Third-pass role/process walkthrough qualification
+
+After 11 business narratives, [26 — Role/Process Simulation & Gap Audit](26-role-process-simulation-and-gap-audit.md) adds 42 desk simulations across all 22 role personas, including cross-tenant EXC, own tenant shipper, carrier, driver, receiver, Finance, Warehouse/Marketplace/ML (later) and two strategic exceptions: Sales-assisted RFQ and live transport during SaaS suspension. The JSON matrix is [here](contracts/role-process-simulation.v1.json). There are 33 gap hypotheses, not 33 new modules. Keep 17 module boundaries and 67 unchanged Access Governance v2.1 policies. Only approved R0 commands get authorization design/test code; R1/R2 personas stay deferred.
