@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "1.0.0",
-  "documentStatus": "PROPOSED_PLAN_NOT_EXECUTION_EVIDENCE",
+  "schemaVersion": "1.1.0",
+  "documentStatus": "AUDITED_V1_1_PROPOSED_NO_R0_BUSINESS_IMPLEMENTATION_QUALIFIED",
   "date": "2026-11-07",
   "roadmapRef": "docs/33-tdd-development-roadmap-v1.md",
   "baselineRef": "docs/32-scenario-driven-backend-design-v1.md",
@@ -23,7 +23,13 @@
       "negativeTests": 48,
       "totalNamedPriorTests": 132,
       "additionalSdbTraceAnchors": 20
-    }
+    },
+    "priorHandlerCi": "Backend Error Contract on PR HEAD 964eaec3: completed success as observed before v1.1 update; only error-contract scope",
+    "lastAuditedHead": "964eaec3f061ee38cc2accedcdf0d65c40ae2d28",
+    "roadmapContractValidation": "NOT_YET_EXECUTED",
+    "applicationModuleTests": "NOT_EXECUTED",
+    "realPostgresqlRls": "NOT_IMPLEMENTED",
+    "frontendBusinessJourneys": "NOT_IMPLEMENTED"
   },
   "rules": {
     "execution": "TEST_FIRST_WITH_APPROVED_ACCEPTANCE_CRITERIA",
@@ -131,19 +137,27 @@
       ],
       "gate": "Для каждого функционального среза — подтверждённые actor/resource scope, бизнес-владелец, AC, отказ и legal/finance signoff, где необходим; не подписанный BR не превращается в продуктовый allow.",
       "next": "RD-01 возможен параллельно; бизнес-срезы используют только подписанные правила.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "primaryWriteOwners": [
+        "architecture",
+        "business analysts"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Documentation contracts and signoff are separate from implementation. Review only impacted BR before irreversible command; never require complete W1..W5 to compile platform foundation.",
+      "deliveryPrs": [
+        "PR-00"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-01",
       "name": "Build + Platform Foundation",
       "stage": "R0",
       "dependsOn": [],
-      "modules": [
-        "tenancy"
-      ],
+      "modules": [],
       "bsc": [],
       "br": [],
-      "scope": "Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Flyway/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, минимальные audit/idempotency/outbox порты и fail-closed security. Docker Compose/local smoke.",
+      "scope": "Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Flyway/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, минимальные audit/idempotency/outbox порты и fail-closed security. Docker Compose/local smoke. Platform baseline INCLUDES a minimal transactional Outbox+Inbox protocol and durable dispatcher needed from RD-03; RD-10 only adds operational hardening.",
       "code": [
         "backend Maven BOM lock and reproducible build",
         "Modulith verify() and @ApplicationModuleTest harness",
@@ -155,11 +169,21 @@
         "ApplicationModules.verify no cycles/internal imports",
         "DB migration, startup and rollback/no phantom outbox",
         "RLS fail-closed + two tenant pool reuse",
-        "invalid JWT/401/403 shared ProblemDetail"
+        "invalid JWT/401/403 shared ProblemDetail",
+        "INF-01..04: actual transaction crash tests, PG RLS connection context, dedup+replay"
       ],
-      "gate": "mvn verify и startup на конкретном SHA; реальные PG/PostGIS+RLS интеграции, не H2 вместо PG; не открывать бизнес API без auth.",
+      "gate": "mvn verify и startup на конкретном SHA; реальные PG/PostGIS+RLS интеграции, не H2 вместо PG; не открывать бизнес API без auth. PLUS atomic outbox/inbox, no runtime DB superuser, privileged DDL isolated.",
       "next": "RD-02.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "primaryWriteOwners": [
+        "platform"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "R0 shared event/outbox/least-privilege RLS MUST be operational now. RD-10 improves resilience, not first appearance. No business owner module added by platform foundations.",
+      "deliveryPrs": [
+        "PR-01"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-02",
@@ -196,7 +220,17 @@
       "gate": "Два Tenant + минимум два CustomerOrg в одном provider не видят чужих записей; сквозной authorization HTTP→DB подтверждён.",
       "next": "RD-03, RD-05.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Вход/выбор подтверждённого Tenant или CustomerAccount; запрет доступа к чужому кабинету и безопасная обработка истёкших приглашений."
+      "frontendAcceptance": "Вход/выбор подтверждённого Tenant или CustomerAccount; запрет доступа к чужому кабинету и безопасная обработка истёкших приглашений.",
+      "primaryWriteOwners": [
+        "tenancy"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Verified principal/JWT and provider-customer grants must precede exposing scoped REST and customer UI; no hidden tenant header override.",
+      "deliveryPrs": [
+        "PR-02",
+        "PR-03"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-03",
@@ -213,7 +247,7 @@
         "BSC-002"
       ],
       "br": [],
-      "scope": "Создать Draft RFQ, submit/clarification/qualification по принятому lifecycle; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие.",
+      "scope": "Создать Draft RFQ, submit/clarification/qualification по принятому lifecycle; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие. Public submit/ discard MUST remain denied pending explicit owner permission from SDB contract; no implicit template grant.",
       "code": [
         "RFQ aggregate and transitions",
         "command + query repositories, Flyway and RLS",
@@ -228,10 +262,20 @@
         "cross-account filtering before COUNT/OFFSET; SQL EXPLAIN",
         "double submit changed payload conflict; draft deletion/quote issuance race if enabled"
       ],
-      "gate": "External customer sees only own RFQs; provider only allowed Inbox; pagination/count and DTO no leak; one logical create/submit effect.",
+      "gate": "External customer sees only own RFQs; provider only allowed Inbox; pagination/count and DTO no leak; one logical create/submit effect. Submit enabled only after verified scoped permission and approved source-of-truth actor.",
       "next": "RD-04.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Customer My Requests: создание/отправка RFQ, фильтры, сортировка, пагинация, empty/error states; Provider Incoming RFQs: только разрешённый inbox."
+      "frontendAcceptance": "Customer My Requests: создание/отправка RFQ, фильтры, сортировка, пагинация, empty/error states; Provider Incoming RFQs: только разрешённый inbox.",
+      "primaryWriteOwners": [
+        "commercial"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "RFQ submit permission remains PENDING in SDB v1; do not implement public write until explicit permission and negative test. Soft delete is opt-in only.",
+      "deliveryPrs": [
+        "PR-04",
+        "PR-05"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-04",
@@ -268,7 +312,17 @@
       "gate": "Only authorized exact current quote version can be accepted; never mutate issued terms; no implicit Booking.CONFIRMED.",
       "next": "RD-06 (with RD-05).",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Разные экраны просмотра и правомерного акцепта QuoteVersion; состояние awaiting resource confirmation не отображается как confirmed booking."
+      "frontendAcceptance": "Разные экраны просмотра и правомерного акцепта QuoteVersion; состояние awaiting resource confirmation не отображается как confirmed booking.",
+      "primaryWriteOwners": [
+        "commercial"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Split immutable issue/approval from legally significant acceptance; if BR-01 missing, implement safe pending/deny path without fake acceptance.",
+      "deliveryPrs": [
+        "PR-06",
+        "PR-07"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-05",
@@ -289,7 +343,7 @@
         "BR-07",
         "BR-08"
       ],
-      "scope": "VehicleCombination/driver/capacity windows; CargoProfile weights, volume, dimensions and controlled eligibility; ComplianceAssessment with UNKNOWN fail-closed. PostGIS verified coordinates and proximity search; Fleet owns transactional CapacityHold, no read-model guard.",
+      "scope": "VehicleCombination/driver/capacity windows; CargoProfile weights, volume, dimensions and controlled eligibility; ComplianceAssessment with UNKNOWN fail-closed. PostGIS verified coordinates and proximity search; Fleet owns transactional CapacityHold, no read-model guard. Slice into three independently verified cargo/compliance/fleet PRs; UNKNOWN compliance remains HOLD. Do not bypass foreign module APIs.",
       "code": [
         "FleetCapacityApi hold/confirm/release",
         "vehicle/cargo master repositories + geo query port",
@@ -302,12 +356,26 @@
         "two competing reservations on separate transactions",
         "expiry vs confirmation race; old GPS cannot authoritatively reserve",
         "missing safety rule returns hold/needs review; no automatic allow",
-        "postgis ST_DWithin meters + cross-tenant nearest exclusion"
+        "postgis ST_DWithin meters + cross-tenant nearest exclusion",
+        "PR-08/09/10 separately green including BR-07/08 negative safety"
       ],
       "gate": "No double hold in DB, no unsafe UNKNOWN release, correct coordinate/units and geo tenant isolation; real concurrency test green.",
       "next": "RD-06.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Операционный shortlist автомобилей с freshness/eligibility; UNKNOWN compliance — заблокированная кнопка с объяснением, не фиктивная автоматическая проверка."
+      "frontendAcceptance": "Операционный shortlist автомобилей с freshness/eligibility; UNKNOWN compliance — заблокированная кнопка с объяснением, не фиктивная автоматическая проверка.",
+      "primaryWriteOwners": [
+        "cargo",
+        "compliance",
+        "fleet"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Three independent owner-module PRs: CargoProfile (PR-08), Compliance proof/HOLD (PR-09), Fleet exclusive interval reservation (PR-10). Not a combined big-bang PR.",
+      "deliveryPrs": [
+        "PR-08",
+        "PR-09",
+        "PR-10"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-06",
@@ -348,7 +416,18 @@
       "gate": "Confirmed Booking always has valid evidence of Quote + exclusive CapacityReservation + compliance; crash/retry converges and cleans hold.",
       "next": "RD-07.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Provider/Carrier Booking workflow: hold, pending, confirmation, rejection/cancel request; при конфликте UI показывает актуальную версию после повторного чтения."
+      "frontendAcceptance": "Provider/Carrier Booking workflow: hold, pending, confirmation, rejection/cancel request; при конфликте UI показывает актуальную версию после повторного чтения.",
+      "primaryWriteOwners": [
+        "commercial",
+        "booking"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Commercial CarrierOffer and Booking canonical are separate PRs; no direct Booking write from Commercial. Booking uses exported API and event/outbox with recovery.",
+      "deliveryPrs": [
+        "PR-11",
+        "PR-12"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-07",
@@ -370,7 +449,7 @@
         "BR-09",
         "BR-10"
       ],
-      "scope": "Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered.",
+      "scope": "Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered. Use a versioned evidence pointer/public Documents API contract in RD-07, never silently publish unsigned POD. Documents publication later in RD-08.",
       "code": [
         "Execution state machines and custody ledger",
         "offline command intake with verifier and quarantine",
@@ -387,7 +466,17 @@
       "gate": "No custody loss or forged POD; verified cargo-unit reconciliation and negative/replay invariants pass.",
       "next": "RD-08.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Driver offline pickup/POD draft queue + receiver evidence; после устаревшей роли/assignment показать requires reconciliation, не silently delivered."
+      "frontendAcceptance": "Driver offline pickup/POD draft queue + receiver evidence; после устаревшей роли/assignment показать requires reconciliation, не silently delivered.",
+      "primaryWriteOwners": [
+        "execution"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Execution owns custody and DeliveryAttempt. Required Documents evidence pointer interface is established here via contract stub; Documents versioned publication comes in RD-08.",
+      "deliveryPrs": [
+        "PR-13",
+        "PR-14"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-08",
@@ -407,7 +496,7 @@
         "BSC-009"
       ],
       "br": [],
-      "scope": "Event-derived customer timeline, permission-filtered milestone, ETA freshness/watermarks; verified document packages and downloads; cursor/keyset for immutable chronological streams; data lifecycle/retention/legal hold, default active lists exclude soft deleted where policy eligible.",
+      "scope": "Event-derived customer timeline, permission-filtered milestone, ETA freshness/watermarks; verified document packages and downloads; cursor/keyset for immutable chronological streams; data lifecycle/retention/legal hold, default active lists exclude soft deleted where policy eligible. No new delete endpoint unless opted in with business+security+retention signoff; customer timeline and document packages are two independently testable owner PRs.",
       "code": [
         "TrackingQueryApi filtered projection and rebuild",
         "DocumentPackageVersion and proof access adapter",
@@ -424,7 +513,18 @@
       "gate": "No raw GPS/foreign documents, truthful freshness, no erased legal evidence, cursor cannot cross authorizations.",
       "next": "RD-09.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Customer Tracking + POD/documents, явная свежесть ETA, строгий customer-visible field allowlist, истекшая ссылка не открывает чужой документ."
+      "frontendAcceptance": "Customer Tracking + POD/documents, явная свежесть ETA, строгий customer-visible field allowlist, истекшая ссылка не открывает чужой документ.",
+      "primaryWriteOwners": [
+        "tracking",
+        "documents"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Tracking + Documents are separate PRs. Soft Delete is a conditional per-owner qualification, NOT an R0 feature or an excuse to hide legal evidence.",
+      "deliveryPrs": [
+        "PR-15",
+        "PR-16"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-09",
@@ -448,7 +548,7 @@
         "BR-11",
         "BR-12"
       ],
-      "scope": "Distinct invoice, receivable, payable, payment allocation, advance, claim references and approval; exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or audited manual verification, not GPS or user toggle. Independent finance approver.",
+      "scope": "Distinct invoice, receivable, payable, payment allocation, advance, claim references and approval; exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or audited manual verification, not GPS or user toggle. Independent finance approver. Finance owns its ledger; Booking/Documents data via versioned public events/snapshots, not direct queries to internal tables. Advanced credit note beyond agreed pilot scope fails safely or is deferred.",
       "code": [
         "Finance domain aggregates/ledger, repository",
         "immutable Invoice, controlled correction/credit note",
@@ -465,7 +565,16 @@
       "gate": "No fictitious PAID or duplicate money effect; financial balance and independent approval verified on real PostgreSQL.",
       "next": "RD-10/11.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Finance office AR/AP + evidence status; approval и posting отделены, paid не доступен как произвольный ручной переключатель."
+      "frontendAcceptance": "Finance office AR/AP + evidence status; approval и posting отделены, paid не доступен как произвольный ручной переключатель.",
+      "primaryWriteOwners": [
+        "finance"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Finance is the ONLY canonical finance table writer. References to Booking/Documents use published snapshot/events from their owners; never import foreign internal repositories. Paid status requires verified cash fact.",
+      "deliveryPrs": [
+        "PR-17"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-10",
@@ -491,7 +600,7 @@
         "BR-04",
         "BR-11"
       ],
-      "scope": "Cross-cutting durable Job Engine, outbox/inbox, retry classification/dead letter, fencing, observability, error catalog consistency. Subscription suspension during live cargo follows BR-04 with explicit safety continuity; do not build full SaaS Control billing in R0.",
+      "scope": "Cross-cutting durable Job Engine, outbox/inbox, retry classification/dead letter, fencing, observability, error catalog consistency. Subscription suspension during live cargo follows BR-04 with explicit safety continuity; do not build full SaaS Control billing in R0. This is RESILIENCE HARDENING of Outbox/Inbox/Jobs introduced in RD-01 and used in all state-writing slices, not first implementation of reliability.",
       "code": [
         "PostgreSQL-backed durable jobs and reclaim supervisor",
         "policy-scoped service principals, retry/replay approvals",
@@ -508,7 +617,16 @@
       "gate": "No lost committed event or job, no duplicate logical effect, no cross-tenant worker privilege, operable degraded state.",
       "next": "RD-11.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Состояния долгой операции, retry/failed, graceful degradation и безопасная операционная непрерывность при недоступности внешних сервисов."
+      "frontendAcceptance": "Состояния долгой операции, retry/failed, graceful degradation и безопасная операционная непрерывность при недоступности внешних сервисов.",
+      "primaryWriteOwners": [
+        "platform"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Harden previously deployed foundational Jobs/Outbox instead of implementing them after Booking. SaaS continuity is a narrow policy, not full billing SaaS module.",
+      "deliveryPrs": [
+        "PR-18"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-11",
@@ -550,7 +668,7 @@
         "BSC-011"
       ],
       "br": [],
-      "scope": "Reproduce full route two tenants + two customer accounts + external carrier + driver + receiver. Include all accepted applicable 84 TDD and 48 negative scenarios by traceability, not merely test count. Fault injection, CI exact SHA, migrations, backup/restore, partition test conditional GPS and load benchmark.",
+      "scope": "Reproduce full route two tenants + two customer accounts + external carrier + driver + receiver. Include all accepted applicable 84 TDD and 48 negative scenarios by traceability, not merely test count. Fault injection, CI exact SHA, migrations, backup/restore, partition test conditional GPS and load benchmark. Role-based frontend E2E is REQUIRED to declare USER_JOURNEY_QUALIFIED; backend-only slices may be qualified at API level but not full user journey.",
       "code": [
         "single documented R0 E2E fixture",
         "smoke runner and CI jobs with reports",
@@ -567,7 +685,16 @@
       "gate": "Every accepted P0 applicable contract green on exact SHA, zero known P0 leak/dup booking/custody/finance bug, documented SLO from measured benchmark; no mock-only release claim.",
       "next": "RD-12.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "Сквозная browser/UI и при необходимости offline device simulation: customer→provider→carrier→driver→receiver→finance, все негативные видимые состояния."
+      "frontendAcceptance": "Сквозная browser/UI и при необходимости offline device simulation: customer→provider→carrier→driver→receiver→finance, все негативные видимые состояния.",
+      "primaryWriteOwners": [
+        "cross-functional"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Require real frontend role journey, not backend-only endpoints; distinguish loading/empty/denied/stale and offline accepted/reconciliation. 132 case specs are risk selected, not automatic fixed runtime count.",
+      "deliveryPrs": [
+        "PR-19"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RD-12",
@@ -608,7 +735,16 @@
       "gate": "Signed business/legal/finance acceptance where required, exact release SHA artifacts/CI green, operational recovery proved; otherwise NO RELEASE.",
       "next": "Enable RX work by measured demand.",
       "status": "PLANNED_NOT_QUALIFIED",
-      "frontendAcceptance": "User acceptance workshop, accessibility/responsive baseline и документирование наблюдаемых ограничений перед публикацией."
+      "frontendAcceptance": "User acceptance workshop, accessibility/responsive baseline и документирование наблюдаемых ограничений перед публикацией.",
+      "primaryWriteOwners": [
+        "release"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Release-gate is actual business/legal/finance signoff, production-like restore, image digest and exact SHA; no mock-only acceptance.",
+      "deliveryPrs": [
+        "PR-20"
+      ],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RX-01",
@@ -634,7 +770,16 @@
       ],
       "gate": "New module tests + regression R0 all green, measured business value.",
       "next": "RX-02 / RX-03 conditional.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "primaryWriteOwners": [
+        "recovery",
+        "warehouse",
+        "saas-control"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Release extension only after pilot evidence and module boundary verification",
+      "deliveryPrs": [],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RX-02",
@@ -661,7 +806,15 @@
       ],
       "gate": "Use-case benefit/quality/latency and tenant security verified; fallback deterministic.",
       "next": "Optional activation.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "primaryWriteOwners": [
+        "optimization",
+        "intelligence"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Release extension only after pilot evidence and module boundary verification",
+      "deliveryPrs": [],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     },
     {
       "id": "RX-03",
@@ -687,7 +840,15 @@
       ],
       "gate": "Separate business/legal/regulatory acceptance and R0 regression.",
       "next": "Feature release only.",
-      "status": "PLANNED_NOT_QUALIFIED"
+      "status": "PLANNED_NOT_QUALIFIED",
+      "primaryWriteOwners": [
+        "marketplace",
+        "regulatory"
+      ],
+      "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
+      "tddRiskNotes": "Release extension only after pilot evidence and module boundary verification",
+      "deliveryPrs": [],
+      "testExecutionStatus": "NOT_RUN_THIS_ROADMAP"
     }
   ],
   "traceabilityFields": [
@@ -746,5 +907,301 @@
     "BR-11",
     "BR-12"
   ],
-  "noAutoActivationOfExtensionModules": true
+  "noAutoActivationOfExtensionModules": true,
+  "audit": {
+    "version": "1.1",
+    "source": "docs/34-tdd-roadmap-technical-audit.md",
+    "findingsTotal": 12,
+    "releaseBlockers": [
+      "business signoff for irreversible contracts",
+      "real RLS and Booking/Fleet/Custody/Finance consistency",
+      "exact-SHA integrated E2E",
+      "restore/security evidence"
+    ],
+    "principles": [
+      "vertical PRs rather than one PR per large phase",
+      "thin transactional Outbox/Inbox in RD-01, per-module use from first write",
+      "RD-10 hardens infrastructure, not first implementation",
+      "modules means participants, not allowed direct imports",
+      "source-of-truth and no illegal deletion/retention",
+      "no accepted business policy inferred from future passing tests"
+    ]
+  },
+  "executionGovernance": {
+    "statusTruth": "Do not mark stage QUALIFIED from plan or a previous commit; require exact SHA + job logs + migration and fixtures",
+    "signedDecisionGate": "Approve only impacted BR decision before implementing irreversible transition; independent non-binding foundation may proceed",
+    "noGoP0": "Security leakage, double capacity confirmation, fabricated acceptance/POD/settlement, broken cargo conservation, RLS bypass or unapproved irreversible action",
+    "releaseEvidence": [
+      "releaseSha",
+      "builtArtifactDigest",
+      "mavenAndIntegrationCiUrl",
+      "businessAcceptanceRefs",
+      "dbMigrationVersion",
+      "RlsSecurityEvidence",
+      "recoveryDrillEvidence",
+      "frontendE2eReport",
+      "openP0Count",
+      "riskExceptionsApproved"
+    ],
+    "dispositionEnum": [
+      "PROPOSED",
+      "ACCEPTED",
+      "IMPLEMENTED",
+      "VERIFIED",
+      "QUALIFIED",
+      "DEFERRED_WITH_APPROVED_RATIONALE",
+      "BLOCKED"
+    ]
+  },
+  "trackOwnership": {
+    "concept": "A stage may involve multiple modules, but only the owning module can write its canonical tables; each PR declares exactly one primary write owner or a platform technical owner.",
+    "moduleBoundaryRef": "docs/contracts/module-boundaries.v1.json",
+    "authorizedIntegrationModes": [
+      "published exported API",
+      "versioned outbox event",
+      "read-only customer-safe projection composed through exported API"
+    ],
+    "forbidden": [
+      "cross-module JPA repository import",
+      "direct writes to foreign schema",
+      "circular synchronous dependencies",
+      "frontend-supplied tenantId,approvalState,paid or deletion flags"
+    ],
+    "technicalInfrastructure": "platform/errors, jobs, security and web adapters are not new business modules"
+  },
+  "r0Prcuts": [
+    {
+      "id": "PR-00",
+      "phase": "RD-00",
+      "owner": "architecture",
+      "outcome": "traceability validator, signoff ledger and phase-by-phase test selection",
+      "testGate": "catalog IDs and BR status truthful"
+    },
+    {
+      "id": "PR-01",
+      "phase": "RD-01",
+      "owner": "platform",
+      "outcome": "Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox",
+      "testGate": "verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic"
+    },
+    {
+      "id": "PR-02",
+      "phase": "RD-02",
+      "owner": "tenancy",
+      "outcome": "tenant/legal entity and verified identity/invitation/grants",
+      "testGate": "real JWT or verified auth adapter + multi-grant denial + SoD"
+    },
+    {
+      "id": "PR-03",
+      "phase": "RD-02",
+      "owner": "tenancy",
+      "outcome": "provider-customer organization grants and revoke",
+      "testGate": "Customer-X/Y negative list/detail, warm cache, RLS context reset"
+    },
+    {
+      "id": "PR-04",
+      "phase": "RD-03",
+      "owner": "commercial",
+      "outcome": "RFQ creation+submit+customer My RFQs",
+      "testGate": "idempotency conflict + scoped list/pagination + first real outbox"
+    },
+    {
+      "id": "PR-05",
+      "phase": "RD-03",
+      "owner": "commercial",
+      "outcome": "provider Inbox assignment, clarification/qualify",
+      "testGate": "branch restriction, CAS assignment, no unapproved quote"
+    },
+    {
+      "id": "PR-06",
+      "phase": "RD-04",
+      "owner": "commercial",
+      "outcome": "immutable QuoteVersion issue/supersede, independent price approval",
+      "testGate": "version race + SoD; no binding acceptance without BR-01"
+    },
+    {
+      "id": "PR-07",
+      "phase": "RD-04",
+      "owner": "commercial",
+      "outcome": "authorized customer Quote accept/decline with evidence",
+      "testGate": "BR-01/02/05 acceptance, exact signer, termsHash and expiry"
+    },
+    {
+      "id": "PR-08",
+      "phase": "RD-05",
+      "owner": "cargo",
+      "outcome": "CargoProfile/identified units and physical compatibility inputs",
+      "testGate": "mass/quantity/identity/value invariants"
+    },
+    {
+      "id": "PR-09",
+      "phase": "RD-05",
+      "owner": "compliance",
+      "outcome": "versioned compliance decision and critical UNKNOWN safety gate",
+      "testGate": "qualified source / correct HOLD, BR-08 signoff where binding"
+    },
+    {
+      "id": "PR-10",
+      "phase": "RD-05",
+      "owner": "fleet",
+      "outcome": "vehicle/driver/trailer registry and atomic capacity holding",
+      "testGate": "PostgreSQL exclusion/locked-slot race, hold expiry fencing BR-07"
+    },
+    {
+      "id": "PR-11",
+      "phase": "RD-06",
+      "owner": "commercial",
+      "outcome": "carrier sourced offer+withdrawal/ack and own-fleet alternative",
+      "testGate": "partner grants, no margin disclosure, no false capacity, BR-06"
+    },
+    {
+      "id": "PR-12",
+      "phase": "RD-06",
+      "owner": "booking",
+      "outcome": "Booking pending→confirmed via accepted quote and confirmed exclusive capacity",
+      "testGate": "process crash/replay, stale quote/carrier, no phantom Booking"
+    },
+    {
+      "id": "PR-13",
+      "phase": "RD-07",
+      "owner": "execution",
+      "outcome": "Trip+pickup offline custody and signed evidence references",
+      "testGate": "historical authority, late replay, one custodian, BR-09"
+    },
+    {
+      "id": "PR-14",
+      "phase": "RD-07",
+      "owner": "execution",
+      "outcome": "delivery attempts, partial/refused POD and compensating disposition",
+      "testGate": "8/10 conservation, receiver evidence and proof immutability, BR-10"
+    },
+    {
+      "id": "PR-15",
+      "phase": "RD-08",
+      "owner": "tracking",
+      "outcome": "customer-scoped timeline and ETA freshness",
+      "testGate": "stale cache, wrong-customer cursor, no GPS-derived POD"
+    },
+    {
+      "id": "PR-16",
+      "phase": "RD-08",
+      "owner": "documents",
+      "outcome": "verified POD/document package and bounded download",
+      "testGate": "verified version, revoked grant, legal hold, no generic soft delete"
+    },
+    {
+      "id": "PR-17",
+      "phase": "RD-09",
+      "owner": "finance",
+      "outcome": "distinct AR/AP/Invoice and verified payment reconciliation",
+      "testGate": "money/SoD, allocation uniqueness, reversal, BR-11/12"
+    },
+    {
+      "id": "PR-18",
+      "phase": "RD-10",
+      "owner": "platform",
+      "outcome": "advanced job fencing, timeout, crash and safe SaaS continuity",
+      "testGate": "replay/failover + BR-04 in-flight evidence after suspension"
+    },
+    {
+      "id": "PR-19",
+      "phase": "RD-11",
+      "owner": "cross-functional",
+      "outcome": "full customer→forwarder→carrier→driver→receiver→finance real E2E",
+      "testGate": "accepted P0 negative, RLS, outage recovery, UI states and artifact evidence"
+    },
+    {
+      "id": "PR-20",
+      "phase": "RD-12",
+      "owner": "release",
+      "outcome": "pilot signoff, container, SBOM, restore drill and release artifact",
+      "testGate": "same SHA/digest, no open P0, signed applicable BR"
+    }
+  ],
+  "testSelection": {
+    "testSources": {
+      "baseline": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "negative": "docs/contracts/r0-negative-scenarios.v1.json",
+      "access": "docs/contracts/access-policy-matrix.v2.json",
+      "backend": "docs/contracts/backend-query-soft-delete.v1.json",
+      "errors": "docs/contracts/api-error-catalog.v1.json"
+    },
+    "knownCounts": {
+      "blocker": 60,
+      "safety": 14,
+      "e2e": 10,
+      "negative": 48,
+      "individualPlanned": 132,
+      "mixedScenariosUncounted": 8,
+      "backendAnchors": 20
+    },
+    "method": "derive stable applicability register by storyId/module/phase; no implicit 132 test methods or blanket gating unapproved workflows",
+    "candidateStatuses": [
+      "APPLICABLE_APPROVED",
+      "APPLICABLE_FAIL_CLOSED",
+      "DEFERRED_R1_R2",
+      "NOT_APPLICABLE_WITH_REASON",
+      "BLOCKED_PENDING_BR"
+    ],
+    "policyRlsAndConcurrencyMandatory": [
+      "all tenant/customer-cross reads and writes",
+      "exclusive vehicle hold",
+      "quote accept/expiry with expectedVersion",
+      "offline custody authority and CargoUnit conservation",
+      "bank allocation unique reference",
+      "outbox/inbox replay and subscription continuity"
+    ]
+  },
+  "earlyInfrastructure": [
+    {
+      "id": "INF-01",
+      "phase": "RD-01",
+      "contract": "atomic domain state+audit+outbox in one PostgreSQL transaction",
+      "proof": "crash before/after commit, no phantom event"
+    },
+    {
+      "id": "INF-02",
+      "phase": "RD-01",
+      "contract": "inbox dedup/version/ordering protocol; durable dispatcher retry",
+      "proof": "duplicate-delivery, replay, idempotent consumer effect"
+    },
+    {
+      "id": "INF-03",
+      "phase": "RD-01",
+      "contract": "transaction-scoped RLS context reset and denied missing tenant context",
+      "proof": "two JDBC connections, pooled Tenant-A→Tenant-B swap"
+    },
+    {
+      "id": "INF-04",
+      "phase": "RD-01",
+      "contract": "schema migrations and Testcontainers test matrix pinned",
+      "proof": "empty and upgrade DB migrations, PostGIS ST_DWithin and no runtime superuser"
+    },
+    {
+      "id": "INF-05",
+      "phase": "RD-02",
+      "contract": "real verified identity, no unverified JWT claims or caller tenant override",
+      "proof": "JWT expiry, wrong issuer/audience, user revoke, cross-account projection denial"
+    }
+  ],
+  "qualityGates": {
+    "perPR": [
+      "RED before code on scoped accepted behavior",
+      "GREEN + REFACTOR evidence",
+      "ApplicationModules.verify",
+      "unit+real affected PG/RLS/security test",
+      "contract catalog validate",
+      "no hidden 4xx/500 or false outbox",
+      "exact-SHA CI and review"
+    ],
+    "r0Release": [
+      "all applicable approved P0 and safety tests green",
+      "cross-role backend+UI actual walk-through",
+      "two tenants two customer accounts + carrier / receiver / finance",
+      "database migration from previous version and backup restore proof",
+      "security scanning + SBOM + known risks and logs",
+      "explicit pilot legal/counterparty signoff for irreversible effects",
+      "zero known critical bugs and no silent test skips"
+    ]
+  }
 }
