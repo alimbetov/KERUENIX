@@ -35,7 +35,7 @@ Customer users are not automatically tenant administrators. A platform operator 
 
 See [User Story Book](../docs/21-user-story-book.md) and [requirements](../docs/04-requirements-traceability.md).
 
-**Detailed access policy contract:** [Tenancy & Commercial Role-Permission Matrix](../docs/22-role-permission-scope-approval-matrix.md). It distinguishes role templates, delegated abilities, legal entity/branch/resource scopes, owner transfer, platform bootstrap and planned TDD criteria. The 24 policies are **draft rules pending business/security review**, not executed authorization code.
+**Canonical access policy contract:** [Access Governance v2](../docs/24-access-control-tdd-matrix-v2.md) and [v2 machine contract](../docs/contracts/access-policy-matrix.v2.json). The [earlier Tenancy/Commercial matrix v1](../docs/22-role-permission-scope-approval-matrix.md) remains a historical draft. v2 separates provider staff membership from external customer-account grants, ordinary access guards from human approvals, and expands delivery/finance, reviewer and service-principal controls. All rules are **design only** and require security/business acceptance.
 
 ## Recommended tenancy model
 
