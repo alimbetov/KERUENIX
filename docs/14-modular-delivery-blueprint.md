@@ -3,7 +3,7 @@
 **Версия:** 1.0 · **Дата:** 07.11.2026 · **Статус:** PROPOSED implementation plan.  
 **Родитель:** [13 — Architecture Options](13-modular-architecture-options-v1.md).  
 **Машинный каталог:** [contracts/module-boundaries.v1.json](contracts/module-boundaries.v1.json).  
-**Текущий репозиторий:** в проверенной проектной ветке только документация; это план, а не работающий код.
+**Текущий репозиторий:** к документации добавлен минимальный [backend error-handler bootstrap](../backend/README.md) (Spring Boot 4.1.2 / Java21); полноценные бизнес-модули, миграции, реальная аутентификация и подтверждённый CI ещё отсутствуют.
 
 ## 1. Форма репозитория
 
@@ -212,3 +212,7 @@ Use [27 — 12 Blocker Decisions](27-r0-blocker-policy-decisions.md), [28 — TD
 ## Negative/failure acceptance prior to R0 code qualification
 
 [30 — Negative and Failure Bank](30-negative-and-failure-scenario-bank.md) supplements the [84-case original TDD Bank](28-r0-tdd-acceptance-bank.md) with 48 fault-focused assertions across identity, CustomerAccount, Quote, Carrier, Capacity/Booking, Compliance, Custody, POD/Documents, Finance, SaaS, Jobs and disputes. Combined **132 designed test cases** plus eight cross-domain MIX fault sequences (uncounted). Prove state correctness, data absence/preservation, Outbox/Inbox event control and truthful UI status, not simply HTTP 403. All are planned, none executed; 17 business modules and 67 draft access policies remain unchanged.
+
+## Error-handler bootstrap as first platform code slice
+
+[31 — Unified RFC 9457 Error Standard](31-unified-error-handling-standard.md) provides shared machine codes and the first real [backend implementation skeleton](../backend/README.md): one Spring MVC/Security/servlet error contract, safe 400/401/403/404/409/422/500 responses, request IDs and contract tests. The [Maven CI workflow](../.github/workflows/backend-error-contract.yml) exists but pass status has not been verified. The scaffold defaults to `denyAll`; do **not** mistake it for Tenancy or drop this security boundary for convenience. No additional business module is created; full Spring Modulith module baseline and PostgreSQL RLS are the next engineering slices.
