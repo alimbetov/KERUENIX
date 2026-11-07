@@ -8,6 +8,8 @@
 | ID | Требование | Приор. | Доказательство / тест | Источник |
 |---|---|---|---|---|
 | KX-TEN-001 | Identity, tenant, membership, роли и field/object policy | P0 | Два tenant не читают чужие ресурсы, в т.ч. документы и кеш | [02](../idea/02-multi-tenant-and-identity.md) |
+| KX-TEN-003 | PLATFORM_SUPER_ADMIN: verified tenant creation and initial TENANT_OWNER; optional approved initial TENANT_ADMIN; no inherent customer business-data access | P0 | Unauthorized provisioning denied, audit/idempotency and cross-tenant RLS; USB-PSA-001/002 | [Tenancy](../idea/02-multi-tenant-and-identity.md), [Stories](21-user-story-book.md) |
+| KX-TEN-004 | TENANT_OWNER controls tenant admin delegation and secure recovery; TENANT_ADMIN limited to delegated staff permissions | P0 | Owner-only grant, admin escalation and last-owner removal denied; USB-TNO-001 | [Tenancy](../idea/02-multi-tenant-and-identity.md) |
 | KX-TEN-002 | Межорганизационный доступ с ограниченным scope | P0 | Партнёр видит только свою часть Shipment | [02](../idea/02-multi-tenant-and-identity.md) |
 | KX-DEP-001 | Один код для Cloud и Dedicated/On-Prem | P0 | Domain/security contract тесты в двух профилях | [13](../idea/13-deployment-models.md) |
 | KX-COM-001 | RFQ с обязательными полями, уточнениями и ответственным | P0 | Нет binding quote при критически неполных данных | [16](../idea/16-system-needs-gap-analysis.md) |
