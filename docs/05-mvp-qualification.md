@@ -4,6 +4,8 @@
 
 **Модульный implementation blueprint:** [docs/14](14-modular-delivery-blueprint.md). Для R0 рекомендуется один Spring Boot business runtime со Spring Modulith, PostgreSQL/Flyway, отдельными логическими контекстами с verified API и CI architecture checks; не требуется 10 отдельный deployable services. Изоляцию GPS bulk/optimizer worker вводить по результатам нагрузки.
 
+**Data/GIS qualification:** добавить [PostGIS + Read Models + GPS partition architecture](15-data-platform-partitioning-postgis.md) в foundation. Для `R0` достаточно PostGIS provisioning, корректного spatial smoke, RLS и ограниченного metadata/ETA projection. Автоматическое партиционирование GPS обязательно **с реальным потоком телеметрии**; если первый MVP работает на ручных этапах без GPS, отложить физические partitions до GPS ingestion slice, но сохранить контракт и тест-план. Не партиционировать все коммерческие таблицы.
+
 ## Product slice R0 — минимальная доказуемая перевозка
 
 **Сначала только автомобильные перевозки по выбранному тестовому коридору Казахстана, типовые грузы с полностью описанным профилем**. Регулируемый опасный груз и международная декларация не входят в автоматический R0; отсутствие нормативных сведений должно блокировать соответствующую операцию.

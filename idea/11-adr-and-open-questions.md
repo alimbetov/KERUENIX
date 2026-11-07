@@ -40,6 +40,9 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-032 | Operational vs financial close | Order operational closure derived from cargo disposition; financial closure derived from documents, invoices, payment allocations and claims | Accounting owner and contract approval |
 | ADR-033 | Logical modular monolith | Single Spring Boot runtime with Spring Modulith API/event boundaries and architecture tests for R0 | Implementation proof and domain-owner sign-off |
 | ADR-034 | Module vs artifact vs deployment | Prefer one Maven executable initially, separate Maven artifacts or services only by measured need | Complexity metrics and release cadence |
+| ADR-036 | Write/read models | One writer per aggregate; specialized read projections with watermark, no stale projection as booking/finance/stock guard | Testcontainers and domain-owner sign-off |
+| ADR-037 | Partition lifecycle | Only selected high-volume event streams partitioned by query/retention; privileged automatic creation/maintenance, legal-hold-aware archive | Real query/retention benchmark and DBA review |
+| ADR-038 | PostGIS baseline | PostGIS in R0 provision, WGS84/SRID 4326, geography meters, GiST indexes; GIS subject to tenant/partner grants, no legal routing inference | RLS/geospatial acceptance and mapping-provider PoC |
 | ADR-035 | Durable events and worker extraction | Local module event registry plus verified external outbox/inbox; GPS/optimizer workers only when justified | Failure/replay/load evidence |
 
 ## Questions to settle before code

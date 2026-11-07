@@ -121,6 +121,12 @@ R0: **один физический PostgreSQL** на инсталляцию; о
 - Cross-module reporting строить read models/materialized projections (с reconciliation), а не джойном десятков доменных таблиц в чужом service.
 - `@Transactional` в одном JVM не должно становиться разрешением обходить модульные API и владение данными.
 
+### Logical module ownership vs storage strategy
+
+Write model и read model могут принадлежать разным модульным границам **без прямой записи в чужие JPA таблицы**: projection обновляется только через опубликованные события/DTO владельца, с watermark, rebuild и permission filtering. Партиционирование не является механизмом изоляции модулей/tenants; это инструмент производительности/retention отдельных высокообъёмных таблиц.
+
+**PostGIS** включён в платформенную БД: `Fleet` владеет фактической GPS-телеметрией, `Execution` — версией маршрута/геозонным milestone, `Tracking` — клиентским представлением, `Warehouse` — своей физической геометрией. Использовать geospatially-aware ports и hard tenant policy, а не общий `GISRepository` с правами на все данные. ТЗ: [15](15-data-platform-partitioning-postgis.md) и [16](16-module-storage-gis-addendum.md).
+
 ## 9. Multi-Tenant / Dedicated / On-Prem
 
 Три deployment profiles используют **одинаковые domain invariants**:

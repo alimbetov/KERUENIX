@@ -1,6 +1,6 @@
 # 07 — Open Decisions, Risks and Next Actions
 
-**Статус:** DISCOVERY · **Дата:** 07.11.2026. Все ADR-001…ADR-035 в `idea/11` остаются **PROPOSED**, если нет отдельного подписанного утверждения.
+**Статус:** DISCOVERY · **Дата:** 07.11.2026. Все ADR-001…ADR-038 в `idea/11` остаются **PROPOSED**, если нет отдельного подписанного утверждения.
 
 **Свежая оценка архитектурных и продуктовых рисков:** [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md). Он фиксирует блокеры и не означает их устранения.
 
@@ -15,6 +15,19 @@
 | MOD-DEC-03 | Data ownership и tenancy/partner grants для внешних интеграций | Security + architect |
 | MOD-DEC-04 | Event publication/outbox delivery model и recovery | Platform/SRE |
 | MOD-DEC-05 | Условия выделения workers и автономная работа On-Prem | Platform + enterprise owner |
+
+## Data Platform / GIS решения для утверждения
+
+| Код | Решение | Владелец |
+|---|---|---|
+| DAT-DEC-01 | `GPS VehiclePosition` source of truth и idempotency registry для partitioned history | Fleet + Architecture |
+| DAT-DEC-02 | Retention per tenant/legal hold, permitted archive/drop policy | Compliance + Security + DBA |
+| DAT-DEC-03 | `pg_partman` vs privileged scheduled DDL per Cloud/On-Prem profile | DBA/SRE |
+| DAT-DEC-04 | Mandatory PostGIS versions/extensions, GIS provider, GIS query budgets | Backend + DBA |
+| DAT-DEC-05 | Read-model watermark/freshness/rebuild and no critical write guards | Module owners + QA |
+| DAT-DEC-06 | Privacy precision, partner geo access and geofence event semantics | Security + Logistics |
+
+См. [15 — Data Platform](15-data-platform-partitioning-postgis.md) и [16 — Module Annex](16-module-storage-gis-addendum.md). Требуется real PostgreSQL/PostGIS PoC; декларативный JSON не подтверждает performance/tenant isolation.
 
 ## Критические решения
 

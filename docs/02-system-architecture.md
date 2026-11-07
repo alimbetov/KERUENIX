@@ -77,6 +77,14 @@ Java 21, поддерживаемая версия Spring Boot, PostgreSQL/PostG
 
 Предлагается `CommercialWorkflow` и `ExecutionWorkflow` как явные application-level process managers, которые вызывают агрегаты RFQ/Quote/Booking/Reservation и Shipment/Trip/Delivery без прямого доступа к чужим таблицам. Для внешнего Carrier confirmation, документов и финансового ERP использовать outbox/inbox, команды с expectedVersion + idempotency key и компенсационные операции (release reservation, invalidate pending confirmation, open exception); не обещать распределённую ACID транзакцию. Набор команд/переходов закреплён в [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) и [машинном контракте](contracts/commercial-execution-lifecycle.v1.json). Публикация агрегированных статусов для Customer Tracking отделена от фактов cargo custody, а finance ledger — от физического shipment.
 
+## Data Platform: Read Models, partition management and PostGIS (proposed)
+
+Разделить `write-owned` бизнес-таблицы от `read-owned` projections; не разрешать чтению менять source-of-truth. Каждый модуль может иметь собственный projection/индексы и event-watermark, но **не** отдельную БД и не партицию по умолчанию. Горячие read models: `Fleet.current_position` (verified vehicle only) и `Tracking.customer_shipment_snapshot` (permission filtered, last observed timestamp). Историческая GPS append-only таблица — основной кандидат RANGE(time) partitions с автоматическим обслуживанием; Booking/Capacity/Finance источники истины не партиционировать ради механической «модульности».
+
+**PostGIS — базовая инфраструктурная возможность R0**, GIS бизнес-функции развиваются постепенно. WGS84/SRID 4326, geography в метрах и GiST; RLS/PartnerGrant продолжают действовать на пространственных запросах. Для route legal constraints требуется подтверждённый provider/RuleSet: PostGIS proximity не означает дорожной допустимости.
+
+**Подробности:** [15 — Data Platform](15-data-platform-partitioning-postgis.md), [16 — Per-module annex](16-module-storage-gis-addendum.md), [JSON contract](contracts/storage-gis-module-contract.v1.json).
+
 ## Security / reliability gates
 
 Два tenant, пересекающиеся Order reference и одно GPS-устройство с несколькими CargoUnit должны пройти изоляционные проверки. Duplicate webhooks, two dispatchers on same vehicle, stale GPS, out-of-order cargo scan, provider outage, blocked customs release, invalid label and timeout optimization обязаны давать **объяснимые безопасные** результаты.

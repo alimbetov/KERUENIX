@@ -38,6 +38,7 @@ KERUENIX — многоклиентская платформа управлен�
 | [25 — Consolidation v0.2](25-consolidation-v0.2.md) | Общая карта идеи, принятые к проектированию направления и следующие решения |
 | [26 — Commercial Lifecycle Risks](26-commercial-execution-lifecycle-risks.md) | Особенности переговоров, подтверждения транспорта, документов и расчётов |
 | [27 — Freight Exchange & Backhaul](27-freight-exchange-load-board-and-backhaul.md) | Биржа грузов, догрузы, обратные рейсы, закрытая сеть перевозчиков, DELLA benchmark |
+| [29 — Data Platform & PostGIS](29-read-models-partitioning-postgis.md) | Read Model по модулю, GPS партиции, автоматическая ротация, PostGIS и геозоны |
 | [28 — Modular Platform Concept](28-modular-platform-concept.md) | Spring Modulith, границы бизнес-модулей, SaaS/On-Prem и масштабирование workers |
 | [standards/identifier-catalog.v0.1.json](standards/identifier-catalog.v0.1.json) | Machine-readable namespace catalog, валидация форматов и источники |
 | [standards/external-identifier.schema.json](standards/external-identifier.schema.json) | JSON Schema для записи внешнего идентификатора с issuer/verified/evidence |

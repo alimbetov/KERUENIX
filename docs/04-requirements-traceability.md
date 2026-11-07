@@ -90,6 +90,22 @@
 | KX-MKT-006 | Open marketplace opt-in, moderation, reputation and anti-fraud | P2 | MKT-03,12,18 |
 | KX-MKT-007 | Incremental margin and reliable backhaul opportunity ranking | P2 | MKT-09,16,20 |
 
+## Data platform / GEO — требования к модульным ТЗ
+
+| ID | Требование | Приор. | Проверка | Источник |
+|---|---|---|---|---|
+| KX-DAT-001 | Единственный writer для модульных агрегатов, отдельные read models | P0 | DATA-09, DATA-10, architecture verification | [15](15-data-platform-partitioning-postgis.md) |
+| KX-DAT-002 | Не использовать eventual read projection для критических Booking/stock/money guards | P0 | DATA-10 + concurrency | [15](15-data-platform-partitioning-postgis.md) |
+| KX-DAT-003 | GPS history partition lifecycle: premake, retries, late events and dedup | P0 when live GPS is enabled | DATA-01…05, DATA-08 | [15](15-data-platform-partitioning-postgis.md) |
+| KX-DAT-004 | Retention, archive, legal hold, tenant-safe partition access | P0 for partitioned data | DATA-06, DATA-07, DATA-11 | [15](15-data-platform-partitioning-postgis.md) |
+| KX-GEO-001 | PostGIS provisioned and health-checked; SRID/lat-lon validated | P0 | GEO-01, GEO-04 | [15](15-data-platform-partitioning-postgis.md) |
+| KX-GEO-002 | Index-aware GIS queries and meter semantics, query plans measured | P0 for geo functions | GEO-02, GEO-03, GEO-10 | [15](15-data-platform-partitioning-postgis.md) |
+| KX-GEO-003 | Multi-Tenant geospatial RLS and location privacy | P0 | GEO-05, GEO-06, DATA-07 | [15](15-data-platform-partitioning-postgis.md) |
+| KX-GEO-004 | No legal truck route or POD inference from straight-line proximity/geofence | P0 | GEO-07, GEO-08, GEO-09 | [15](15-data-platform-partitioning-postgis.md) |
+| KX-DAT-005 | Each of 16 modules has explicit write/read/geo/partition strategy and tests | P0 spec / per-phase implementation | [16](16-module-storage-gis-addendum.md) | [JSON](contracts/storage-gis-module-contract.v1.json) |
+
+Все данные требования — **PROPOSED**. Нет пройденных performance/partition/GIS тестов в коде.
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.

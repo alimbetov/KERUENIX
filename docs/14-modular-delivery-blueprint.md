@@ -154,6 +154,14 @@ P0–P5 — **порядок задач**, не длительности. Не �
 **Первая подходящая изоляция:** обработчик массовых GPS-событий или долгий route/Timefold optimizer.  
 **Первая неподходящая изоляция:** Quote ↔ Booking ↔ Reservation, если нет доказанного распределённого обеспечения эквивалентной корректности.
 
+## GIS / Storage Slice — дополнение к плану реализации
+
+1. Сначала `PostGIS` и валидированные SRID/units в миграциях, два tenant, RLS + GiST `ST_DWithin` smoke; базовые геоточки можно добавить до реального GPS ingest.
+2. `Fleet.current_position` — горячая read model; `Fleet.vehicle_position_event` — append-only, RANGE(time) partitions включать при реальном ingestion. Отдельный globally unique dedup registry нужен из-за ограничения PK/UNIQUE partitioned parent.
+3. Только `Fleet` обновляет свои positions; `Tracking` строит собственный permission-filtered projection, `Execution` создаёт геозонные **candidate** события, но не POD по GPS.
+4. `Partition Lifecycle Manager` — privileged operational job/extension с premake, late events, retries, retention/legal hold, backup/replay; прямое DDL у runtime app запрещено.
+5. В каждом модульном PR: по [16 — Annex](16-module-storage-gis-addendum.md) определить `write/read/geo/partition/test` и пройти соответствующие `DATA/GEO` tests из [15](15-data-platform-partitioning-postgis.md).
+
 ## 10. Definition of Done первого PR
 
 Есть исполняемый Spring Boot backend, бизнес-модули с `ApplicationModules.verify()` green, real PostgreSQL migrations и RLS, DTO/API contracts, docker compose, двухтенантный отрицательный тест, README запуска, CI green exact SHA и один вертикальный workflow. Наличие документов `docs/13`–`docs/14` **не означает выполнения этих критериев**.

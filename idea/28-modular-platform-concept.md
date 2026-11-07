@@ -47,3 +47,7 @@
 ## Утверждение
 
 Рекомендуется принять в качестве architecture baseline **B → E**, но официальное ADR остаётся предложением до согласования бизнес-ответственности Commercial/Finance, политики Tenant и пилота R0a. Далее создать контрактные/architecture tests на первом исполняемом коде.
+
+## Data/Geo extension (v1)
+
+Модульная платформа не означает «отдельная partition для каждого модуля»: каждому модулю назначаются владелец write data, при необходимости своя read projection и отдельный SLA свежести. PostgreSQL/PostGIS — общий технологический фундамент; выбранные большие исторические таблицы (начиная с GPS) могут получить автоматический RANGE partition lifecycle. Не удалять данные с legal hold, не допускать GPS вместо POD, не обходить RLS в GIS. Спецификации: [docs/15](../docs/15-data-platform-partitioning-postgis.md), [docs/16](../docs/16-module-storage-gis-addendum.md).

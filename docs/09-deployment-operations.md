@@ -39,6 +39,12 @@
 - Stale GPS, неработающий ML/provider не блокируют безопасное ручное исполнение, но уменьшают уровень уверенности в ETA.
 - Нужны PITR, объектные backups, проверка tenant-selective export/restore, audit retention.
 
+## PostGIS & partition lifecycle operations
+
+R0 migration preflight проверяет доступность `postgis` extension и права installation на SAAS_POOLED, DEDICATED, ON_PREM без использования суперпользовательских прав application runtime. `pg_partman` **опционален**: для каждого deployment проверить поддержку/версию и альтернативный privileged schedule (не DDL на каждый запрос). Контроль ошибок создания будущих partitions, late events и failure-mode recovery; сохранять job ledger, retries, alerts, per-tenant/legal-hold retention. Никакого автоматического DROP partitions без документированного owner approval.
+
+Измерять `p95/p99` GIS query, число scanned partitions, maintenance lag, ingest backlog, index size, autovacuum/locks, RLS negative-test failures. Backup/restore проверяет parent + child partitions, spatial indexes, extension version и read projection rebuild. Прямой доступ к child tables и leaks connection-pool RLS тестировать на реальном PostgreSQL. Полные требования и тесты: [15 — Data Platform](15-data-platform-partitioning-postgis.md).
+
 ## CI/CD и приёмка эксплуатации
 
 1. Check formatting, tests, SAST/dependency/secret scans and SBOM.

@@ -196,3 +196,7 @@ Customer Portal / Expeditor Console / Driver light-view
 - Della Kazakhstan terms: https://www.della.kz/terms/
 
 **Следующие артефакты:** согласованные P0 ADR, issue backlog по `KX-LFC` и `KX-TEN`, минимальный executable Spring Boot foundation и квалифицированный R0 smoke.
+
+## Addendum — Data Platform / Read Models / GIS design (07.11.2026)
+
+После данного аудита подготовлено [ТЗ по PostGIS и партиционированию](15-data-platform-partitioning-postgis.md), [дополнение по 16 модулям](16-module-storage-gis-addendum.md) и [машинный контракт](contracts/storage-gis-module-contract.v1.json). **Это проектная mitigation**, а не исправление в коде: нет доказанных RLS/partition pruning/GiST/latency или restore tests. При первом implementation PR обязательны real PostGIS/Testcontainers tests и гарантии no stale critical write guards.

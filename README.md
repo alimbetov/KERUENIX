@@ -11,6 +11,8 @@ KERUENIX — логистическая платформа для экспеди
 
 **Предлагаемая модульная архитектура:** [варианты (B → E)](docs/13-modular-architecture-options-v1.md), [план разработки](docs/14-modular-delivery-blueprint.md), [контракт модулей](docs/contracts/module-boundaries.v1.json). Это проектное решение, не утверждённое или реализованное ПО.
 
+**Data Platform v1:** [PostGIS и автоматическое партиционирование](docs/15-data-platform-partitioning-postgis.md) · [требования по всем 16 модулям](docs/16-module-storage-gis-addendum.md) · [JSON-контракт](docs/contracts/storage-gis-module-contract.v1.json). Реализация пока не создана.
+
 ## Начните здесь
 
 1. **[Документация — единая карта](docs/README.md)** — актуальная проектная навигация и статусы.
