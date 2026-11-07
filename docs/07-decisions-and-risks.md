@@ -18,6 +18,10 @@
 
 [User Story Book](21-user-story-book.md) now holds 80 unique draft/discovery stories; [Business Scenario Book](25-business-scenario-book.md) retains 11 cross-role narratives; [Role/Process Simulation](26-role-process-simulation-and-gap-audit.md) adds 42 desk walkthroughs, representing all 22 role personas in at least one process. There are 33 gap candidates, including 12 business/security/legal blockers for their impacted R0 actions. **Not exhaustive**, not actual user simulation, code or CI. Specifically requires sign-off on external customer authority, carrier agreement, offline custody, finance truth, and live shipment continuity if tenant billing suspends. Do not convert discovery candidates into unreviewed R0 features or expand from 17 business modules.
 
+## Fourth review: 12 blocker design proposals versus stakeholder approvals
+
+[27 — Proposed R0 Blocker Decisions](27-r0-blocker-policy-decisions.md) specifies fail-safe contracts for the 12 blocking business/legal/security gaps from [26](26-role-process-simulation-and-gap-audit.md). Technical specification exists, but **business/legal approvals remain pending**. The [28 — TDD Bank](28-r0-tdd-acceptance-bank.md) contains 84 planned cases, [29 — Workshop Kit](29-r0-business-acceptance-workshop-kit.md) prepares five stakeholder sessions; none of these represent actual test runs or signed agreements. Keep all affected irreversible actions deny/pending until the applicable actor, source/evidence and operating policy is verified.
+
 ## Новое архитектурное решение — модульная стратегия
 
 **Рекомендуемый выбор (ещё не ACCEPTED):** один Spring Boot backend + Spring Modulith business modules для R0, впоследствии isolated background workers для GPS, routing, notifications. Сравнение альтернатив и критерии экстракции: [13 — Architecture Options](13-modular-architecture-options-v1.md). Декомпозиция и gate implementation: [14 — Delivery Blueprint](14-modular-delivery-blueprint.md).
