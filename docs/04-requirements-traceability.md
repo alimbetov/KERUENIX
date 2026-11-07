@@ -180,6 +180,19 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 
 **Unapproved policy gaps:** new story commands to amend submitted RFQ, withdraw carrier offer, replace reserved resource, create incident, reject document package, open surcharge dispute and compliance hold resolution need business sign-off and individual `AUTH-*` definitions. The existing 67-entry Access Governance v2.1 is **not automatically expanded**. Warehouse and executive KPI candidate stories stay R1.
 
+## Role-to-process simulation audit — third pass
+
+[26 — Role/Process Simulation & Gap Audit](26-role-process-simulation-and-gap-audit.md) and [machine-readable 42-case simulation matrix](contracts/role-process-simulation.v1.json) cross-check all **22 personas** in at least one process, using **42 desk-run scenarios**, **33 gap findings** and explicit adversarial variants. It expands [User Story Book](21-user-story-book.md) to **80 unique stories** (58 prior + 22 discovery candidates). **Not implemented, not executed, not signed off.**
+
+- `KX-SIM-001` R0 design: customer identity and authorized legal signatory; assisted phone/email RFQ must never forge client acceptance. Cases `SIM-04..13, SIM-42`.
+- `KX-SIM-002` R0 design: exclusive vehicle/driver/trailer capacity, carrier offer withdrawals, own fleet and critical compliance DENY/UNKNOWN. Cases `SIM-15..20`.
+- `KX-SIM-003` R0 design: offline pickup, mismatched cargo/consignee, handovers, partial POD and source-owned correction. Cases `SIM-23..30`.
+- `KX-SIM-004` R0 design: approval vs verified bank settlement, reimbursement/dispute, cancellation contract, private review and tenant grant revoke. Cases `SIM-21,22,31..35`.
+- `KX-SIM-005` R0 design: active shipment/custody/evidence must follow approved safe-continuity policy during SaaS subscription suspension; no silent access loss. Case `SIM-41`.
+- `KX-SIM-006` R1/R2: warehouse crossdock, executive scope, multi-provider selection, marketplace reputation, AI governance remain deferred. Cases `SIM-36..40`.
+
+**Blocked for implementation:** 12 business/legal/security `BLOCKER` findings must be resolved in their respective business actions; `R0-SAFETY` gaps must at least fail closed and preserve evidence. This does not mandate 33 new features. Existing 67 draft permissions remain canonical until reviewed. After approval derive `TDD-SIM-NNN` tests in unit, PostgreSQL RLS/Testcontainers, Modulith, HTTP/consumer and failure-recovery layers.
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.
