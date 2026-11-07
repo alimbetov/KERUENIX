@@ -90,3 +90,7 @@ See [19 — Architecture Hardening](19-architecture-hardening-priorities.md), [1
 ## 8. User Story Book → TDD input contract
 
 Use [21 — User Story Book](21-user-story-book.md) as source of actor-centered business scenarios. Only business-reviewed stories with tenant scope, main and negative flow, invariants and accepted `USB-*-AC-*` criteria can become `ACCEPTED_FOR_TDD`. Derive `TDD-USB-*` tests at unit, PostgreSQL concurrency/RLS and E2E levels as applicable. Draft stories are not executable specifications.
+
+## 9. Role and approval policy TDD traceability
+
+The first permission-driven TDD input is [22 — Role → Permission → Scope → Approval → Test](22-role-permission-scope-approval-matrix.md) and its [JSON](contracts/role-permission-scope-approval.v1.json). Map `AUTH-TEN-001..011` and `AUTH-COM-001..013` to tests after security/business acceptance. Red/Green/Refactor targets permission boundaries, SoD and quote version transitions, using actual Spring Security/tenant membership + PostgreSQL RLS integration where required. Compile-time MapStruct mapping cannot assign tenant, permissions or approval state from untrusted DTOs.
