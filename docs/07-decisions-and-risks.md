@@ -1,8 +1,20 @@
 # 07 — Open Decisions, Risks and Next Actions
 
-**Статус:** DISCOVERY · **Дата:** 07.11.2026. Все ADR-001…ADR-032 в `idea/11` остаются **PROPOSED**, если нет отдельного подписанного утверждения.
+**Статус:** DISCOVERY · **Дата:** 07.11.2026. Все ADR-001…ADR-035 в `idea/11` остаются **PROPOSED**, если нет отдельного подписанного утверждения.
 
 **Свежая оценка архитектурных и продуктовых рисков:** [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md). Он фиксирует блокеры и не означает их устранения.
+
+## Новое архитектурное решение — модульная стратегия
+
+**Рекомендуемый выбор (ещё не ACCEPTED):** один Spring Boot backend + Spring Modulith business modules для R0, впоследствии isolated background workers для GPS, routing, notifications. Сравнение альтернатив и критерии экстракции: [13 — Architecture Options](13-modular-architecture-options-v1.md). Декомпозиция и gate implementation: [14 — Delivery Blueprint](14-modular-delivery-blueprint.md).
+
+| Код | Что необходимо утвердить | Владелец |
+|---|---|---|
+| MOD-DEC-01 | Spring Modulith package-level, single Maven build для R0 или сразу Maven multi-module | Architect + backend lead |
+| MOD-DEC-02 | Границы Booking/Capacity (один атомарный владелец reservation) | Fleet + dispatch + architecture |
+| MOD-DEC-03 | Data ownership и tenancy/partner grants для внешних интеграций | Security + architect |
+| MOD-DEC-04 | Event publication/outbox delivery model и recovery | Platform/SRE |
+| MOD-DEC-05 | Условия выделения workers и автономная работа On-Prem | Platform + enterprise owner |
 
 ## Критические решения
 

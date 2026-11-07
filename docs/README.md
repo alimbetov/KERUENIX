@@ -19,6 +19,10 @@
 | 10 | [Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md) | Каковы команды, состояния, инварианты, согласования и исключения? | Proposed / review |
 | 11 | [Lifecycle Acceptance & Simulation](11-commercial-execution-acceptance-v1.md) | Как проверить коммерческий и операционный цикл? | Test plan |
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
+| 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
+| 14 | [Modular Delivery Blueprint](14-modular-delivery-blueprint.md) | Структура репозитория, PR срезы, контракты и qualification | Proposed |
+| JSON | [Module Boundaries v1](contracts/module-boundaries.v1.json) | Каталог модулей и разрешённых зависимостей (пока без кода) | Proposed |
+| 28 | [Modular Platform Idea](../idea/28-modular-platform-concept.md) | Модульные продуктовые пакеты и эволюция B → E | Idea |
 | JSON | [Lifecycle State Machines](contracts/commercial-execution-lifecycle.v1.json) | Машинно-читаемый контракт допустимых переходов (12 агрегатов) | Proposed |
 | 25 | [Сводка изменений идей v0.2](../idea/25-consolidation-v0.2.md) | Что уточнили и что ещё нужно доказать? | Draft |
 | 26 | [Lifecycle gaps and decisions](../idea/26-commercial-execution-lifecycle-risks.md) | Коммерческие риски, исключения и бизнес-вопросы | Proposed |

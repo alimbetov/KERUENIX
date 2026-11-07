@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PROPOSED_NOT_ENFORCED_IN_CODE",
+  "date": "2026-11-07",
+  "architecture": "Spring Modulith logical modules / single deployable business core",
+  "source": "docs/13-modular-architecture-options-v1.md",
+  "rules": [
+    "NO_CROSS_MODULE_INTERNAL_IMPORT",
+    "NO_CROSS_MODULE_REPOSITORY_OR_DIRECT_DB_WRITE",
+    "PUBLIC_API_AND_VERSIONED_EVENT_ONLY",
+    "TENANT_AUTH_REQUIRED_EVERY_COMMAND",
+    "NO_CYCLES",
+    "EXTERNAL_EVENTS_REQUIRES_DURABLE_DELIVERY"
+  ],
+  "modules": [
+    {
+      "id": "tenancy",
+      "phase": "R0",
+      "allowedDirectDependencies": [],
+      "owns": [
+        "Tenant",
+        "LegalEntity",
+        "Membership",
+        "PartnerGrant"
+      ],
+      "publicContracts": [
+        "AccessPolicyApi",
+        "TenantLookupApi"
+      ]
+    },
+    {
+      "id": "commercial",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy"
+      ],
+      "owns": [
+        "RFQ",
+        "QuoteVersion",
+        "CarrierOffer"
+      ],
+      "publicContracts": [
+        "CommercialApi",
+        "QuoteAccepted"
+      ]
+    },
+    {
+      "id": "fleet",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy"
+      ],
+      "owns": [
+        "VehicleCombination",
+        "Equipment",
+        "CapacityHold"
+      ],
+      "publicContracts": [
+        "FleetCapacityApi",
+        "CapacityConfirmed"
+      ]
+    },
+    {
+      "id": "cargo",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy"
+      ],
+      "owns": [
+        "CargoProfile",
+        "HandlingUnit",
+        "CargoClassification"
+      ],
+      "publicContracts": [
+        "CargoCatalogApi",
+        "CargoProfileApproved"
+      ]
+    },
+    {
+      "id": "compliance",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy"
+      ],
+      "owns": [
+        "ComplianceAssessment",
+        "RuleSetActivation"
+      ],
+      "publicContracts": [
+        "ComplianceApi",
+        "ComplianceDenied"
+      ]
+    },
+    {
+      "id": "booking",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "commercial",
+        "fleet",
+        "cargo",
+        "compliance"
+      ],
+      "owns": [
+        "Booking",
+        "ReservationOrchestration"
+      ],
+      "publicContracts": [
+        "BookingApi",
+        "BookingConfirmed"
+      ]
+    },
+    {
+      "id": "execution",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "booking",
+        "fleet",
+        "cargo",
+        "compliance"
+      ],
+      "owns": [
+        "Trip",
+        "TransportLeg",
+        "Shipment",
+        "CustodyHandover",
+        "DeliveryAttempt"
+      ],
+      "publicContracts": [
+        "ExecutionApi",
+        "ShipmentMilestoneRecorded"
+      ]
+    },
+    {
+      "id": "tracking",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "execution"
+      ],
+      "owns": [
+        "TrackingSnapshot",
+        "CustomerTrackingGrant"
+      ],
+      "publicContracts": [
+        "TrackingQueryApi"
+      ]
+    },
+    {
+      "id": "documents",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "execution"
+      ],
+      "owns": [
+        "DocumentPackageVersion",
+        "ProofDocument"
+      ],
+      "publicContracts": [
+        "DocumentApi"
+      ]
+    },
+    {
+      "id": "finance",
+      "phase": "R0",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "commercial",
+        "execution"
+      ],
+      "owns": [
+        "CostEstimate",
+        "Receivable",
+        "Payable",
+        "PaymentAllocation"
+      ],
+      "publicContracts": [
+        "FinanceApi",
+        "InvoiceIssued"
+      ]
+    },
+    {
+      "id": "optimization",
+      "phase": "R1",
+      "allowedDirectDependencies": [
+        "fleet",
+        "cargo",
+        "compliance"
+      ],
+      "owns": [
+        "OptimizationJob",
+        "OptimizationResult"
+      ],
+      "publicContracts": [
+        "FleetOptimizerPort"
+      ]
+    },
+    {
+      "id": "recovery",
+      "phase": "R1",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "booking",
+        "execution",
+        "fleet",
+        "compliance"
+      ],
+      "owns": [
+        "RecoveryCase",
+        "ReplacementOffer"
+      ],
+      "publicContracts": [
+        "RecoveryApi"
+      ]
+    },
+    {
+      "id": "warehouse",
+      "phase": "R1",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "cargo",
+        "compliance",
+        "execution"
+      ],
+      "owns": [
+        "WarehouseStockLedger",
+        "DockAppointment",
+        "StorageLocation"
+      ],
+      "publicContracts": [
+        "WarehouseApi"
+      ]
+    },
+    {
+      "id": "marketplace",
+      "phase": "R2",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "commercial",
+        "fleet",
+        "booking"
+      ],
+      "owns": [
+        "FreightListing",
+        "CapacityListing",
+        "MatchCandidate"
+      ],
+      "publicContracts": [
+        "LoadBoardApi"
+      ]
+    },
+    {
+      "id": "regulatory",
+      "phase": "R2",
+      "allowedDirectDependencies": [
+        "tenancy",
+        "compliance"
+      ],
+      "owns": [
+        "RegulatorySource",
+        "JurisdictionRuleSet"
+      ],
+      "publicContracts": [
+        "RegulatoryRegistryApi"
+      ]
+    },
+    {
+      "id": "saas-control",
+      "phase": "R1",
+      "allowedDirectDependencies": [
+        "tenancy"
+      ],
+      "owns": [
+        "Subscription",
+        "UsageMeter",
+        "TenantProvisioning"
+      ],
+      "publicContracts": [
+        "SaasControlApi"
+      ]
+    }
+  ]
+}

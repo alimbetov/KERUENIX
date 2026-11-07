@@ -38,6 +38,9 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-030 | Explicit commercial and execution lifecycles | Distinct RFQ, QuoteVersion, CarrierOffer, Reservation, Booking, Trip, Shipment, DeliveryAttempt, DocumentPackage, Invoice, AR and AP state machines | Real expeditor/finance/legal workshop and sign-off |
 | ADR-031 | State transition and event contract | Versioned machine-readable transitions with expectedVersion, idempotency, scoped auth, transactional outbox and compensations | Contract test implementation and exact-SHA CI |
 | ADR-032 | Operational vs financial close | Order operational closure derived from cargo disposition; financial closure derived from documents, invoices, payment allocations and claims | Accounting owner and contract approval |
+| ADR-033 | Logical modular monolith | Single Spring Boot runtime with Spring Modulith API/event boundaries and architecture tests for R0 | Implementation proof and domain-owner sign-off |
+| ADR-034 | Module vs artifact vs deployment | Prefer one Maven executable initially, separate Maven artifacts or services only by measured need | Complexity metrics and release cadence |
+| ADR-035 | Durable events and worker extraction | Local module event registry plus verified external outbox/inbox; GPS/optimizer workers only when justified | Failure/replay/load evidence |
 
 ## Questions to settle before code
 
