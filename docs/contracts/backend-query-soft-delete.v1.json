@@ -183,7 +183,7 @@
       {
         "method": "GET",
         "path": "/api/v1/customer/rfqs",
-        "permission": "customer:orders:list",
+        "permission": "customer:rfq:list",
         "pagination": "offset",
         "scope": "customer account + provider tenant"
       },
@@ -197,15 +197,16 @@
       {
         "method": "GET",
         "path": "/api/v1/customer/rfqs/{rfqId}",
-        "permission": "customer:orders:read",
+        "permission": "customer:rfq:read",
         "scope": "customer account + provider tenant"
       },
       {
         "method": "POST",
         "path": "/api/v1/customer/rfqs/{rfqId}/submit",
-        "permission": "customer:rfq:create",
+        "permission": "PENDING_SPECIFIC_RFQ_SUBMIT_POLICY",
         "idempotency": true,
-        "expectedVersion": true
+        "expectedVersion": true,
+        "status": "DESIGN_CANDIDATE_NOT_ACTIVE_UNTIL_PERMISSION_CONFIRMED"
       },
       {
         "method": "POST",
