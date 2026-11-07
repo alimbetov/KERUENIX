@@ -21,6 +21,8 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
+| 22 | [Role / Permission / Scope / Approval / TDD Matrix](22-role-permission-scope-approval-matrix.md) | Tenancy + Commercial: 24 policies, 24 planned test cases and approval boundaries | Design / business review |
+| JSON | [Role Permission Matrix v1](contracts/role-permission-scope-approval.v1.json) | Машинный контракт для policy/test traceability | Draft |
 | 21 | [User Story Book](21-user-story-book.md) | Роли, банк пользовательских сценариев, итерации, трассировка к TDD | Iteration 1 / Draft |
 | 20 | [MapStruct + TDD Engineering Standard](20-mapstruct-tdd-engineering-standard.md) | Compile-time DTO mapping, TDD, integration tests and quality gates | Engineering direction agreed / implementation pending |
 | 19 | [Architecture Hardening Priorities](19-architecture-hardening-priorities.md) | Correctness First, Operational Reliability, Intelligence Ready; requirements and delivery gates | Design agreed / implementation pending |
