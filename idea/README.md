@@ -26,6 +26,8 @@ KERUENIX — многоклиентская платформа управлен�
 | [13 — Deployment Models](13-deployment-models.md) | Cloud SaaS, Dedicated и Enterprise/On-Prem из одного кода |
 | [14 — Rescue Network](14-emergency-recovery-subcontracting.md) | Аварийный перехват груза, поиск замены и субподряд между компаниями |
 | [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md) | Автоматизация въезда, складского учёта, перегрузки, СВХ, ворот и отгрузки |
+| [16 — System Needs & Gap Analysis](16-system-needs-gap-analysis.md) | Системные потребности, разрывы бизнес-процессов, требования и приёмка |
+| [17 — Day-in-Life Simulation](17-forwarder-dispatcher-day-simulation.md) | Симуляция рабочего дня экспедитора, логиста, диспетчера и финансов |
 
 ## Неизменные правила дизайна
 

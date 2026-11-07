@@ -4,6 +4,9 @@
 
 ## Phase 0 — foundations and discovery
 
+**Needs-analysis gate:** before coding quote/booking workflows, qualify RFQ inputs, counterparty verification, contractual approval of changes, delivered-vs-invoiced-vs-paid states, and credit/cash exposure. The gaps and scenario acceptance are tracked in [16 — System Needs & Gap Analysis](16-system-needs-gap-analysis.md) and [17 — Day-in-Life Simulation](17-forwarder-dispatcher-day-simulation.md).
+
+
 Deliverables: customer interviews and workflow mapping; benchmark representative routes; tenant threat model; data catalog; agreed business glossary; architecture decision records; provider proof-of-concept; test sample of completed trips.
 
 **Gate:** two or more target companies validate workflows and are willing to participate in a pilot; validate availability of real traffic, GPS and rate inputs. If not, revise scope.

@@ -23,6 +23,8 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-017 | Emergency recovery and subcontract | Preserve the original order; create incident, approved replacement leg, scoped partner offer and cargo handover evidence | Carrier/insurer contract and operational pilot |
 | ADR-018 | Warehouse stock truth | Transactional stock ledger + balance/reservation constraints, independent cargo owner and custody | Multi-owner transit warehouse pilot |
 | ADR-019 | Yard/WMS/SVH boundaries | WMS+YMS interfaces in modular core, customs hold with verified release, hardware adapters | Warehouse operations and legal qualification |
+| ADR-020 | Commercial lifecycle | Separate RFQ, conditional quote, offer, confirmed booking, delivery, documents and finance states | Expeditor workshop and pilot |
+| ADR-021 | Financial exposure | Separate cost/margin from AR/AP, advances, credit limits and cash exposure; ERP can remain source of truth | Finance model and first-customer ERP integration |
 
 ## Questions to settle before code
 
