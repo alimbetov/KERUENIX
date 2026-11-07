@@ -41,11 +41,11 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         )
 
     def check_risk(self, road: dict) -> list[str]:
-        return module.audit_v12_pr_contract(
+        return module.audit_v13_pr_contract(
             road, self.case_ids, self.permissions, self.br_ids
         )
 
-    def test_current_contract_has_no_v12_risk_errors(self) -> None:
+    def test_current_contract_has_no_v13_risk_errors(self) -> None:
         self.assertEqual([], self.check_risk(self.roadmap))
 
     def test_unknown_critical_case_fails(self) -> None:
@@ -84,7 +84,7 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
                             for p in self.check_risk(road)))
 
     def test_current_markdown_pr_dag_matches_machine(self) -> None:
-        self.assertEqual([], module.audit_v12_markdown_pr_table(
+        self.assertEqual([], module.audit_v13_markdown_pr_table(
             self.roadmap, self.markdown
         ))
 
@@ -97,7 +97,7 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         )
         self.assertNotEqual(changed, self.markdown)
         self.assertTrue(any("PR-05: Markdown prerequisites differ" in p
-                            for p in module.audit_v12_markdown_pr_table(
+                            for p in module.audit_v13_markdown_pr_table(
                                 self.roadmap, changed
                             )))
 
