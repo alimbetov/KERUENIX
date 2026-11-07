@@ -265,7 +265,7 @@ src/test/java/kz/keruenix/
 **This is a proposed file layout, not existing files.** Actual package structure should follow module-owned Spring Modulith boundaries and the selected Maven organization.
 
 **Red → Green → Refactor first vertical slice:**
-1. Define `TDD-SIM-013-G01-02`: EXC Viewer cannot accept a customer quote; **RED** at policy/HTTP layer.
+1. Define `TDD-SIM-13-G01-02`: EXC Viewer cannot accept a customer quote; **RED** at policy/HTTP layer.
 2. Implement smallest `CommercialAuthorizationPolicy` and account grant checks, make test **GREEN** without bypassing RLS.
 3. Define `TDD-SIM-013-G01-03`: concurrent expiry vs acceptance, test real PostgreSQL version race.
 4. Repeat for `ExclusiveCapacityHoldIT`, `OfflinePickupReplayIT`, `CargoUnitConservationPropertyTest`, `VerifiedBankAllocationIdempotencyIT`.
