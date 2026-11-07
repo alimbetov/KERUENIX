@@ -12,6 +12,29 @@
 
 Customer users are not automatically tenant administrators. A platform operator has restricted support access, never permanent unrestricted visibility.
 
+## Platform Super Administrator and tenant administration — approved design direction
+
+**PLATFORM_SUPER_ADMIN** is a global *control-plane* principal maintained by KERUENIX platform governance, not a role inside a customer tenant. It can onboard/verify a tenant, provision its initial `TENANT_OWNER`, and, where required by a verified provisioning request, establish an initial `TENANT_ADMIN`. **After onboarding**, ordinary invitations/delegation and role assignments belong to `TENANT_OWNER` and `TENANT_ADMIN` subject to scoped delegability and separation of duties. Only `TENANT_OWNER` (or a specifically approved recovery process) may appoint further owners; tenant admin delegation cannot grant platform-level privileges.
+
+| Role | Identity boundary | Permitted role management | Explicit denial |
+|---|---|---|---|
+| `PLATFORM_SUPER_ADMIN` | KERUENIX control plane | Create/verify tenant, initialize/recover owner, optionally initialize tenant admin with recorded approval | No automatic tenant cargo, rates, GPS, payment, documents, or direct RLS bypass |
+| `TENANT_OWNER` | Verified tenant membership and organization authority | Appoint/revoke tenant admins, set bounded delegation, oversee owner transfer with approval | Cannot grant platform permissions or bypass tenant grants |
+| `TENANT_ADMIN` | Tenant/organization branch-scoped membership | Invite personnel and assign predefined roles within delegated permission set | Cannot elevate self, create owner/super-admin, see unrelated financial data by default |
+| `TENANT_USER` / domain persona | Scoped membership | Execute assigned capabilities | Cannot grant roles absent explicit delegated authority |
+
+**Bootstrap and recovery controls:**
+1. Initial `PLATFORM_SUPER_ADMIN` comes from secure platform bootstrap / break-glass procedure, never a public signup or self-assigned membership.
+2. `CreateTenant` and `AssignInitialTenantOwner` must be auditable, idempotent and transactionally consistent, with verified organization identity, intended owner's invitation/acceptance, and no orphan active tenant.
+3. Platform super-admin requires phishing-resistant MFA and least-privilege operator account; high-risk owner replacement/recovery should require independent approval (four-eyes), verified corporate evidence, immutable audit and timely notification to existing owners.
+4. Platform super-admin may provision an initial tenant admin **only if explicitly authorized**; normal admin appointment is managed by the tenant owner.
+5. All owner/admin invitations use bounded lifetime, one-time acceptance and revocation, with role assignments applied only after validated acceptance.
+6. Operations use restricted provisioning APIs and platform-owned tables. Tenant business data remains protected by DB RLS, service authorization and object-storage access broker. Never grant global DB superuser credentials to an interactive platform admin.
+7. Platform support impersonation is forbidden by default; any emergency customer-data access uses a separate approval, narrow scope, time limit and complete audit trail.
+8. Removal of the final active owner is prohibited unless a verified replacement owner transfer is atomically completed; recovery must be testable after loss of company admin access.
+
+See [User Story Book](../docs/21-user-story-book.md) and [requirements](../docs/04-requirements-traceability.md).
+
 ## Recommended tenancy model
 
 **Start:** PostgreSQL shared database / shared schema with a mandatory tenant_id on tenant-owned rows, composite tenant-aware keys and PostgreSQL Row Level Security (RLS) as defense in depth. Application authorization remains required. System dictionaries may be global read-only tables.
