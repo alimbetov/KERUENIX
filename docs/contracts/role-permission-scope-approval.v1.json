@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "status": "DRAFT_FOR_BUSINESS_AND_SECURITY_REVIEW",
   "date": "2026-11-07",
   "source": "docs/22-role-permission-scope-approval-matrix.md",
@@ -14,7 +14,8 @@
     "APR": "COMMERCIAL_APPROVER",
     "PRC": "CARRIER_PROCUREMENT_MANAGER",
     "CAR": "CARRIER_AUTHORIZED_MANAGER",
-    "FIN": "FINANCE_OFFICER"
+    "FIN": "FINANCE_OFFICER",
+    "EXC": "EXTERNAL_CUSTOMER_PORTAL"
   },
   "scopeDimensions": [
     "principalMembership",
@@ -38,7 +39,13 @@
     "All denial/default routes are audited where security critical",
     "Permissions are checked at execution time including jobs and downloads; revoke must terminate future authorized access",
     "Quote issued version is immutable; material revision is a new version",
-    "No business write is allowed across module-owned persistence through a shared mapper"
+    "No business write is allowed across module-owned persistence through a shared mapper",
+    "External customer identity is not a membership of provider tenant and cannot delegate staff/owner permissions",
+    "Customer access is explicitly scoped to provider tenant + customer relationship + exact RFQ/order/shipment/document and verified permissions",
+    "Tenant inbound RFQ queue is provider-owned while My Orders is customer-relationship filtered; no cross-customer list access",
+    "Customer tracking exposes only freshness-aware permission-filtered milestones/ETA and permitted evidence, never foreign GPS history or carrier purchase price",
+    "Review requires service completion evidence, verified reviewer relationship, dedup per eligible service and audit; public reputation publication is a separate later policy",
+    "Review eligibility derives from source-owned completion evidence/event and never from a stale UI status alone"
   ],
   "policyNotes": {
     "PLATFORM_ONBOARDING_CASE": "Verified onboarding request; control-plane identity separate from tenant business DB; audited idempotent create.",
@@ -47,7 +54,10 @@
     "OWN_SHIPPER_TENANT_OR_EXPLICIT_SUBMISSION_GRANT": "Shipper creates own RFQ or sends explicit request through approved B2B scope; acceptance occurs only by authorized shipper legal entity.",
     "EXACT_QUOTE_VERSION_FOR_AUTHORIZED_SHIPPER": "Customer grant is restricted to quote version and permitted customer-facing fields; foreign supplier buy-rate is hidden.",
     "ASSIGNED_CUSTOMER_IN_FORWARDER_TENANT": "Assignment/legal entity must be authorized; no cross-tenant read by passing foreign ID.",
-    "AUTHORIZED_FORWARDER_PROCUREMENT_SCOPE": "Carrier selection is an operational choice, not confirmation of CapacityReservation/Booking."
+    "AUTHORIZED_FORWARDER_PROCUREMENT_SCOPE": "Carrier selection is an operational choice, not confirmation of CapacityReservation/Booking.",
+    "EXTERNAL_CUSTOMER_PORTAL": "External portal identity with scoped customer-service relationship to provider tenant, not an internal tenant administrator or employee membership.",
+    "CUSTOMER_ACCOUNT_PROVIDER_TENANT_ALLOWED_ORDER_SET": "The provider owns order data; customer sees only authorized customer-side projection and exact eligible orders; mapping and RLS must enforce relationship.",
+    "COMPLETED_ELIGIBLE_SERVICE_FOR_CUSTOMER_ORDER": "Delivery/POD verified by execution source; commercial feedback eligibility derived from trusted event with dedup and replay protection."
   },
   "entries": [
     {
@@ -313,6 +323,138 @@
       "storyId": "USB-FIN-001",
       "acceptanceId": "AUTH-COM-013",
       "priority": "R0"
+    },
+    {
+      "id": "EXT-01",
+      "module": "Tenancy",
+      "roleTemplate": "EXC",
+      "permission": "customer:portal:activate",
+      "resourceScope": "PROVIDER_TENANT_CUSTOMER_RELATIONSHIP_AND_VERIFIED_INVITEE",
+      "approvalPolicy": "VERIFIED_IDENTITY_EXPLICIT_SERVICE_SCOPE_NO_INTERNAL_MEMBERSHIP",
+      "storyId": "USB-EXC-001",
+      "acceptanceId": "AUTH-EXT-001",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-02",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:rfq:create",
+      "resourceScope": "CUSTOMER_RELATIONSHIP_TO_EXACT_PROVIDER_TENANT",
+      "approvalPolicy": "ACTIVE_RELATIONSHIP_AND_COMPLETE_MINIMUM_RFQ_FIELDS",
+      "storyId": "USB-EXC-002",
+      "acceptanceId": "AUTH-EXT-002",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-03",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:orders:list",
+      "resourceScope": "CUSTOMER_ACCOUNT_PROVIDER_TENANT_ALLOWED_ORDER_SET",
+      "approvalPolicy": "ONLY_OWN_OR_CUSTOMER_ORGANIZATION_AUTHORIZED_ORDERS",
+      "storyId": "USB-EXC-003",
+      "acceptanceId": "AUTH-EXT-003",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-04",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:orders:read",
+      "resourceScope": "EXACT_CUSTOMER_ORDER_ID_AND_PROVIDER_TENANT",
+      "approvalPolicy": "NO_SUPPLIER_RATES_INTERNAL_MARGIN_OR_OTHER_CUSTOMERS",
+      "storyId": "USB-EXC-003",
+      "acceptanceId": "AUTH-EXT-004",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-05",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:quote:read",
+      "resourceScope": "CUSTOMER_AUTHORIZED_QUOTE_VERSION",
+      "approvalPolicy": "ONLY_CUSTOMER_FACING_TERMS_AND_CURRENT_OR_HISTORICAL_VERSIONS_AS_POLICY",
+      "storyId": "USB-EXC-004",
+      "acceptanceId": "AUTH-EXT-005",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-06",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:quote:accept",
+      "resourceScope": "EXACT_UNEXPIRED_QUOTE_VERSION_AND_CUSTOMER_SIGNATORY_SCOPE",
+      "approvalPolicy": "EXPLICIT_CUSTOMER_ACCEPTANCE_AUTHORITY_AND_IDEMPOTENCY_NOT_BOOKING",
+      "storyId": "USB-EXC-004",
+      "acceptanceId": "AUTH-EXT-006",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-07",
+      "module": "Tracking",
+      "roleTemplate": "EXC",
+      "permission": "customer:tracking:read",
+      "resourceScope": "AUTHORIZED_SHIPMENT_CUSTOMER_PROJECTION_AND_ACTIVE_GRANT",
+      "approvalPolicy": "FRESHNESS_WATERMARK_FIELD_FILTERING_NO_RAW_OTHER_PARTY_GPS",
+      "storyId": "USB-EXC-005",
+      "acceptanceId": "AUTH-EXT-007",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-08",
+      "module": "Documents",
+      "roleTemplate": "EXC",
+      "permission": "customer:pod:read",
+      "resourceScope": "AUTHORIZED_ORDER_DELIVERY_EVIDENCE_AND_DOCUMENT_SCOPE",
+      "approvalPolicy": "VERIFIED_DOC_AND_RIGHTS_CHECK_AT_DOWNLOAD_TIME",
+      "storyId": "USB-EXC-005",
+      "acceptanceId": "AUTH-EXT-008",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-09",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:review:submit",
+      "resourceScope": "COMPLETED_ELIGIBLE_SERVICE_FOR_CUSTOMER_ORDER",
+      "approvalPolicy": "VERIFIED_DELIVERY_EVIDENCE_SINGLE_REVIEW_PER_SERVICE_NO_SELF_REVIEW",
+      "storyId": "USB-EXC-006",
+      "acceptanceId": "AUTH-EXT-009",
+      "priority": "R0"
+    },
+    {
+      "id": "EXT-10",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:rfq:withdraw",
+      "resourceScope": "OWN_CUSTOMER_RFQ_IN_ALLOWED_PRECOMMIT_STATE",
+      "approvalPolicy": "NO_SILENT_CANCELLATION_AFTER_BINDING_ACCEPTANCE",
+      "storyId": "USB-EXC-007",
+      "acceptanceId": "AUTH-EXT-010",
+      "priority": "R0"
+    },
+    {
+      "id": "COM-14",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "rfq:inbox:read",
+      "resourceScope": "PROVIDER_TENANT_AND_ASSIGNED_INBOUND_RFQS",
+      "approvalPolicy": "SCOPED_CUSTOMER_QUEUE_NO_OTHER_TENANT_DATA",
+      "storyId": "USB-SAL-003",
+      "acceptanceId": "AUTH-COM-014",
+      "priority": "R0"
+    },
+    {
+      "id": "COM-15",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "review:respond",
+      "resourceScope": "PROVIDER_TENANT_VERIFIED_COMPLETED_SERVICE_REVIEW",
+      "approvalPolicy": "ONLY_PROVIDER_REPLY_NO_ALTER_OR_DELETE_CUSTOMER_REVIEW_AUDIT",
+      "storyId": "USB-SAL-004",
+      "acceptanceId": "AUTH-COM-015",
+      "priority": "R1"
     }
   ]
 }
