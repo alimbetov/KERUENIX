@@ -21,6 +21,9 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
+| 31 | [Unified API Errors — RFC 9457 / Global Handler](31-unified-error-handling-standard.md) | 21 stable codes, MVC + Spring Security + servlet fallback, async failure rules | Spec + Java bootstrap / CI pending |
+| JSON | [API Error Catalog v1](contracts/api-error-catalog.v1.json) | Machine-readable code/status/title/retryable registry | Design + reference enum |
+| Code | [Backend Java21 Error Bootstrap](../backend/README.md) | Spring Boot 4.1.2, ApiProblemFactory, handlers, fail-closed security and contract tests | Written / not qualified |
 | 30 | [Negative & Failure Scenario Bank](30-negative-and-failure-scenario-bank.md) | 48 new negative/fault tests with DB/outbox/UI assertions, 8 MIX cases | Designed / not executed |
 | JSON | [Negative Test Bank v1](contracts/r0-negative-scenarios.v1.json) | Machine-readable 48 risk-selected cases, linked to USB/SIM/GAP/test anchors | Designed |
 | 29 | [R0 Business Acceptance Workshop Kit](29-r0-business-acceptance-workshop-kit.md) | Five role/party workshop packets; signoff and evidence matrix for 12 blockers | Ready for review / no approvals |
