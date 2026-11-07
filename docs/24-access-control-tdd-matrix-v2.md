@@ -60,7 +60,7 @@ Data ownership: `Tenancy` secures identity and grants; `Commercial` owns custome
 
 Every row is **DRAFT**, test identifiers are planned. The `Approval / guard` column points to an immutable policy definition in §5 / JSON. A request with insufficient scope is denied even when a user holds the named role.
 
-### Tenancy + Platform Identity — 15 policies
+### Tenancy + Platform Identity — 16 policies
 
 | ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
 |---|---|---|---|---|---|
@@ -80,7 +80,9 @@ Every row is **DRAFT**, test identifiers are planned. The `Approval / guard` col
 | `SUP-01` | Platform Support | `platform:job:inspect` | `PLATFORM_JOB_METADATA_WITH_REDACTED_FIELDS` | `AP-PLATFORM-OBS` | `AUTH-SUP-001` |
 | `SUP-02` | Platform Support | `platform:job:retry` | `FAILED_JOB_AND_APPROVED_REPLAY_REQUEST` | `AP-JOB-REPLAY` | `AUTH-SUP-002` |
 
-### Commercial, Customer Portal and Reviews — 25 policies
+| `TEN-12` | Tenant Admin | `tenant:customeraccount:invite` | `AUTHORIZED_PROVIDER_TENANT_CUSTOMER_ORGANIZATION_AND_VERIFIED_INVITEE` | `AP-CUSTOMER-RELATION` | `AUTH-TEN-012` |
+
+### Commercial, Customer Portal and Reviews — 26 policies
 
 | ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
 |---|---|---|---|---|---|
@@ -109,6 +111,8 @@ Every row is **DRAFT**, test identifiers are planned. The `Approval / guard` col
 | `EXT-11` | External Customer | `customer:review:read` | `VERIFIED_CUSTOMER_ACCOUNT_EXACT_SERVICE` | `AP-SCOPED-READ` | `AUTH-EXT-011` |
 | `EXT-13` | External Customer | `customer:order:cancel_request` | `OWN_CONFIRMED_BOOKING_CUSTOMER_PROJECTION` | `AP-BOOKING` | `AUTH-EXT-013` |
 | `COM-16` | Commercial Approver | `quote:approval:withdraw` | `AUTHORED_APPROVAL_FOR_SAME_VERSION` | `AP-COM-EXCEPTION` | `AUTH-COM-016` |
+
+| `COM-17` | Sales/Expeditor | `review:provider:read` | `AUTHORIZED_PROVIDER_TENANT_CUSTOMER_SERVICE_REVIEW` | `AP-SCOPED-READ` | `AUTH-COM-017` |
 
 ### Fleet / Capacity — 2 policies
 
@@ -197,7 +201,7 @@ For small companies with one employee: ordinary within-limit transactions can pr
 
 **Revocation:** deny future protected reads immediately at server authorization boundary after confirmed revoke. Be honest about previously issued presigned RustFS URLs: they may survive until TTL unless access is proxied and continuously checked. Cache keys and all derived projections include enough customer/provider/permission scope; revoke blocks stale cached authorizations, not merely invalidates a user’s displayed UI.
 
-## 7. Planned TDD adversarial suite — 16 high-risk tests
+## 7. Planned TDD adversarial suite — 18 high-risk tests
 
 Each policy row additionally maps to its own `AUTH-...` acceptance ID. The following are required *cross-cutting* negative and race tests. They are **not currently executed**.
 
@@ -219,6 +223,9 @@ Each policy row additionally maps to its own `AUTH-...` acceptance ID. The follo
 | `AUTH-X-014` | internal event handler acts under absent tenant context | fail closed, no cross-tenant writes | Job+Modulith+RLS |
 | `AUTH-X-015` | provider grants EXC to wrong customer org across shared email domain | scope verified by explicit invited identity and org mapping; no domain-based autojoin | HTTP+PostgreSQL |
 | `AUTH-X-016` | quote acceptance / booking / review confuse lifecycle projections | no accepted quote implies booking; GPS not POD; delivery not payment | Module integration+E2E |
+
+| `AUTH-X-017` | Provider admin invites buyer without verifying their customer organization | DENY; no implicit provider employee membership | HTTP+PostgreSQL |
+| `AUTH-X-018` | Sales user of Tenant-A tries to read review belonging to Tenant-B | DENY; provider and review scope enforced | HTTP+RLS |
 
 **Test implementation rule:** unit TDD for pure authorization/approval decision and state guards; real PostgreSQL/Testcontainers/RLS for tenant and customer-account isolation, race/unique/row locks; HTTP authorization tests for external customer and provider workspaces; module tests for Outbox and ownership boundaries; end-to-end 2 provider/customer organizations for the full RFQ → Quote → Booking → POD → Review path. Trace `USB-... → KX-... → policyId → AUTH-... → JUnit/SQL case → exact SHA and CI`.
 
