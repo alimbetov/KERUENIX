@@ -184,3 +184,7 @@ Follow [19 — Architecture Hardening Priorities](19-architecture-hardening-prio
 ## Engineering baseline — MapStruct and test-driven development
 
 Apply [20 — MapStruct + TDD Engineering Standard](20-mapstruct-tdd-engineering-standard.md) for all 17 existing modules. MapStruct is the default for nontrivial module-owned DTO mappings, with explicit sensitive fields and strict compile-time unmapped-target checking; simple constructor mapping is acceptable. Test new high-risk domain rules with Red → Green → Refactor and real PostgreSQL/Testcontainers for JDBC/RLS/concurrency. Foundation CI must include JUnit 5, Spring Modulith verification, Flyway integration tests, JaCoCo reports, and exact-SHA qualification. Do not conflate mapped DTOs with authorized domain commands or promise correctness based on coverage alone.
+
+## Role-based User Story Book adoption
+
+Develop [21 — User Story Book](21-user-story-book.md) in several passes: R0 actors and story seeds; commercial/booking; execution/POD; finance/tenancy/operations; later roles; approved scenarios → TDD tests. Keep `USB-*` story IDs stable and link `KX-*`, `LFC-*`, `ENG-*`. Do not add business modules or inflate R0 scope. Each implementation slice references reviewed user outcomes and adversarial/security acceptance.
