@@ -88,6 +88,34 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
             self.roadmap, self.markdown
         ))
 
+    def test_commercial_account_onboarding_requires_role_ui(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-03C")[
+            "uiAcceptance"
+        ]["required"] = False
+        self.assertTrue(any("PR-03C" in p for p in self.check_risk(road)))
+
+    def test_bank_settlement_requires_business_gate(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-17S")[
+            "activationGate"
+        ]["mode"] = "NOT_A_REAL_GATE"
+        self.assertTrue(any("PR-17S" in p for p in self.check_risk(road)))
+
+    def test_suffixed_commercial_account_pr_dependency_is_checked(self) -> None:
+        q = chr(96)
+        original = f"| {q}PR-03{q} | {q}RD-02{q} | {q}tenancy{q} | {q}PR-03C{q} |"
+        changed = self.markdown.replace(
+            original,
+            f"| {q}PR-03{q} | {q}RD-02{q} | {q}tenancy{q} | {q}PR-02{q} |",
+            1
+        )
+        self.assertNotEqual(changed, self.markdown)
+        self.assertTrue(any("PR-03: Markdown prerequisites differ" in p
+                            for p in module.audit_v13_markdown_pr_table(
+                                self.roadmap, changed
+                            )))
+
     def test_wrong_markdown_pr_prerequisite_fails(self) -> None:
         q = chr(96)
         changed = self.markdown.replace(
