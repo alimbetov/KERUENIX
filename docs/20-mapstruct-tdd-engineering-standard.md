@@ -94,3 +94,7 @@ Use [21 — User Story Book](21-user-story-book.md) as source of actor-centered 
 ## 9. Role and approval policy TDD traceability
 
 The first permission-driven TDD input is [22 — Role → Permission → Scope → Approval → Test](22-role-permission-scope-approval-matrix.md) and its [JSON](contracts/role-permission-scope-approval.v1.json). Map `AUTH-TEN-001..011` and `AUTH-COM-001..013` to tests after security/business acceptance. Red/Green/Refactor targets permission boundaries, SoD and quote version transitions, using actual Spring Security/tenant membership + PostgreSQL RLS integration where required. Compile-time MapStruct mapping cannot assign tenant, permissions or approval state from untrusted DTOs.
+
+## 10. Access Governance v2 test-first specification
+
+[24 — Reworked Roles / Scope / Approval / TDD](24-access-control-tdd-matrix-v2.md) and [v2 JSON](contracts/access-policy-matrix.v2.json) replace v1 as the source for new access policy TDD. The design defines 55 draft `AUTH-*` policy acceptances and 16 independent `AUTH-X-*` adversarial cases. First implement pure guard and approval logic using Red → Green → Refactor, then prove effective `CustomerAccount`/tenant/PartnerGrant scoping through Spring Security HTTP, PostgreSQL RLS/Testcontainers, async jobs, cache revocation and exact-SHA E2E tests. Preserve all prior IDs; no executed test status is implied.
