@@ -227,7 +227,7 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 
 **`KX-ERR-003` P0:** Domain guards, idempotency and concurrency failures are typed. Known optimistic lock -> 409; unknown SQL/RLS/DataIntegrityException must not be blanket-mapped to 409 or 403. Async work gets internal retry/quarantine/reconciliation classification; no leaking HTTP ProblemDetail into event streams.
 
-**`KX-ERR-004` P0:** Negative tests `ERR-001..012` must verify 401/403/404, 400 validation, 405/415 headers, 409 version conflict, safe 500, requestId propagation and no false DB/Outbox/UI state. First [backend error-only Java21 scaffold](../backend/README.md) and [CI workflow](../.github/workflows/backend-error-contract.yml) are committed; they are **not yet built or qualified on exact SHA**. These requirements do not mean 132 domain TDD cases were executed.
+**`KX-ERR-004` P0:** Negative tests `ERR-001..012` must verify 401/403/404, 400 validation, 405/415 headers, 409 version conflict, safe 500, requestId propagation and no false DB/Outbox/UI state. First [backend error-only Java21 scaffold](../backend/README.md) and [CI workflow](../.github/workflows/backend-error-contract.yml) are committed; initial 13 handler contract tests passed on commit `0117f8dc`; newer revisions must pass their own exact-SHA CI. These requirements do not mean 132 domain TDD cases were executed.
 
 ## Acceptance status
 
