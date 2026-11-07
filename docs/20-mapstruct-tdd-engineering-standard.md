@@ -97,4 +97,8 @@ The first permission-driven TDD input is [22 — Role → Permission → Scope �
 
 ## 10. Access Governance v2 test-first specification
 
-[24 — Reworked Roles / Scope / Approval / TDD](24-access-control-tdd-matrix-v2.md) and [v2 JSON](contracts/access-policy-matrix.v2.json) replace v1 as the source for new access policy TDD. The design defines 57 draft `AUTH-*` policy acceptances and 18 independent `AUTH-X-*` adversarial cases. First implement pure guard and approval logic using Red → Green → Refactor, then prove effective `CustomerAccount`/tenant/PartnerGrant scoping through Spring Security HTTP, PostgreSQL RLS/Testcontainers, async jobs, cache revocation and exact-SHA E2E tests. Preserve all prior IDs; no executed test status is implied.
+[24 — Reworked Roles / Scope / Approval / TDD](24-access-control-tdd-matrix-v2.md) and [v2 JSON](contracts/access-policy-matrix.v2.json) replace v1 as the source for new access policy TDD. The design defines 67 draft `AUTH-*` policy acceptances and 27 independent `AUTH-X-*` adversarial cases. First implement pure guard and approval logic using Red → Green → Refactor, then prove effective `CustomerAccount`/tenant/PartnerGrant scoping through Spring Security HTTP, PostgreSQL RLS/Testcontainers, async jobs, cache revocation and exact-SHA E2E tests. Preserve all prior IDs; no executed test status is implied.
+
+## 11. Second security audit test selection
+
+The current authorization design contract is v2.1. Start Red/Green/Refactor by proving read-only permission cannot call Quote decline, EXC viewer cannot sign, foreign CustomerAccount cannot list RFQ/orders, and concurrent incoming RFQ assignment respects expectedVersion. Then add Testcontainers RLS for composed portal reads, booking cancellation request state separation, membership revoke isolation, and verified Finance payment reconciliation. See `AUTH-X-019..027` in [24](24-access-control-tdd-matrix-v2.md). These are **planned tests** only, not passing CI.
