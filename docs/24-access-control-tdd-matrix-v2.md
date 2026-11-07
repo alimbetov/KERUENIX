@@ -1,6 +1,6 @@
-# 24 — KERUENIX Access Governance v2: Roles, Scopes, Approvals & TDD
+# 24 — KERUENIX Access Governance v2.1: Roles, Scopes, Approvals & TDD
 
-**Version:** 2.0.0 · **Date:** 2026-11-07 · **Status:** DESIGN REVIEW / NOT IMPLEMENTED. **Machine contract:** [access-policy-matrix.v2.json](contracts/access-policy-matrix.v2.json). **Supersedes:** [v1 matrix](22-role-permission-scope-approval-matrix.md) and [v1 JSON](contracts/role-permission-scope-approval.v1.json) for future design decisions; v1 remains available for historical traceability. No existing implemented code was migrated.
+**Version:** 2.1.0 · **Date:** 2026-11-07 · **Status:** DESIGN REVIEW / NOT IMPLEMENTED. **Machine contract:** [access-policy-matrix.v2.json](contracts/access-policy-matrix.v2.json). **Supersedes:** [v1 matrix](22-role-permission-scope-approval-matrix.md) and [v1 JSON](contracts/role-permission-scope-approval.v1.json) for future design decisions; v1 remains available for historical traceability. No existing implemented code was migrated.
 
 ## 1. Executive re-audit
 
@@ -58,16 +58,16 @@ Data ownership: `Tenancy` secures identity and grants; `Commercial` owns custome
 
 ## 4. Canonical Role → Permission → Resource Scope → Policy → TDD matrix
 
-Every row is **DRAFT**, test identifiers are planned. The `Approval / guard` column points to an immutable policy definition in §5 / JSON. A request with insufficient scope is denied even when a user holds the named role.
+**67 policies — draft, all entries machine-readable.** This is a policy candidate, not an automatic role grant. In particular `CustomerPortalApi` and `PlatformJobs` are technical surfaces, **not** new business modules. All listed permissions require active assignment, relationship and resource guard. Writes remain owned by their domain.
 
-### Tenancy + Platform Identity — 16 policies
+### Tenancy + platform identity — 16 policies
 
-| ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
-| `TEN-01` | Super Admin | `platform:tenant:create` | `PLATFORM_ONBOARDING_CASE` | `AP-PLAT-ONBOARD` | `AUTH-TEN-001` |
-| `TEN-02` | Super Admin | `platform:owner:bootstrap` | `PENDING_TENANT_AND_VERIFIED_INVITEE` | `AP-PLAT-ONBOARD` | `AUTH-TEN-002` |
-| `TEN-03` | Super Admin | `platform:admin:bootstrap` | `PENDING_TENANT_AND_VERIFIED_INVITEE` | `AP-PLAT-ONBOARD` | `AUTH-TEN-003` |
-| `TEN-04` | Super Admin | `platform:owner:recover` | `VERIFIED_INCIDENT_AND_TARGET_TENANT` | `AP-PLAT-RECOVERY` | `AUTH-TEN-004` |
+| `TEN-01` | Platform Super Admin | `platform:tenant:create` | `PLATFORM_ONBOARDING_CASE` | `AP-PLAT-ONBOARD` | `AUTH-TEN-001` |
+| `TEN-02` | Platform Super Admin | `platform:owner:bootstrap` | `PENDING_TENANT_AND_VERIFIED_INVITEE` | `AP-PLAT-ONBOARD` | `AUTH-TEN-002` |
+| `TEN-03` | Platform Super Admin | `platform:admin:bootstrap` | `PENDING_TENANT_AND_VERIFIED_INVITEE` | `AP-PLAT-ONBOARD` | `AUTH-TEN-003` |
+| `TEN-04` | Platform Super Admin | `platform:owner:recover` | `VERIFIED_INCIDENT_AND_TARGET_TENANT` | `AP-PLAT-RECOVERY` | `AUTH-TEN-004` |
 | `TEN-05` | Tenant Owner | `tenant:admin:appoint` | `OWN_ACTIVE_TENANT_LEGAL_ENTITY` | `AP-TEN-DELEGATION` | `AUTH-TEN-005` |
 | `TEN-06` | Tenant Owner | `tenant:owner:transfer` | `OWN_ACTIVE_TENANT_LEGAL_ENTITY` | `AP-TEN-DELEGATION` | `AUTH-TEN-006` |
 | `TEN-07` | Tenant Admin | `tenant:member:invite` | `DELEGATED_TENANT_LEGAL_ENTITY_BRANCH` | `AP-TEN-DELEGATION` | `AUTH-TEN-007` |
@@ -76,15 +76,14 @@ Every row is **DRAFT**, test identifiers are planned. The `Approval / guard` col
 | `TEN-10` | Tenant Owner | `tenant:partnergrant:manage` | `AUTHORIZED_SHIPMENT_AND_PARTNER_SCOPE` | `AP-TEN-DELEGATION` | `AUTH-TEN-010` |
 | `TEN-11` | Tenant Admin | `tenant:partnergrant:revoke` | `DELEGATED_SHIPMENT_PARTNER_SCOPE` | `AP-TEN-DELEGATION` | `AUTH-TEN-011` |
 | `EXT-01` | External Customer | `customer:portal:activate` | `PROVIDER_TENANT_CUSTOMER_RELATIONSHIP_AND_VERIFIED_INVITEE` | `AP-CUSTOMER-RELATION` | `AUTH-EXT-001` |
-| `EXT-12` | External Customer | `customer:access:revoke` | `OWN_CUSTOMER_ACCOUNT_GRANT` | `AP-CUSTOMER-RELATION` | `AUTH-EXT-012` |
-| `SUP-01` | Platform Support | `platform:job:inspect` | `PLATFORM_JOB_METADATA_WITH_REDACTED_FIELDS` | `AP-PLATFORM-OBS` | `AUTH-SUP-001` |
-| `SUP-02` | Platform Support | `platform:job:retry` | `FAILED_JOB_AND_APPROVED_REPLAY_REQUEST` | `AP-JOB-REPLAY` | `AUTH-SUP-002` |
-
+| `EXT-12` | External Customer | `customer:access:revoke_self` | `EXACT_OWN_CUSTOMER_ACCOUNT_MEMBERSHIP_ONLY` | `AP-CUSTOMER-SELF-REVOKE` | `AUTH-EXT-012` |
 | `TEN-12` | Tenant Admin | `tenant:customeraccount:invite` | `AUTHORIZED_PROVIDER_TENANT_CUSTOMER_ORGANIZATION_AND_VERIFIED_INVITEE` | `AP-CUSTOMER-RELATION` | `AUTH-TEN-012` |
+| `TEN-13` | Tenant Admin | `tenant:customeraccount:member:revoke` | `PROVIDER_TENANT_CUSTOMER_ACCOUNT_EXACT_MEMBER_SCOPE` | `AP-CUSTOMER-RELATION` | `AUTH-TEN-013` |
+| `TEN-14` | Tenant Owner | `tenant:customerrelationship:suspend` | `PROVIDER_TENANT_VERIFIED_CUSTOMER_ORGANIZATION` | `AP-CUSTOMER-RELATION-SUSPEND` | `AUTH-TEN-014` |
 
-### Commercial, Customer Portal and Reviews — 26 policies
+### Commercial, RFQ and feedback — 29 policies
 
-| ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
 | `COM-01` | Shipper signatory | `rfq:create` | `OWN_SHIPPER_TENANT_OR_EXPLICIT_SUBMISSION_GRANT` | `AP-RFQ` | `AUTH-COM-001` |
 | `COM-02` | Shipper signatory | `rfq:amend_draft` | `OWN_RFQ_ALLOWED_EDITABLE_STATE` | `AP-RFQ` | `AUTH-COM-002` |
@@ -93,75 +92,94 @@ Every row is **DRAFT**, test identifiers are planned. The `Approval / guard` col
 | `COM-05` | Sales/Expeditor | `quote:issue` | `ASSIGNED_QUOTE_VERSION_AND_LEGAL_ENTITY` | `AP-COM-ISSUE` | `AUTH-COM-005` |
 | `COM-06` | Commercial Approver | `quote:approve_exception` | `AUTHORIZED_FORWARDER_LEGAL_ENTITY_AND_LIMIT` | `AP-COM-EXCEPTION` | `AUTH-COM-006` |
 | `COM-07` | Shipper signatory | `quote:accept` | `EXACT_QUOTE_VERSION_FOR_AUTHORIZED_SHIPPER` | `AP-COM-CUSTOMER-ACCEPT` | `AUTH-COM-007` |
-| `COM-08` | Shipper signatory | `quote:decline` | `EXACT_QUOTE_VERSION_FOR_AUTHORIZED_SHIPPER` | `AP-SCOPED-READ` | `AUTH-COM-008` |
+| `COM-08` | Shipper signatory | `quote:decline` | `EXACT_QUOTE_VERSION_FOR_AUTHORIZED_SHIPPER` | `AP-QUOTE-DECLINE` | `AUTH-COM-008` |
 | `COM-09` | Carrier Procurement | `carrier_offer:request` | `AUTHORIZED_FORWARDER_RFQ_AND_VERIFIED_PARTNER` | `AP-COM-PROCUREMENT` | `AUTH-COM-009` |
 | `COM-10` | Carrier Manager | `carrier_offer:submit` | `OWN_CARRIER_TENANT_AND_EXPLICIT_REQUEST_GRANT` | `AP-COM-PROCUREMENT` | `AUTH-COM-010` |
 | `COM-11` | Carrier Procurement | `carrier_offer:select` | `AUTHORIZED_FORWARDER_PROCUREMENT_SCOPE` | `AP-COM-PROCUREMENT` | `AUTH-COM-011` |
 | `COM-12` | Sales/Expeditor | `quote:revise` | `OWN_ISSUED_QUOTE_CONTEXT` | `AP-COM-ISSUE` | `AUTH-COM-012` |
 | `COM-13` | Finance Officer | `commercial:margin:read` | `OWN_FORWARDER_LEGAL_ENTITY_FINANCIAL_SCOPE` | `AP-COM-MARGIN` | `AUTH-COM-013` |
 | `EXT-02` | External Customer | `customer:rfq:create` | `CUSTOMER_RELATIONSHIP_TO_EXACT_PROVIDER_TENANT` | `AP-RFQ` | `AUTH-EXT-002` |
-| `EXT-03` | External Customer | `customer:orders:list` | `CUSTOMER_ACCOUNT_PROVIDER_TENANT_ALLOWED_ORDER_SET` | `AP-SCOPED-READ` | `AUTH-EXT-003` |
-| `EXT-04` | External Customer | `customer:orders:read` | `EXACT_CUSTOMER_ORDER_ID_AND_PROVIDER_TENANT` | `AP-SCOPED-READ` | `AUTH-EXT-004` |
 | `EXT-05` | External Customer | `customer:quote:read` | `CUSTOMER_AUTHORIZED_QUOTE_VERSION` | `AP-SCOPED-READ` | `AUTH-EXT-005` |
 | `EXT-06` | External Customer | `customer:quote:accept` | `EXACT_UNEXPIRED_QUOTE_VERSION_AND_CUSTOMER_SIGNATORY_SCOPE` | `AP-COM-CUSTOMER-ACCEPT` | `AUTH-EXT-006` |
 | `EXT-09` | External Customer | `customer:review:submit` | `COMPLETED_ELIGIBLE_SERVICE_FOR_CUSTOMER_ORDER` | `AP-CUSTOMER-REVIEW` | `AUTH-EXT-009` |
 | `EXT-10` | External Customer | `customer:rfq:withdraw` | `OWN_CUSTOMER_RFQ_IN_ALLOWED_PRECOMMIT_STATE` | `AP-RFQ` | `AUTH-EXT-010` |
-| `COM-14` | Sales/Expeditor | `rfq:inbox:read` | `PROVIDER_TENANT_AND_ASSIGNED_INBOUND_RFQS` | `AP-SCOPED-READ` | `AUTH-COM-014` |
+| `COM-14` | Sales/Expeditor | `rfq:inbox:read` | `PROVIDER_TENANT_ALLOWED_BRANCH_TEAM_INBOX_INCLUDING_UNASSIGNED_RFQ` | `AP-SCOPED-READ` | `AUTH-COM-014` |
 | `COM-15` | Sales/Expeditor | `review:respond` | `PROVIDER_TENANT_VERIFIED_COMPLETED_SERVICE_REVIEW` | `AP-CUSTOMER-REVIEW` | `AUTH-COM-015` |
 | `EXT-11` | External Customer | `customer:review:read` | `VERIFIED_CUSTOMER_ACCOUNT_EXACT_SERVICE` | `AP-SCOPED-READ` | `AUTH-EXT-011` |
-| `EXT-13` | External Customer | `customer:order:cancel_request` | `OWN_CONFIRMED_BOOKING_CUSTOMER_PROJECTION` | `AP-BOOKING` | `AUTH-EXT-013` |
 | `COM-16` | Commercial Approver | `quote:approval:withdraw` | `AUTHORED_APPROVAL_FOR_SAME_VERSION` | `AP-COM-EXCEPTION` | `AUTH-COM-016` |
-
 | `COM-17` | Sales/Expeditor | `review:provider:read` | `AUTHORIZED_PROVIDER_TENANT_CUSTOMER_SERVICE_REVIEW` | `AP-SCOPED-READ` | `AUTH-COM-017` |
+| `EXT-14` | External Customer | `customer:rfq:list` | `AUTHORIZED_PROVIDER_AND_EXACT_CUSTOMER_ACCOUNT_RFQ_SET` | `AP-SCOPED-READ` | `AUTH-EXT-014` |
+| `EXT-15` | External Customer | `customer:rfq:read` | `AUTHORIZED_EXACT_RFQ_AND_CUSTOMER_ACCOUNT` | `AP-SCOPED-READ` | `AUTH-EXT-015` |
+| `COM-18` | Sales/Expeditor | `rfq:inbox:assign` | `PROVIDER_TENANT_ALLOWED_BRANCH_TEAM_RFQ` | `AP-RFQ-ASSIGN` | `AUTH-COM-018` |
+| `COM-19` | Sales/Expeditor | `rfq:request_clarification` | `AUTHORIZED_ASSIGNED_RFQ_PROVIDER` | `AP-RFQ` | `AUTH-COM-019` |
+| `EXT-16` | External Customer | `customer:issue:report` | `OWN_ACTIVE_CUSTOMER_ORDER_AND_SERVICE_REF` | `AP-CUSTOMER-ISSUE` | `AUTH-EXT-016` |
+| `EXT-17` | External Customer | `customer:issue:read` | `EXACT_OWN_CUSTOMER_ISSUE_REF` | `AP-SCOPED-READ` | `AUTH-EXT-017` |
 
-### Fleet / Capacity — 2 policies
+### Customer Portal API composition (technical facade) — 2 policies
 
-| ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
+|---|---|---|---|---|---|
+| `EXT-03` | External Customer | `customer:orders:list` | `CUSTOMER_ACCOUNT_PROVIDER_TENANT_ALLOWED_ORDER_SET` | `AP-SCOPED-READ` | `AUTH-EXT-003` |
+| `EXT-04` | External Customer | `customer:orders:read` | `EXACT_CUSTOMER_ORDER_ID_AND_PROVIDER_TENANT` | `AP-SCOPED-READ` | `AUTH-EXT-004` |
+
+### Fleet and capacity — 2 policies
+
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
 | `FLT-01` | Planner | `fleet:capacity:hold` | `ASSIGNED_VEHICLE_AND_TENANT_LEGAL_ENTITY_WINDOW` | `AP-FLEET-RESERVATION` | `AUTH-FLT-001` |
 | `FLT-02` | Carrier Manager | `fleet:capacity:confirm` | `OWN_CARRIER_RESOURCE_AND_ACTIVE_PARTNER_AGREEMENT` | `AP-FLEET-RESERVATION` | `AUTH-FLT-002` |
 
-### Booking / Reservation confirmation — 2 policies
+### Booking and cancellation — 4 policies
 
-| ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
+| `EXT-13` | External Customer | `customer:order:cancel_request` | `OWN_CONFIRMED_BOOKING_CUSTOMER_PROJECTION` | `AP-BOOKING-CANCEL-REQUEST` | `AUTH-EXT-013` |
 | `BKG-01` | Dispatcher | `booking:confirm` | `ASSIGNED_BOOKING_OWN_PROVIDER_TENANT` | `AP-BOOKING` | `AUTH-BKG-001` |
 | `BKG-02` | Dispatcher | `booking:cancel` | `ASSIGNED_BOOKING_OWN_PROVIDER_TENANT` | `AP-BOOKING` | `AUTH-BKG-002` |
+| `BKG-03` | Dispatcher | `booking:cancel_request:review` | `OWN_PROVIDER_TENANT_BOOKING_AND_AUTHORIZED_ASSIGNEE` | `AP-BOOKING-CANCEL-REQUEST` | `AUTH-BKG-003` |
 
-### Execution, custody and POD — 3 policies
+### Execution and POD — 3 policies
 
-| ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
 | `EXE-01` | Dispatcher | `trip:assign` | `ASSIGNED_PROVIDER_TRIP_AND_DRIVER` | `AP-TRIP` | `AUTH-EXE-001` |
 | `EXE-02` | Driver | `pickup:confirm` | `EXACT_ASSIGNED_TRIP_CARGO_UNITS` | `AP-CUSTODY` | `AUTH-EXE-002` |
-| `EXE-03` | Receiver | `pod:submit` | `EXACT_DELIVERY_ATTEMPT_AND_AUTHORIZED_RECEIVER` | `AP-POD` | `AUTH-EXE-003` |
+| `EXE-03` | Consignee | `pod:submit` | `EXACT_DELIVERY_ATTEMPT_AND_AUTHORIZED_RECEIVER` | `AP-POD` | `AUTH-EXE-003` |
 
-### Tracking projection — 2 policies
+### Tracking — 2 policies
 
-| ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
 | `EXT-07` | External Customer | `customer:tracking:read` | `AUTHORIZED_SHIPMENT_CUSTOMER_PROJECTION_AND_ACTIVE_GRANT` | `AP-SCOPED-READ` | `AUTH-EXT-007` |
 | `TRK-01` | Dispatcher | `tracking:provider:read` | `ASSIGNED_PROVIDER_SHIPMENT` | `AP-SCOPED-READ` | `AUTH-TRK-001` |
 
-### Documents and POD evidence — 3 policies
+### Documents — 3 policies
 
-| ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
 | `EXT-08` | External Customer | `customer:pod:read` | `AUTHORIZED_ORDER_DELIVERY_EVIDENCE_AND_DOCUMENT_SCOPE` | `AP-DOCUMENT` | `AUTH-EXT-008` |
 | `DOC-01` | Document Controller | `document:verify` | `OWN_PROVIDER_DOCUMENT_PACKAGE_AND_VERSION` | `AP-DOCUMENT` | `AUTH-DOC-001` |
 | `DOC-02` | External Customer | `customer:document:list` | `CUSTOMER_ACCOUNT_AND_AUTHORIZED_ORDER_PACKAGE` | `AP-DOCUMENT` | `AUTH-DOC-002` |
 
-### Finance-lite — 3 policies
+### Finance-lite — 4 policies
 
-| ID | Role template | Permission | Resource scope | Guard / approval | Acceptance |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
 | `FIN-01` | Finance Officer | `invoice:prepare` | `OWN_PROVIDER_LEGAL_ENTITY_AND_AUTHORIZED_ORDER` | `AP-FINANCE-PREP` | `AUTH-FIN-001` |
 | `FIN-02` | Finance Officer | `payment:prepare` | `OWN_PROVIDER_PAYABLE_AND_APPROVED_EVIDENCE` | `AP-FINANCE-PREP` | `AUTH-FIN-002` |
 | `FIN-03` | Finance Approver | `payment:approve` | `OWN_PROVIDER_LEGAL_ENTITY_AMOUNT_LIMIT_AND_PAYABLE` | `AP-FINANCE` | `AUTH-FIN-003` |
+| `FIN-04` | Finance Officer | `finance:payment:reconcile` | `OWN_PROVIDER_LEGAL_ENTITY_AND_VERIFIED_BANK_ERP_PAYMENT` | `AP-FINANCE-RECONCILE` | `AUTH-FIN-004` |
 
-## 5. Reusable approval and guard catalog (23 rules)
+### Platform Jobs (technical capability) — 2 policies
 
-| Policy ID | Type | Responsible owner | Required check |
+| Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
+|---|---|---|---|---|---|
+| `SUP-01` | Platform Support | `platform:job:inspect` | `PLATFORM_JOB_METADATA_WITH_REDACTED_FIELDS` | `AP-PLATFORM-OBS` | `AUTH-SUP-001` |
+| `SUP-02` | Platform Support | `platform:job:retry` | `FAILED_JOB_AND_APPROVED_REPLAY_REQUEST` | `AP-PLATFORM-JOB` | `AUTH-SUP-002` |
+
+## 5. Reusable approval and guard catalog — 31 rules
+
+| Policy | Type | Responsibility | Required testable check |
 |---|---|---|---|
 | `AP-PLAT-ONBOARD` | GUARD_ONLY | Platform/Tenancy | Verified business onboarding request, MFA; first owner invitation and recipient acceptance |
 | `AP-PLAT-RECOVERY` | HUMAN_APPROVAL_REQUIRED | Platform/Tenancy | Independently verified company evidence, two distinct approvers and audited recovery |
@@ -186,10 +204,16 @@ Every row is **DRAFT**, test identifiers are planned. The `Approval / guard` col
 | `AP-FINANCE-PREP` | GUARD_ONLY | Finance | Own legal entity, verified obligation/accounting reference and correct state |
 | `AP-PLATFORM-OBS` | GUARD_ONLY | Platform SRE | Read-only redacted job metadata, incident/operational purpose and audit |
 | `AP-COM-MARGIN` | GUARD_ONLY | Commercial + Finance | Explicit margin-read financial permission and own legal entity |
+| `AP-QUOTE-DECLINE` | GUARD_ONLY | Commercial | Customer authorization on exact current QuoteVersion and declinable state; idempotent command and reason audit |
+| `AP-RFQ-ASSIGN` | GUARD_ONLY | Commercial | Provider team/branch scope for unassigned RFQ, atomic assignee change with expectedVersion, audit |
+| `AP-BOOKING-CANCEL-REQUEST` | GUARD_ONLY | Booking | Customer Account scope, exact booking and open cancellation-request eligibility; persisted request with reason; no automatic cancel |
+| `AP-CUSTOMER-ISSUE` | GUARD_ONLY | Commercial intake -> owning Execution/Booking issue handling | Requester has exact customer order/Booking, issue type and evidence; clear escalation owner; not a review or POD rewrite |
+| `AP-FINANCE-RECONCILE` | GUARD_ONLY | Finance | Approved Finance permission, source-verified bank/ERP transaction reference, unique allocation, amounts/currency and immutable audit |
+| `AP-CUSTOMER-SELF-REVOKE` | GUARD_ONLY | Tenancy | Verified EXC user and exact own provider CustomerAccount membership; revoke own sessions/tokens |
+| `AP-CUSTOMER-RELATION-SUSPEND` | CONDITIONAL_HUMAN_APPROVAL | Tenancy + Commercial | Authorized provider manager/Owner, verified business basis, notice and safe retention |
+| `AP-PLATFORM-JOB` | GUARD_ONLY | Platform Jobs (technical) | Scoped platform operator job metadata or specifically approved replay, tenant and job-type allowlists, audit |
 
-**Critical SoD:** Commercial exception author cannot approve that specific exception; Finance payment initiator cannot approve the same payment; Tenant Admin cannot assign privileges beyond delegation ceiling; platform operator is not all-tenant data owner; supplier cannot act as customer signatory without customer delegation. **SoD operates per transaction and principal**, not only via mutually exclusive static role assignment. An individual may combine Sales/Procurement/Planner where permitted, but still fails if trying to approve their own exception.
-
-For small companies with one employee: ordinary within-limit transactions can proceed under agreed policy; exceptional approvals **must not silently fall back to self-approval**. Owner must designate another approved person or use a separately reviewed legal escalation workflow; until then, deny.
+**Approval is not authorization:** a guard-only check never opens a human approval step. An independent approver is required only for actions like financial payment approval, commercial exception, or verified recovery. Ordinary reads and RFQ updates are explicitly authorized state-checked operations.
 
 ## 6. Two user workspaces and review lifecycle
 
@@ -201,11 +225,11 @@ For small companies with one employee: ordinary within-limit transactions can pr
 
 **Revocation:** deny future protected reads immediately at server authorization boundary after confirmed revoke. Be honest about previously issued presigned RustFS URLs: they may survive until TTL unless access is proxied and continuously checked. Cache keys and all derived projections include enough customer/provider/permission scope; revoke blocks stale cached authorizations, not merely invalidates a user’s displayed UI.
 
-## 7. Planned TDD adversarial suite — 18 high-risk tests
+## 7. Planned TDD adversarial suite — 27 high-risk tests
 
-Each policy row additionally maps to its own `AUTH-...` acceptance ID. The following are required *cross-cutting* negative and race tests. They are **not currently executed**.
+All cases are **planned**; no executable tests or CI passed. 
 
-| Test ID | Given / When | Then / expected result | Test layer |
+| Test ID | Adversarial condition | Expected outcome | Required test layer |
 |---|---|---|---|
 | `AUTH-X-001` | external-customer cross-account listing/order UUID enumeration | DENY without record-count or field leak | HTTP+PostgreSQL-RLS |
 | `AUTH-X-002` | customer EXC tries provider internal tenant role API | DENY; no provider membership | HTTP+RLS |
@@ -223,13 +247,19 @@ Each policy row additionally maps to its own `AUTH-...` acceptance ID. The follo
 | `AUTH-X-014` | internal event handler acts under absent tenant context | fail closed, no cross-tenant writes | Job+Modulith+RLS |
 | `AUTH-X-015` | provider grants EXC to wrong customer org across shared email domain | scope verified by explicit invited identity and org mapping; no domain-based autojoin | HTTP+PostgreSQL |
 | `AUTH-X-016` | quote acceptance / booking / review confuse lifecycle projections | no accepted quote implies booking; GPS not POD; delivery not payment | Module integration+E2E |
+| `AUTH-X-017` | provider admin invites external buyer by shared email domain without verifying customer organization | deny unverified relationship, no provider employee membership or cross-customer access | HTTP+PostgreSQL |
+| `AUTH-X-018` | Sales staff in provider Tenant-A tries to inspect private reviews belonging to provider Tenant-B | deny across provider tenant and customer service scope | HTTP+RLS |
+| `AUTH-X-019` | Quote viewer invokes decline command via read-only permission | DENY; read does not authorize state mutation | HTTP+JUnit+PostgreSQL |
+| `AUTH-X-020` | External customer requests cancellation of confirmed Booking | request stored, Booking remains unchanged until owner policy decision and contract effects | Module+PostgreSQL |
+| `AUTH-X-021` | EXC revokes own access while coworkers share customer organization | only actor membership/sessions disabled; others retain correct scope | HTTP+RLS |
+| `AUTH-X-022` | Unassigned incoming RFQ is assigned concurrently by two branch Sales actors | one committed assignee/version, other conflict; wrong-branch DENY | PostgreSQL concurrency+HTTP |
+| `AUTH-X-023` | Customer reads provider-composed My Orders from multiple source modules | no direct cross-module DB writes; exact CustomerAccount-scoped list and field allowlist | Modulith+HTTP+PostgreSQL RLS |
+| `AUTH-X-024` | Finance approver approves outgoing payable without bank settlement evidence | approval recorded but Paid/Settled unchanged until independently reconciled verified cash fact | Finance unit+PostgreSQL |
+| `AUTH-X-025` | Customer read-only capability tries to create RFQ, sign quote and post review | each action requires separate explicit CustomerAccount capability | HTTP+security |
+| `AUTH-X-026` | External client submits damage issue before service completed | valid issue accepted/triaged if order scoped; standard review eligibility remains independent | HTTP+Commercial integration |
+| `AUTH-X-027` | Job monitoring role sees tenant finance payload via diagnostics | redacted operational metadata only; no Tenancy SQL side door | Jobs+RLS+HTTP |
 
-| `AUTH-X-017` | Provider admin invites buyer without verifying their customer organization | DENY; no implicit provider employee membership | HTTP+PostgreSQL |
-| `AUTH-X-018` | Sales user of Tenant-A tries to read review belonging to Tenant-B | DENY; provider and review scope enforced | HTTP+RLS |
-
-**Test implementation rule:** unit TDD for pure authorization/approval decision and state guards; real PostgreSQL/Testcontainers/RLS for tenant and customer-account isolation, race/unique/row locks; HTTP authorization tests for external customer and provider workspaces; module tests for Outbox and ownership boundaries; end-to-end 2 provider/customer organizations for the full RFQ → Quote → Booking → POD → Review path. Trace `USB-... → KX-... → policyId → AUTH-... → JUnit/SQL case → exact SHA and CI`.
-
-**Test fixture:** Tenant-FWD-A with CustomerOrg-X and CustomerOrg-Y (both EXC without tenant); Tenant-SHIP-B with own membership; Tenant-CAR-C partner; a separate forbidden Tenant-Z; active and expired grants; one driver, one receiver, a reviewer, sales, admin, commercial approver, finance initiator and distinct finance approver. Verify simultaneous access from different virtual threads and JDBC pool reuse.
+**Integration requirement:** each of the 67 entries also has a distinct `AUTH-...` acceptance ID. Security verification uses HTTP+Spring Security plus actual PostgreSQL RLS/Testcontainers for isolation; booking and quota race tests must exercise real transactions. Red–Green–Refactor applies to domain policy, not to a fake SQL mock.
 
 ## 8. Rollout with minimum overengineering
 
@@ -276,3 +306,29 @@ This v2 is the **R0 vertical-slice authorization baseline**, not permission sign
 The existence of a role name does not grant access to these modules. Apply `deny-by-default` until the relevant business module defines its own policies. Integrate with [User Story Book](21-user-story-book.md) passes and exact-`SHA` tests instead of implementing hypothetical UI and policy engines prematurely.
 
 **Contract qualification before implementation:** validate JSON schema/version, uniqueness of policy IDs and acceptance IDs, reference to a known role, referenced approval/guard definition, and linkage to a real `USB-*` story. These are documentation checks today; they are not CI checks until implementation.
+
+## 11. Second-pass hard audit — v2.1 corrective decisions
+
+The second review found **business correctness and authorization gaps**; every change below is now reflected in [JSON v2.1](contracts/access-policy-matrix.v2.json).
+
+1. **State-changing Quote decline:** `COM-08` cannot use `AP-SCOPED-READ`; must use `AP-QUOTE-DECLINE` and authorization against the exact version and valid state. A reader of a quote is not automatically entitled to decline it.
+2. **External customer workspace is not provider staff membership:** `customer:rfq:list/read` and `customer:orders:list/read` independently verify `providerTenantId + customerAccountId + customerOrgId + exact resource`. Different users in the same customer company may hold Viewer, Requester, Signatory, Feedback Author capabilities. `EXC` is a persona, not four automatically bundled permissions.
+3. **Read composition without breaking Modulith boundaries:** `EXT-03/04` are exposed by `CustomerPortalApi`, a transport/application facade that composes **exported** Commercial, Booking, Execution, Tracking and Documents APIs; it cannot import internal modules or directly write their tables. It is **not** an 18th business module.
+4. **Inbound RFQ operability:** Sales receives an explicitly scoped branch/team queue, `rfq:inbox:assign` with expectedVersion, and `rfq:request_clarification` to move `SUBMITTED → NEEDS_INFO` under Commercial owner rules. Concurrent assignments are not lost updates.
+5. **Cancellation request is not cancellation:** `EXT-13` is now owned by Booking; EXC may submit a request, but an authorized Booking actor decides the outcome and contractual cost. Customer request never directly changes `Booking.CONFIRMED` to `CANCELLED`.
+6. **Self-disconnection versus organization suspension:** `EXT-12 customer:access:revoke_self` revokes only the actor's CustomerAccount membership and sessions. `TEN-13` revokes a specific invited member; `TEN-14` organization-wide suspension is an explicitly audited R1 policy requiring business review. Colleagues must not be locked out by one user's action.
+7. **Approval ≠ Payment:** `FIN-03` approves a payable, but approval alone is not a bank transfer or `SETTLED` status. `FIN-04` reconciles a unique verified bank/ERP payment reference with amount/currency/allocations.
+8. **Issue/claim intake ≠ review:** `EXT-16/17` permits a customer to raise and follow a delivery issue even before delivery is complete; eligibility for a standard verified-service rating remains separate. Issue receipt does not change POD or imply a refund.
+9. **Platform Jobs own operations:** `SUP-01/02` inspect/retry Jobs under a technical `PlatformJobs` API with scoped service authorization, not Tenancy's business tables. Neither support nor Super Admin gets global tenant payload visibility.
+10. **Role template ≠ automatically granted rights:** R0 may show a role preset, but explicit assignments, customer grants, state/version checks, field projections and transaction-specific SoD are still required.
+
+**Unresolved for sign-off:** the actual legal signer for an external company, commercial limit thresholds, contract cancellation penalties, dispute case ownership, consent/retention for review and bank-reconciliation evidence adapter. These require owner/business/security approval; no false universal policy defaults.
+
+**TDD priorities for next implementation slice:**
+- `AUTH-X-019,025` — no read→write privilege inference or automatic EXC grants;
+- `AUTH-X-020,022` — cancellation request and concurrent assignment correctness;
+- `AUTH-X-021,023` — external membership isolation and composed My Orders;
+- `AUTH-X-024` — approval separate from verified settlement;
+- `AUTH-X-026,027` — issues before POD, no support payload leak.
+
+**Scope policy:** 17 business modules unchanged. V2.1 adds security contracts and scenarios, not new services, cross-module direct repositories, IAM DSL, distributed workflows or a general rules engine. Historical v1 remains readable; only v2.1 is the current design candidate.
