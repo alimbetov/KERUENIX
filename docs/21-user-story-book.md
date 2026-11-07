@@ -47,7 +47,7 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 
 | Pass | Focus | Deliverable | Stop condition |
 |---|---|---|---|
-| 1 (this revision) | Role catalog + 12 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
+| 1 (this revision) | Role catalog + 15 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
 | 2 | SHP/SAL/PLN/CAR: RFQ, quote, vehicle hold/Booking | Full main/alternate/negative paths, state guards and documents | Commercial/legal actor responsibilities agreed |
 | 3 | DSP/DRV/RCV: Trip, pickup, cargo custody, POD, tracking | Evidence rules, offline replay, partial/failed delivery | Logistics/operations signatures and derived status reviewed |
 | 4 | FIN/TEN/SUP: reconciliation, permissions, recovery | Finance-lite, tenant isolation, ops exceptions | Security + finance business review |
@@ -74,6 +74,22 @@ All entries: `status=DRAFT`, `evidence=NOT EXECUTED`. Synthetic tenant IDs and s
 | USB-FIN-001 | FIN | As financial controller I reconcile sell/buy amounts and evidence separately from actual cash receipt | Delivered != Paid; no duplicate payment allocation or invoice status from unverified callback | KX-FIN-001/002, LFC-021..026 |
 | USB-TEN-001 | TEN | As tenant admin I grant/revoke scoped access for a carrier or customer on a shipment | Role != ownership; revoke must stop new access to GPS, quote, documents, cache | KX-TEN-001/002, LFC-008/017 |
 | USB-SUP-001 | SUP | As support operator I inspect job failures and initiate authorized safe replay without disclosing unrelated tenant data | Least privilege, audited replay, no duplicate side effects, RLS and source-owner checks | JOB-004..008, KX-ARC-OPS-001 |
+
+## 4A. Platform onboarding and ownership scenarios (iteration 1 extension)
+
+All scenarios below are `DRAFT`, not business accepted; no TDD tests executed. Platform roles are separate from tenant-operational personas.
+
+| Story ID | Actor | User outcome | Critical guard | Requirement |
+|---|---|---|---|---|
+| USB-PSA-001 | PSA | As a platform super admin I verify and create a new tenant, invite and initialize its first TENANT_OWNER | Verified organization, verified intended recipient, idempotent provisioning, audit and invitation acceptance; never uncontrolled self-enrollment | KX-TEN-003 |
+| USB-PSA-002 | PSA | As platform super admin I provision an initial TENANT_ADMIN where an explicitly approved onboarding request requires it, or recover owner access under dual approval | No ordinary cross-tenant access or unapproved permanent impersonation; MFA, independent approval for recovery, scoped event audit | KX-TEN-003 |
+| USB-TNO-001 | TNO | As a verified company owner I appoint or revoke TENANT_ADMIN, transfer ownership safely and prevent the last active owner from disappearing | Authority and permitted delegation, no self-escalation, no platform grants, explicit replacement-owner acceptance | KX-TEN-004 |
+
+### USB-PSA-001 — first tenant owner bootstrap (draft elaboration)
+
+**Actors:** `PLATFORM_SUPER_ADMIN` in platform control plane, invited `TENANT_OWNER` in new tenant. **Preconditions:** platform operator strong authentication, verified corporate identity and owner designation. **Main flow:** operator records/validates onboarding request → platform creates pending tenant with idempotency key → creates expiring owner invitation bound to intended verified identity → intended owner accepts and completes required authentication → platform enables tenant owner membership → emits audit/outbox event and notifies designated representatives. **Denials:** anonymous onboarding cannot grant PSA; failed identity verification cannot activate owner; replay cannot create duplicate tenant/membership; tenant admin cannot create a PSA; super-admin has no default read access to company invoices, cargo or GPS. **Open:** business verification SLA, legal identity evidence and dual-approval policy.
+
+**Candidate acceptance (not test code):** `USB-PSA-001-AC-01` verified first owner; `-AC-02` duplicate onboarding request; `-AC-03` wrong invitee/expired invite; `-AC-04` lost platform access during onboarding; `-AC-05` tenant-data isolation for super-admin. TDD later after actor and approval process sign-off.
 
 ## 5. Detailed seed example — USB-DSP-001 (ready for business elaboration, NOT ready for TDD)
 
