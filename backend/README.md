@@ -9,7 +9,7 @@ Includes:
 - `ApiFallbackErrorController`: servlet `/error` dispatch when MVC/Security advice cannot handle an error.
 - `RequestIdFilter`: server-generated UUID requestId, header and MDC.
 - `SecurityConfig`: **fail-closed** `anyRequest().denyAll()`. No JWT/real user login, no Tenancy, no domain endpoints, no accidental public business route.
-- `ErrorContractTest`, `SecurityErrorContractTest`, `ErrorCodeCatalogTest` and `FallbackErrorControllerTest`: **written, not yet executed in CI**.
+- `ErrorContractTest`, `SecurityErrorContractTest`, `ErrorCodeCatalogTest` and `FallbackErrorControllerTest`: **written; 13 initial tests passed on commit `0117f8dc`, further revisions require a new exact-SHA run**.
 
 ## Local build
 
@@ -20,11 +20,11 @@ mvn -f backend/pom.xml test
 mvn -f backend/pom.xml verify
 ```
 
-**No build/test result has been qualified for this branch yet.** Maven is unavailable in the author's current execution container; compile/integration status must be verified by an actual developer or GitHub CI. Do not interpret these tests as security/RLS/business acceptance.
+**Qualification:** GitHub Actions `Backend Error Contract` run #14 compiled and passed 13 JUnit tests on commit `0117f8dc` (0 failures/errors/skips). Later commits must be checked on their own SHA. Local Maven is unavailable in the execution container. These tests do not demonstrate PostgreSQL RLS or business-domain acceptance. Do not interpret these tests as security/RLS/business acceptance.
 
 ## Integration rules
 
-The application **intentionally denies all routes**, including unknown ones, until a separate Tenancy/JWT feature introduces a tested `SecurityFilterChain` with explicit permissions and public health endpoints. Do not disable authentication to make a smoke test pass. Spring Security filter failures require their own entry point and denied handler, unlike MVC `@RestControllerAdvice`.
+The application **intentionally denies ordinary user-initiated routes** (servlet ERROR dispatch is permitted solely for safe error formatting) until a separate Tenancy/JWT feature introduces a tested `SecurityFilterChain` with explicit permissions and public health endpoints. Do not disable authentication to make a smoke test pass. Spring Security filter failures require their own entry point and denied handler, unlike MVC `@RestControllerAdvice`.
 
 For R0 domain implementations, convert known aggregate guard failures to `DomainProblemException(ErrorCode.*)` only **after** server-derived subject/tenant/CustomerAccount checks. Catch recognized named SQL constraints inside the owning repository adapter, never map all `DataIntegrityViolationException` or foreign RLS failures to `409`. Keep the error catalog in [docs/contracts/api-error-catalog.v1.json](../docs/contracts/api-error-catalog.v1.json) synchronized with Java `ErrorCode`.
 
@@ -37,3 +37,5 @@ Outstanding acceptance:
 - full `/error` servlet dispatch and error response integration;
 - propagation/localization and production metrics;
 - legitimate idempotent application-level retry headers and job failure classification.
+
+The repo workflow also checks Java ErrorCode parity with the JSON catalog before running Maven tests. No new business endpoints are available in this bootstrap.
