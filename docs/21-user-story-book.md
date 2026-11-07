@@ -1,10 +1,10 @@
 # 21 — KERUENIX User Story Book: Role-Based Scenario Bank
 
-**Version:** 0.2 — ITERATION 1 EXTENSION / ROLE AND APPROVAL MATRIX. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
+**Version:** 0.3 — ITERATION 1 REWORK / CUSTOMER PORTAL AND ACCESS POLICY V2. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
 
 **Purpose:** Maintain a single versioned, traceable bank of actor-centered scenarios; build it incrementally in several iterations, *then* derive acceptance tests, TDD unit tests and integration/E2E cases. Do not confuse role catalog with a list of software privileges or tenant membership.
 
-**Authorization matrix:** [22 — Role / Permission / Scope / Approval / TDD](22-role-permission-scope-approval-matrix.md).
+**Canonical authorization matrix (v2):** [24 — Access Governance & TDD](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json). **External customer journey:** [23 — External Customer Portal](23-external-customer-portal.md). The [v1 matrix](22-role-permission-scope-approval-matrix.md) is retained as historical draft.
 
 **Based on:** [operational journeys](../idea/04-operational-workflows.md), [dispatcher day](../idea/17-forwarder-dispatcher-day-simulation.md), [commercial lifecycle](10-commercial-execution-lifecycle-v1.md), [existing lifecycle test plan](11-commercial-execution-acceptance-v1.md), [requirements matrix](04-requirements-traceability.md), [engineering TDD standard](20-mapstruct-tdd-engineering-standard.md).
 
@@ -27,6 +27,7 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 |---|---|---|---|---|
 | PSA | Platform Super Administrator / KERUENIX operator | Provision tenant and first TENANT_OWNER; optional approved initial TENANT_ADMIN; recover ownership safely | Platform Control Plane, Tenancy | R0 |
 | TNO | Tenant Owner / authorized legal-entity representative | Accept control of company, appoint admins, transfer owner with verification | Tenancy | R0 |
+| EXC | Внешний клиент компании-Tenant / customer portal | Create requests, view My Orders, monitor shipment, leave verified feedback without internal employee rights | Commercial, Tracking, Documents | R0 |
 | SHP | Грузовладелец / customer logistics employee | Request, approve terms, track, accept evidence | Commercial, Tracking, Documents | R0 |
 | APR | Commercial Approver / лицо с лимитом утверждения | Approve exceptional client terms, independently of proposer | Commercial | R0 scoped permission template |
 | PRC | Carrier Procurement Manager / закупщик перевозок | Request/select offers within authorized supplier policy | Commercial, Fleet | R0 scoped permission template |
@@ -36,6 +37,8 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 | CAR | Менеджер внешнего перевозчика | Offer capacity, confirm obligations and fleet | Commercial, Fleet, Booking | R0 (trusted partner) |
 | DRV | Водитель | Accept assignment, record pickup/delivery evidence | Execution, Documents | R0 |
 | RCV | Получатель груза | Verify quantities/condition and acknowledge POD | Execution, Documents | R0 |
+| FAP | Finance Approver / финансовый утверждающий | Independently approve payments by financial authority and limits | Finance | R0 scoped permission template |
+| DOC | Document Controller / контролёр документов | Verify evidence/package version; release permitted customer files | Documents | R0 scoped permission template |
 | FIN | Финансовый контролёр / бухгалтер | Review receivables/payables and payment evidence | Finance, Commercial | R0 finance-lite |
 | TEN | Tenant administrator | Manage membership, permission and scoped sharing | Tenancy | R0 |
 | SUP | Platform support / SRE | Observe, recover jobs and diagnose without excess data access | Platform Jobs, Observability | R0 support |
@@ -45,13 +48,13 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 | MKT | Freight exchange participant / moderator | Post permitted listings, verify partner and disputes | Marketplace | R2 |
 | MLS | ML model operator / data steward | Approve datasets/models and interpret quality | Intelligence | R1 design / R2 operation |
 
-**Identity and authorization note:** `SHP/RCV/DRV` may interact through a portal/link or authenticated account depending on pilot decision; every grant must have a bounded resource scope, expiry and audit. Platform support is not a superuser of tenant cargo/payment data.
+**Identity and authorization note:** `EXC` is a verified external customer relationship, not a staff membership of its provider Tenant; `SHP` remains an own-tenant shipper/signatory persona. `SHP/RCV/DRV` may interact through a portal/link or authenticated account depending on pilot decision; every grant must have a bounded resource scope, expiry and audit. Platform support is not a superuser of tenant cargo/payment data.
 
 ## 3. Multi-pass development program
 
 | Pass | Focus | Deliverable | Stop condition |
 |---|---|---|---|
-| 1 (this revision) | Role catalog + 22 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
+| 1 (this revision) | Role catalog + 35 R0 story seeds | Actor map, core journeys, questions and initial TDD trace | Reviewed for missing roles/process ownership |
 | 2 | SHP/SAL/PLN/CAR: RFQ, quote, vehicle hold/Booking | Full main/alternate/negative paths, state guards and documents | Commercial/legal actor responsibilities agreed |
 | 3 | DSP/DRV/RCV: Trip, pickup, cargo custody, POD, tracking | Evidence rules, offline replay, partial/failed delivery | Logistics/operations signatures and derived status reviewed |
 | 4 | FIN/TEN/SUP: reconciliation, permissions, recovery | Finance-lite, tenant isolation, ops exceptions | Security + finance business review |
@@ -112,6 +115,30 @@ These **seven additional DRAFT story seeds** extend the first pass; acceptance r
 `APR` and `PRC` are permission/role templates that may be assigned to existing staff within scoped tenant policy, not mandatory separate employees. For R0, one person may combine SAL/PRC, but cannot approve their own exception above policy limits.
 
 **Reference:** [machine-readable role permissions](contracts/role-permission-scope-approval.v1.json) defines 24 draft policies and planned acceptance IDs `AUTH-TEN-*` / `AUTH-COM-*`. Story acceptance is approved in business review before becoming TDD test code.
+
+## 4C. External Customer, provider Inbox and sensitive approvals — v2 extension
+
+These **13 additional DRAFT stories** supply missing external-client/product and access-governance roles; not tested or legally accepted. Details: [23 — Customer Portal](23-external-customer-portal.md), [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md).
+
+| Story ID | Actor | Business outcome | Critical rule |
+|---|---|---|---|
+| USB-EXC-001 | EXC | Activate portal through verified provider/customer relationship | No internal provider Tenant membership |
+| USB-EXC-002 | EXC | Submit idempotent RFQ to selected provider | Own customer account, correct cargo/route fields; never directly Booking |
+| USB-EXC-003 | EXC | Browse and open own requests/orders | CustomerOrg + providerTenant + exact resource; no foreign records |
+| USB-EXC-004 | EXC | Read quote and, if authorized signatory, accept exact unexpired version | Reading and legal acceptance are different permissions |
+| USB-EXC-005 | EXC | Monitor delivery milestones/ETA and view permitted POD documents | No foreign GPS, provider margin, unapproved evidence |
+| USB-EXC-006 | EXC | Submit private review for eligible completed service | One logical review, real completion evidence, no self-review |
+| USB-EXC-007 | EXC | Withdraw own RFQ while pre-binding | No silent cancellation of accepted quote/confirmed Booking |
+| USB-EXC-008 | EXC | Revoke own provider relationship safely | Revoke future access without granting admin controls |
+| USB-EXC-009 | EXC | Request contractual cancellation of confirmed order | Booking owner decides under cancellation policy |
+| USB-SAL-003 | SAL | Work provider Tenant inbound customer RFQ queue | Assignee/branch and customer data scope |
+| USB-SAL-004 | SAL | Respond to private verified customer review | No editing original text/score; R1 |
+| USB-DOC-001 | DOC | Verify document package before business use/release | Exact package, evidence and immutable version |
+| USB-FAP-001 | FAP | Approve valid payable by policy and amount | Initiator cannot self-approve same payment |
+
+**Interpretation:** `FIN` can prepare accounting evidence; `FAP` is a separate **approval capability** (may belong to another appointed person, not automatically a separate headcount). `SHP` and `EXC` must never be used interchangeably in security decisions. A person with several roles still cannot approve their own exception.
+
+**Traceability:** all existing `USB-*` identifiers are preserved; v2 maps `55` draft policy rows and `16` cross-cutting adversarial cases. See [policy JSON](contracts/access-policy-matrix.v2.json). Approval and acceptance requirements must be reviewed before turning into executable `TDD-USB-*` tests.
 
 ## 5. Detailed seed example — USB-DSP-001 (ready for business elaboration, NOT ready for TDD)
 
