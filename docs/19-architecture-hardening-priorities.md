@@ -75,3 +75,7 @@ For each proposed technology demand: demonstrated problem, bounded ownership, al
 **Open:** first paying persona/corridor, legal quote/financial policies, acceptance SLOs and load profiles, JobRunr vs minimal scheduler PoC, authorized data policy/labels for ML, production library-version locks.
 
 **Next action:** close A0 as a documentation/contract consistency pass, then execute A1 tenant foundation and the A2 Booking/CapacityReservation vertical slice. No additional generic platform subsystems before these gates.
+
+## 8. Engineering execution standard
+
+**MapStruct + TDD are accepted as mandatory R0 engineering practices** under Correctness First and Operational Reliability; see [20 — Engineering Standard](20-mapstruct-tdd-engineering-standard.md). Requirements `KX-ENG-MAP-001`, `KX-ENG-TDD-001`, `KX-ENG-QA-001`, `KX-ENG-E2E-001` are tracked in [04 — Requirements](04-requirements-traceability.md). They add no new business modules. Java 21 records and mapper generation never bypass aggregate guards. TDD requires behavior tests first for domain rules; real database, RLS and failure-injection verification remain obligatory.
