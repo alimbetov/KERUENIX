@@ -1,36 +1,48 @@
-# KERUENIX — idea catalog
+# KERUENIX — каталог проектных идей
 
-> **Status:** Discovery / concept, not production-ready specification.
-> **Updated:** 2026-11-07
+**Версия:** 0.1 · **Обновлено:** 7 ноября 2026 · **Статус:** обсуждение / discovery, не утверждённое техническое задание.
 
-KERUENIX is a proposed **multi-tenant logistics operating platform** for carriers, freight forwarders, shippers and warehouse operators. Its core promise: plan feasible shipments, dispatch mixed fleets, monitor execution and explain planned versus actual cost.
+**[Начать: краткая концепция на русском](00-brief-ru.md)**
 
-## Read this catalog
+KERUENIX — многоклиентская платформа управления логистикой: коммерческий заказ, выбор транспорта, маршруты, диспетчеризация, GPS, грузы, склады, топливо, себестоимость и контроль исполнения. Главная идея — оптимизация **допустимого и выгодного** движения груза, а не просто отображение машин на карте.
 
-| Document | Focus |
+## Комплект документов
+
+| Файл | Содержание |
 |---|---|
-| [01 — Vision](01-vision-and-positioning.md) | Users, value proposition and scope |
-| [02 — Tenancy](02-multi-tenant-and-identity.md) | Isolation, organizations, roles, data access |
-| [03 — Domains](03-domain-model.md) | Orders, shipments, trips, cargo and movements |
-| [04 — Operations](04-operational-workflows.md) | Booking, dispatch, custody, incidents |
-| [05 — Optimization](05-routing-optimization-and-intelligence.md) | Routing, departure times, Timefold, Tribuo |
-| [06 — Economics](06-pricing-fuel-and-settlements.md) | Pricing, fuel, cost, partners |
-| [07 — Integrations](07-external-integrations.md) | Maps, GPS, ERP, WMS and customs |
-| [08 — Reliability](08-security-reliability-and-sre.md) | Tenant safety, availability, audit and recovery |
-| [09 — Architecture](09-reference-architecture.md) | Java/Spring Boot modular design and APIs |
-| [10 — Delivery](10-mvp-roadmap-and-acceptance.md) | Phased delivery and acceptance tests |
-| [11 — Decisions](11-adr-and-open-questions.md) | Proposed ADRs and unresolved choices |
-| [12 — Competitive ideas](12-competitive-benchmark.md) | Patterns to learn from existing platforms |
+| [00 — Краткая концепция (RU)](00-brief-ru.md) | Суть и главные проектные решения |
+| [01 — Vision](01-vision-and-positioning.md) | Клиенты, позиционирование, гипотезы, границы |
+| [02 — Multi-tenancy](02-multi-tenant-and-identity.md) | Изоляция компаний, роли, права, партнёрский доступ |
+| [03 — Domain Model](03-domain-model.md) | Order, Shipment, Trip, Leg, Cargo, Cost |
+| [04 — Workflows](04-operational-workflows.md) | Клиент, логист, диспетчер, водитель, склад |
+| [05 — Intelligence](05-routing-optimization-and-intelligence.md) | Маршрутизация, выезд, Timefold и Tribuo |
+| [06 — Cost & Fuel](06-pricing-fuel-and-settlements.md) | Цена, себестоимость, АЗС, план/факт |
+| [07 — Integrations](07-external-integrations.md) | Карты, GPS, ERP, WMS, АЗС, партнёры |
+| [08 — Security & SRE](08-security-reliability-and-sre.md) | Tenant isolation, надёжность, аудит, резервирование |
+| [09 — Architecture](09-reference-architecture.md) | Java/Spring Boot, модули, API, данные, события |
+| [10 — Roadmap & Tests](10-mvp-roadmap-and-acceptance.md) | MVP, фазы, пилот, обязательные проверки |
+| [11 — ADR Backlog](11-adr-and-open-questions.md) | Предложенные решения и открытые вопросы |
+| [12 — Benchmark](12-competitive-benchmark.md) | Идеи SAP, Oracle, Wialon, PTV и других систем |
 
-## Concept rules
+## Неизменные правила дизайна
 
-1. One **commercial order** is not necessarily one **physical shipment** or one **vehicle trip**.
-2. Make the **tenant boundary** explicit at every read, write, event, cache key, file and export.
-3. Optimize **only feasible plans**; route legality, capacity, driver rest and required custody events are hard constraints.
-4. Separate **plan**, **forecast** and **fact**; preserve versioned explanations and audit history.
-5. Ingest external GPS and traffic through replaceable adapters; avoid dependence on one vendor.
-6. Launch with road freight and a controlled pilot; multimodal, autonomous drones and a public marketplace are future work.
+1. Один заказ может включать несколько грузовых партий и транспортных участков; один рейс может обслуживать несколько заказов.
+2. Tenant определяет границу данных: она должна соблюдаться в API, PostgreSQL/RLS, кешах, файлах, событиях и мониторинге.
+3. Между компаниями передаются только специально разрешённые данные по конкретной перевозке.
+4. Безопасность транспорта и выполнение договорных ограничений важнее расчётной экономии.
+5. План, прогноз, фактические события, деньги и история версий не подменяют друг друга.
+6. Внешние карты/GPS/АЗС подключаются через заменяемые адаптеры.
+7. Непроверенные дорожные данные и недоступные ML-модели не должны создавать ложных гарантий.
+8. Старт — проверяемый MVP для автомобильной логистики, расширение на мультимодальность позже.
 
-**Documentation policy:** mark assumptions, decisions and experiments explicitly. Do not treat illustrative cost figures or unofficial road restrictions as authoritative.
+## Как работать с материалами
 
-**Next:** review the [MVP and acceptance](10-mvp-roadmap-and-acceptance.md) before implementing features.
+- **Idea:** новая гипотеза или возможность, требующая проверки.
+- **Proposed:** вариант решения с анализом альтернатив.
+- **Accepted ADR:** утверждённое архитектурное решение.
+- **MVP Task:** реализуемая задача с проверяемыми критериями.
+- **Verified:** подтверждено CI/интеграционным тестом/реальным пилотом на конкретной версии.
+
+Данные о поставщиках и демонстрационные экономические числа не считать сертифицированными, юридически обязательными или универсальными для Казахстана.
+
+**Начать реализацию рекомендуется с:** [многоклиентности](02-multi-tenant-and-identity.md), [доменной модели](03-domain-model.md), [вертикального MVP и приёмки](10-mvp-roadmap-and-acceptance.md).
