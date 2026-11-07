@@ -1,12 +1,12 @@
 # 21 — KERUENIX User Story Book: Role-Based Scenario Bank
 
-**Version:** 0.8 — ROLE SIMULATION / BLOCKER RULES AND TDD READINESS. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
+**Version:** 0.9 — ROLE SIMULATION / NEGATIVE BUSINESS OUTCOMES AND TDD READINESS. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
 
 **Purpose:** Maintain a single versioned, traceable bank of actor-centered scenarios; build it incrementally in several iterations, *then* derive acceptance tests, TDD unit tests and integration/E2E cases. Do not confuse role catalog with a list of software privileges or tenant membership.
 
 **Canonical authorization matrix (v2.1):** [24 — Access Governance & TDD](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json). **External customer journey:** [23 — External Customer Portal](23-external-customer-portal.md). The [v1 matrix](22-role-permission-scope-approval-matrix.md) is retained as historical draft.
 
-**Current policy and test design:** [27 — 12 Blocker Decisions](27-r0-blocker-policy-decisions.md), [28 — 84 R0 TDD acceptance cases](28-r0-tdd-acceptance-bank.md), [29 — business stakeholder workshops](29-r0-business-acceptance-workshop-kit.md). Technical proposals exist; business/legal approvals and actual code/tests remain pending.
+**Current policy and test design:** [27 — 12 Blocker Decisions](27-r0-blocker-policy-decisions.md), [28 — original 84 R0 TDD cases](28-r0-tdd-acceptance-bank.md), [30 — supplemental 48 negative/failure cases](30-negative-and-failure-scenario-bank.md), [29 — business stakeholder workshops](29-r0-business-acceptance-workshop-kit.md). Technical proposals exist; business/legal approvals and actual code/tests remain pending.
 
 **Role simulation (pass 3):** [26 — Role/Process Simulation](26-role-process-simulation-and-gap-audit.md), [scenario coverage JSON](contracts/role-process-simulation.v1.json).
 
@@ -309,7 +309,13 @@ Iteration 1 is accepted for **documentation review**, not business sign-off, whe
 
 **Next planned pass:** Review [26 — 42 role/process walkthroughs](26-role-process-simulation-and-gap-audit.md) and [25 — BSC-001..011](25-business-scenario-book.md) with actual customer, forwarder, carrier, finance/legal/security and driver/consignee representatives. Resolve P0 blockers, then derive only approved `TDD-*` cases. Neither paper simulation nor approval documents are green CI evidence.
 
-## 8. Story-to-approval gate for the R0 pilot
+## 8. Negative scenario rule for every security-critical User Story
+
+A user story with a command or sensitive read is not ready for TDD solely because a **positive outcome** is written. For each applicable role/tenant interaction, reference [30 — Negative and Failure Bank](30-negative-and-failure-scenario-bank.md) and verify: (a) wrong principal/tenant/customer account, (b) invalid aggregate state/expectedVersion, (c) changed idempotency payload or duplicate/replayed event, (d) permitted failure/audit without unauthorized DB mutation, (e) Outbox/Inbox/notification consequences, and (f) truthful external customer/provider/carrier UI state. The bank adds 48 designed cases to the original 84 (132 total planned), plus 8 MIX sequences not counted as distinct cases. This adds **tests**, not new role templates, business modules or User Story IDs.
+
+Business/legal signoffs for the relevant `BR-*` remain `PENDING`; proposed TDD is not executed evidence.
+
+## 9. Story-to-approval gate for the R0 pilot
 
 All **80** User Story records retain stable IDs. Story acceptance is independent of proposed design. The 12 blockers now have named `BR-01..12` policy proposals in [27](27-r0-blocker-policy-decisions.md), but **none is business-signed**. The 84 candidate `TDD-SIM-*` and `TDD-R0-E2E-*` cases in [28](28-r0-tdd-acceptance-bank.md) can become executable tests only after the relevant customer/forwarder/carrier/consignee/finance/legal review in [29](29-r0-business-acceptance-workshop-kit.md). A change to the approved legal/financial policy must update the `BR` and TDD case together; never bypass `AUTH` and `LFC` invariants.
 
