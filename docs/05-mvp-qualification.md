@@ -27,6 +27,10 @@
 
 **Упрощения допустимы:** ручная квалификация контрагента, ручной финансовый статус при наличии evidence, одна машина на первый Shipment, без публичного marketplace и без настоящего eCMR/KEDEN integration. Упрощение должно быть явно обозначено.
 
+## R0 Blocker and TDD acceptance gate (design only)
+
+Before marking business logic `READY_FOR_IMPLEMENTATION`, review [27 — Twelve R0 Blockers](27-r0-blocker-policy-decisions.md) with real [29 — Stakeholder Workshop](29-r0-business-acceptance-workshop-kit.md). Every blocker has a technical fail-safe proposal, but **no real business/legal approval is recorded**. [28 — R0 TDD Bank](28-r0-tdd-acceptance-bank.md) supplies 84 designed, not executed tests: 60 blocker, 14 R0 safety, 10 cross-role. Any signature/payment/compliance ambiguity fails closed. Current repository state is documentation-only in this scope; no exact-SHA Java/PG/CI evidence is claimed. Deferral of R1/R2 features does not waive the 14 safety paths.
+
 ## Role-simulation safety review (draft)
 
 Prior to R0 implementation, prioritize [26 — Role/Process Simulation & Gap Audit](26-role-process-simulation-and-gap-audit.md): 42 paper-simulated cases; 33 candidate gaps (including 12 blockers for the affected operations). R0 must NOT infer client acceptance from a phone-entered RFQ and must have an explicit safe policy for ongoing cargo/evidence when SaaS billing is suspended. Simulations are **not** CI/DB tests; sign-off and actual code acceptance remain pending. Do not pull deferred R1/R2 workflows into first pilot.
