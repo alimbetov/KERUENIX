@@ -381,3 +381,11 @@ This is the **second-pass R0 business story elaboration**, not evidence that 11 
 **Critical additional realistic variants:** provider staff captures a phone/email RFQ on behalf of customer but cannot forge customer consent (`SIM-42`); active Shipment/Trip retains safe custody and evidence continuity when SaaS subscription is suspended (`SIM-41`); customer quote decline and company signatory power are distinct; own fleet does not need fake CarrierOffer; physical pickup can fail due mismatched cargo; original custodian cannot be overwritten on driver replacement; receiver missing means failed attempt, not delivered; verified bank facts are different from payment approval.
 
 **Next review:** use [User Story Book v0.7](21-user-story-book.md) with 80 proposed/draft stories. The current [Access Governance v2.1](contracts/access-policy-matrix.v2.json) is **still 67 policies**. Add an `AUTH-*` policy only after the specific business action and legal/security ownership are accepted. The 33 findings are proposed gaps; no new implementation/CI results are claimed.
+
+## H. Business acceptance and TDD completeness status
+
+After the 42 role simulations, 12 R0 blocking decisions now have concrete proposed contracts and evidence expectations: [27 — R0 Blockers](27-r0-blocker-policy-decisions.md). **The proposed rules are not binding without real stakeholder signoff.** Follow [29 — Role Business Review Kit](29-r0-business-acceptance-workshop-kit.md), especially customer signatory, carrier acknowledgement, failed/partial POD, cancellation and bank settlement.
+
+The [28 — TDD Acceptance Bank](28-r0-tdd-acceptance-bank.md) contains 84 planned cases (60 blocking-rule, 14 safety, 10 cross-role). These extend `BSC-001..011` and `SIM-01..42`; do not claim executed tests or automatically expand the 67 draft access policies. If the actual pilot decision differs from this proposal, revise the `BR-*` decision and its affected `TDD-SIM-*` tests before implementing.
+
+**Integration priority:** client/forwarder signatory → external carrier/own-fleet capacity → exclusive reservation/Booking → driver custody and 8/10 POD → verified finance ledger, plus SaaS suspension during active cargo. R1/R2 features remain deferred.
