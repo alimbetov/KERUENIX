@@ -135,12 +135,13 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** нет; разрешено начать сейчас. **Технический владелец:** `platform` (не бизнес-модуль). **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Flyway/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, минимальные audit/idempotency/outbox порты и fail-closed security. Docker Compose/local smoke.
+**Scope и результат:** Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Flyway/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, fail-closed security. **RD-01 сразу реализует минимальный транзакционный Outbox + Inbox dedup + durable dispatcher, а не только интерфейсы: иначе RD-03/04 не смогут гарантировать события и повторы.** Docker Compose/local smoke.
 
 **Изменения в коде/артефактах:**
 - backend Maven BOM lock and reproducible build
 - Modulith verify() and @ApplicationModuleTest harness
 - Flyway + real PG/PostGIS + RLS template
+- atomic aggregate + audit + Outbox / Inbox replay, durable dispatch (минимально, без универсального workflow engine)
 - CI exact SHA; issue/artifact refs; readme
 
 **Обязательная TDD-проверка:**
@@ -150,7 +151,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 - RLS fail-closed + two tenant pool reuse
 - invalid JWT/401/403 shared ProblemDetail
 
-**Gate выхода:** mvn verify и startup на конкретном SHA; реальные PG/PostGIS+RLS интеграции, не H2 вместо PG; не открывать бизнес API без auth.
+**Gate выхода:** mvn verify и startup на конкретном SHA; реальные PG/PostGIS+RLS интеграции, не H2 вместо PG; транзакционная атомарность audit/Outbox, повторное событие не даёт второй бизнес-эффект; не открывать бизнес API без auth.
 
 **Затем:** RD-02.
 
@@ -181,7 +182,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-02`. **Ответственные модули:** `commercial`, `tenancy`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Создать Draft RFQ, submit/clarification/qualification по принятому lifecycle; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие.
+**Scope и результат:** Создать Draft RFQ, submit/clarification/qualification **только после явного утверждения прав customer:rfq:submit (сейчас PENDING в SDB) и соответствующих guards**; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие.
 
 **Изменения в коде/артефактах:**
 - RFQ aggregate and transitions
@@ -227,7 +228,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-02`. **Ответственные модули:** `fleet`, `cargo`, `compliance`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** VehicleCombination/driver/capacity windows; CargoProfile weights, volume, dimensions and controlled eligibility; ComplianceAssessment with UNKNOWN fail-closed. PostGIS verified coordinates and proximity search; Fleet owns transactional CapacityHold, no read-model guard.
+**Scope и результат:** Три независимых owner-среза PR-08 CargoProfile, PR-09 ComplianceAssessment и PR-10 Fleet Capacity/VehicleCombination. VehicleCombination/driver/capacity windows; CargoProfile weights, volume, dimensions and controlled eligibility; ComplianceAssessment with UNKNOWN fail-closed. PostGIS verified coordinates and proximity search; Fleet owns transactional CapacityHold, no read-model guard.
 
 **Изменения в коде/артефактах:**
 - FleetCapacityApi hold/confirm/release
@@ -274,7 +275,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-06`. **Ответственные модули:** `execution`, `cargo`, `compliance`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered.
+**Scope и результат:** Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered. **Для подписанного POD в этом срезе нужен публичный контракт доказательства с Documents; хранение/публикация полноценного DocumentPackage — отдельный RD-08, оригинал POD не переписывается.**
 
 **Изменения в коде/артефактах:**
 - Execution state machines and custody ledger
@@ -297,7 +298,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-07`. **Ответственные модули:** `tracking`, `documents`, `fleet`, `execution`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Event-derived customer timeline, permission-filtered milestone, ETA freshness/watermarks; verified document packages and downloads; cursor/keyset for immutable chronological streams; data lifecycle/retention/legal hold, default active lists exclude soft deleted where policy eligible.
+**Scope и результат:** Два независимых owner-среза PR-15 Tracking и PR-16 Documents: Event-derived customer timeline, permission-filtered milestone, ETA freshness/watermarks; verified document packages and downloads; cursor/keyset for immutable chronological streams. **Soft Delete не является автоматически активируемой функцией:** только явно разрешённые draft-объекты и отдельный бизнес/retention gate; Bookings, POD, finance и custody не удаляются.
 
 **Изменения в коде/артефактах:**
 - TrackingQueryApi filtered projection and rebuild
@@ -320,7 +321,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-06`, `RD-07`, `RD-08`. **Ответственные модули:** `finance`, `commercial`, `booking`, `documents`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Distinct invoice, receivable, payable, payment allocation, advance, claim references and approval; exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or audited manual verification, not GPS or user toggle. Independent finance approver.
+**Scope и результат:** Только Finance владеет/изменяет Invoice, AR/AP, Allocation, advance, approval. Сведения Booking/Documents поступают через согласованные published snapshots/events, без JPA внутренних зависимостей. Exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or legally/business-approved audited manual verification, not GPS or user toggle. Independent finance approver. Вне согласованного R0 корректировки/credit notes не включать без отдельного решения; безопасный отказ допустим.
 
 **Изменения в коде/артефактах:**
 - Finance domain aggregates/ledger, repository
@@ -343,7 +344,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-02`, `RD-06`, `RD-07`, `RD-09`. **Ответственные модули:** `tenancy`, `booking`, `execution`, `finance`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Cross-cutting durable Job Engine, outbox/inbox, retry classification/dead letter, fencing, observability, error catalog consistency. Subscription suspension during live cargo follows BR-04 with explicit safety continuity; do not build full SaaS Control billing in R0.
+**Scope и результат:** **Операционное усиление уже существующих RD-01 Outbox/Inbox/durable dispatcher:** retry classification/dead letter, fencing, observability, error catalog consistency. Бизнес-срезы не ждут RD-10 для первого надёжного event consumer. Subscription suspension during live cargo follows BR-04 with explicit safety continuity; do not build full SaaS Control billing in R0.
 
 **Изменения в коде/артефактах:**
 - PostgreSQL-backed durable jobs and reclaim supervisor
@@ -381,7 +382,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 - two independent DB sessions plus network failure matrix
 - restore persisted facts and document checksums
 
-**Gate выхода:** Every accepted P0 applicable contract green on exact SHA, zero known P0 leak/dup booking/custody/finance bug, documented SLO from measured benchmark; no mock-only release claim.
+**Gate выхода:** Every accepted P0 applicable contract green on exact SHA, zero known P0 leak/dup booking/custody/finance bug, documented SLO from measured benchmark; no mock-only release claim. Для полной квалификации R0 обязательны реальная браузерная/офлайн-проверка пользовательских ролей и их error/stale states; API-only работа не считается USER_JOURNEY_QUALIFIED.
 
 **Затем:** RD-12.
 
