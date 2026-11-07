@@ -206,6 +206,19 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 
 **Test traceability:** `BR-xx → GAP-xx → SIM-xx → USB-xx → AUTH/LFC → TDD-SIM-xx or TDD-R0-E2E-xx`. Pass/fail evidence not available until code and exact-SHA CI are run. Kazakhstan electronic signing/transport evidence rules require applicable law/version and authorized legal verification.
 
+## Fifth review — stronger negative scenarios, no false success paths
+
+[30 — Negative/Failure Scenario Bank](30-negative-and-failure-scenario-bank.md) and [machine JSON](contracts/r0-negative-scenarios.v1.json) introduce **48 additional** P0-focused failure scenarios across 12 test taxonomy groups; they supplement 84 prior R0 TDD cases for **132 planned test cases** (plus 8 compound `MIX-*` designs **not** counted as individual cases). No test was executed.
+
+- `KX-NEG-001`: tenant, owner, customer and carrier privilege isolation, no field/count/cursor leakage; `NEG-R0-001..008,015,040`.
+- `KX-NEG-002`: Quote signatory/provenance, idempotency digest, expiry race and self/foreign authority denial; `NEG-R0-009..012`.
+- `KX-NEG-003`: supplier offer expiry/withdraw, own-fleet path, exclusive multi-resource capacity, no duplicate Booking/outbox; `NEG-R0-013..020`.
+- `KX-NEG-004`: Compliance critical UNKNOWN and stale ALLOW, offline custody forgery/reassignment/ordering, partial POD and immutable proof; `NEG-R0-021..032`.
+- `KX-NEG-005`: independent financial approval, cash-source integrity, reversal and overpayment; `NEG-R0-033..036`.
+- `KX-NEG-006`: SaaS cargo continuity, permission revoke, redacted support, outbox/replay/read model, cancellations and private feedback; `NEG-R0-037..048`.
+
+**Mandatory test oracle:** denied requests cannot secretly mutate canonical database state or emit a false success event; projections and UI cannot show a counterfeit successful operation. Exact semantics and legal/financial policy remain subject to `BR-01..12` and real stakeholder review. Until policy is confirmed, safe-deny is the default.
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.
