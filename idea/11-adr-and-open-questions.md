@@ -19,6 +19,7 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-013 | Pricing | Versioned quote/cost snapshots with money precision | Tax/ERP mapping review |
 | ADR-014 | Location | GPS observed vs inferred cargo location/custody separated | Multi-modal pilot |
 | ADR-015 | Deployment | Containerized pilot with backup/observability | Verified demand for Kubernetes |
+| ADR-016 | SaaS + Enterprise parity | One versioned logistics core supports pooled SaaS and dedicated/on-prem through configuration | Deployment pilot and enterprise requirements |
 
 ## Questions to settle before code
 

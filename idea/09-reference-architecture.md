@@ -2,6 +2,8 @@
 
 **Status:** proposal for a Java-first system, intentionally modular before microservices.
 
+**Deployment principle:** one product and codebase supports pooled multi-tenant SaaS and dedicated/on-premise installations; see [13 — Deployment Models](13-deployment-models.md). Keep tenant/resource authorization active even for a physically isolated installation.
+
 ## Technology options (final versions require compatibility check)
 
 - Java 21, supported Spring Boot release, Spring Security/OIDC, JPA/JDBC with explicit tenant boundaries.
