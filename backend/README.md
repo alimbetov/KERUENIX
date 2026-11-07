@@ -9,7 +9,7 @@ Includes:
 - `ApiFallbackErrorController`: servlet `/error` dispatch when MVC/Security advice cannot handle an error.
 - `RequestIdFilter`: server-generated UUID requestId, header and MDC.
 - `SecurityConfig`: **fail-closed** `anyRequest().denyAll()`. No JWT/real user login, no Tenancy, no domain endpoints, no accidental public business route.
-- `ErrorContractTest`, `SecurityErrorContractTest`, `ErrorCodeCatalogTest` and `FallbackErrorControllerTest`: **written; 13 initial tests passed on commit `0117f8dc`, further revisions require a new exact-SHA run**.
+- `ErrorContractTest`, `SecurityErrorContractTest`, `ErrorCodeCatalogTest` and `FallbackErrorControllerTest`: **written; 15 error contract tests and the JSON/Java parity gate passed on commit `ac459923` (GitHub Actions #22); further revisions require exact-SHA verification**.
 
 ## Local build
 
@@ -20,7 +20,7 @@ mvn -f backend/pom.xml test
 mvn -f backend/pom.xml verify
 ```
 
-**Qualification:** GitHub Actions `Backend Error Contract` run #14 compiled and passed 13 JUnit tests on commit `0117f8dc` (0 failures/errors/skips). Later commits must be checked on their own SHA. Local Maven is unavailable in the execution container. These tests do not demonstrate PostgreSQL RLS or business-domain acceptance. Do not interpret these tests as security/RLS/business acceptance.
+**Qualification:** GitHub Actions `Backend Error Contract` run #22 compiled and passed 15 JUnit tests plus the 21-code Java/JSON parity check on commit `ac459923` (0 failures/errors/skips). Later commits must be checked on their own SHA. Local Maven is unavailable in the execution container. These tests do not demonstrate PostgreSQL RLS or business-domain acceptance. Do not interpret these tests as security/RLS/business acceptance.
 
 ## Integration rules
 
