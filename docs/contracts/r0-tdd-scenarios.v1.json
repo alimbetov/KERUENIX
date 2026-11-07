@@ -1286,9 +1286,9 @@
   "noClaim": "NO CODE TESTS OR CI EXECUTED",
   "r0SafetyCases": [
     {
-      "id": "TDD-SIM-042-S04-01",
+      "id": "TDD-SIM-42-S04-01",
       "gapId": "GAP-04",
-      "simId": "SIM-042",
+      "simId": "SIM-42",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Sales records verified-attribution phone/email request; customer has not accepted anything",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1300,9 +1300,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-034-S06-01",
+      "id": "TDD-SIM-34-S06-01",
       "gapId": "GAP-06",
-      "simId": "SIM-034",
+      "simId": "SIM-34",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "External contact revoked but colleagues share CustomerOrg-X",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1314,9 +1314,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-008-S07-01",
+      "id": "TDD-SIM-8-S07-01",
       "gapId": "GAP-07",
-      "simId": "SIM-008",
+      "simId": "SIM-8",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Incoming RFQ has absent assignee and two Sales workers",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1328,9 +1328,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-015-S10-01",
+      "id": "TDD-SIM-15-S10-01",
       "gapId": "GAP-10",
-      "simId": "SIM-015",
+      "simId": "SIM-15",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Carrier without paid Tenant sends confirmation through approved constrained channel",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1342,9 +1342,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-017-S11-01",
+      "id": "TDD-SIM-17-S11-01",
       "gapId": "GAP-11",
-      "simId": "SIM-017",
+      "simId": "SIM-17",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Provider uses own truck with no external CarrierOffer",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1356,9 +1356,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-023-S14-01",
+      "id": "TDD-SIM-23-S14-01",
       "gapId": "GAP-14",
-      "simId": "SIM-023",
+      "simId": "SIM-23",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Driver discovers wrong weight/units or broken seal on pickup",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1370,9 +1370,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-025-S16-01",
+      "id": "TDD-SIM-25-S16-01",
       "gapId": "GAP-16",
-      "simId": "SIM-025",
+      "simId": "SIM-25",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Assigned vehicle breaks down with cargo already in custody",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1384,9 +1384,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-027-S17-01",
+      "id": "TDD-SIM-27-S17-01",
       "gapId": "GAP-17",
-      "simId": "SIM-027",
+      "simId": "SIM-27",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Receiver absent or declines to sign",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1398,9 +1398,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-029-S19-01",
+      "id": "TDD-SIM-29-S19-01",
       "gapId": "GAP-19",
-      "simId": "SIM-029",
+      "simId": "SIM-29",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Guest POD recipient has expired/guessed delivery link",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1412,9 +1412,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-030-S20-01",
+      "id": "TDD-SIM-30-S20-01",
       "gapId": "GAP-20",
-      "simId": "SIM-030",
+      "simId": "SIM-30",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Verified POD access revoked while old presigned URL exists",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1426,9 +1426,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-031-S23-01",
+      "id": "TDD-SIM-31-S23-01",
       "gapId": "GAP-23",
-      "simId": "SIM-031",
+      "simId": "SIM-31",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Carrier claims disputed surcharge after original Invoice issued",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1440,9 +1440,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-026-S24-01",
+      "id": "TDD-SIM-26-S24-01",
       "gapId": "GAP-24",
-      "simId": "SIM-026",
+      "simId": "SIM-26",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "GPS cache is stale and partner grant revoked",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1454,9 +1454,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-029-S25-01",
+      "id": "TDD-SIM-29-S25-01",
       "gapId": "GAP-25",
-      "simId": "SIM-029",
+      "simId": "SIM-29",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Customer reports cargo issue before completion",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
@@ -1468,9 +1468,9 @@
       "execution": "NOT_EXECUTED"
     },
     {
-      "id": "TDD-SIM-035-S26-01",
+      "id": "TDD-SIM-35-S26-01",
       "gapId": "GAP-26",
-      "simId": "SIM-035",
+      "simId": "SIM-35",
       "kind": "SAFETY_FAIL_CLOSED",
       "given": "Job handler retries after user membership revoke",
       "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
