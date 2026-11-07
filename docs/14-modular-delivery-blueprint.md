@@ -188,3 +188,7 @@ Apply [20 — MapStruct + TDD Engineering Standard](20-mapstruct-tdd-engineering
 ## Role-based User Story Book adoption
 
 Develop [21 — User Story Book](21-user-story-book.md) in several passes: R0 actors and story seeds; commercial/booking; execution/POD; finance/tenancy/operations; later roles; approved scenarios → TDD tests. Keep `USB-*` story IDs stable and link `KX-*`, `LFC-*`, `ENG-*`. Do not add business modules or inflate R0 scope. Each implementation slice references reviewed user outcomes and adversarial/security acceptance.
+
+## First access-policy architecture slice
+
+Use [22 — Role Permission Scope Approval Matrix](22-role-permission-scope-approval-matrix.md) as R0 design candidate for Tenancy and Commercial. Implement only necessary built-in role templates, scoped permissions and a compact approval policy; no general-purpose IAM service or BPM engine. Begin with verified tenant owner bootstrap, admin delegation and scoped Commercial Quote issuance, exceptional approval and authorized customer acceptance. Demonstrate 24 documented draft `AUTH-*` outcomes through business review then TDD/real PostgreSQL Testcontainers, without claiming test execution at documentation stage.
