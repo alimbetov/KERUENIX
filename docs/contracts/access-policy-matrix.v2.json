@@ -1578,7 +1578,7 @@
       "permission": "review:provider:read",
       "resourceScope": "AUTHORIZED_PROVIDER_TENANT_CUSTOMER_SERVICE_REVIEW",
       "approvalPolicy": "PRIVATE_FEEDBACK_ONLY_ASSIGNED_PROVIDER_STAFF_NO_FOREIGN_REVIEW_ACCESS",
-      "storyId": "USB-SAL-004",
+      "storyId": "USB-SAL-005",
       "acceptanceId": "AUTH-COM-017",
       "priority": "R0",
       "subjectType": "TENANT_MEMBER",
