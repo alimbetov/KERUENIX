@@ -106,6 +106,15 @@
 
 Все данные требования — **PROPOSED**. Нет пройденных performance/partition/GIS тестов в коде.
 
+## Architecture Hardening — согласованные приоритеты
+
+Владелец проекта утвердил три направления проектирования без расширения каталога из 17 бизнес-модулей:
+- **Correctness First:** `KX-ARC-COR-001..007`, R0 P0.
+- **Operational Reliability:** `KX-ARC-OPS-001..007` R0 P0; `KX-ARC-OPS-008..009` R1 P1.
+- **Intelligence Ready:** `KX-ARC-INT-001..002` только R0 data contract; `KX-ARC-INT-003..004` R1; `KX-ARC-INT-005` R2.
+
+Нормативный источник идентификаторов, ownership, обязательных тестов и exit gates: [19 — Architecture Hardening Priorities](19-architecture-hardening-priorities.md). Требования описывают план, а не принятую реализацию. Полный R0 не блокируется наличием ML training или Redis.
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.
