@@ -21,6 +21,8 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
+| 33 | [TDD Development Roadmap v1](33-tdd-development-roadmap-v1.md) | Этапы RD-00..RD-12, зависимости, TDD, PostgreSQL/RLS, Soft Delete, REST/E2E, CI и R0 qualification | Proposed / no business implementation qualified |
+| JSON | [TDD Roadmap Contract v1](contracts/tdd-development-roadmap.v1.json) | Machine-readable phases/dependencies/owners/test gates with explicit planned status | Planned / not executed |
 | 32 | [Scenario-Driven Backend Design v1](32-scenario-driven-backend-design-v1.md) | DDD/Modulith, command/query, DTO/MapStruct, REST, typed filters, offset/cursor pagination, SQL/RLS and opt-in Soft Delete | Proposed / architecture review; not implemented |
 | JSON | [Backend Query & Soft Delete Contract v1](contracts/backend-query-soft-delete.v1.json) | Machine-readable paging/filter/route, deletion eligibility, restoration, and planned acceptance gates | Proposed / not implemented |
 | 31 | [Unified API Errors — RFC 9457 / Global Handler](31-unified-error-handling-standard.md) | 21 stable codes, MVC + Spring Security + servlet fallback, async failure rules | 15 contract tests green at SHA `ac459923`; domain qualification pending |
