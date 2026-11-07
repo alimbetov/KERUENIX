@@ -572,8 +572,8 @@ The 12 families are **test taxonomy**, not 12 new modules or 12 new roles.
 - **Then / authoritative decision:** At-least-once transport, exactly one logical domain effect via inbox uniqueness
 - **DB/canonical invariant:** No duplicate Booking, invoice, custody or review row
 - **Outbox/Inbox/Jobs/Documents:** Duplicate delivery acknowledged/dedup; not repeated notification side effect
-- **User-visible outcome:** Modulith+PostgreSQL Inbox
-- **Execution layer:** undefined. **Status:** `DESIGNED_NOT_EXECUTED`.
+- **User-visible outcome:** Only one completed operation is visible; no duplicate notifications or ledger entries
+- **Execution layer:** Modulith + PostgreSQL Outbox/Inbox concurrency. **Status:** `DESIGNED_NOT_EXECUTED`.
 
 #### NEG-R0-042 — Job retries after original actor privilege is revoked
 
