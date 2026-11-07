@@ -192,3 +192,7 @@ Develop [21 — User Story Book](21-user-story-book.md) in several passes: R0 ac
 ## First access-policy architecture slice
 
 Use [22 — Role Permission Scope Approval Matrix](22-role-permission-scope-approval-matrix.md) as R0 design candidate for Tenancy and Commercial. Implement only necessary built-in role templates, scoped permissions and a compact approval policy; no general-purpose IAM service or BPM engine. Begin with verified tenant owner bootstrap, admin delegation and scoped Commercial Quote issuance, exceptional approval and authorized customer acceptance. Demonstrate 24 documented draft `AUTH-*` outcomes through business review then TDD/real PostgreSQL Testcontainers, without claiming test execution at documentation stage.
+
+## External Customer access and revised v2 Role Matrix
+
+R0 must include the minimum authenticated external customer portal `EXC` and provider Tenant inbound RFQ window, customer-safe My Orders, quote acceptance by verified signatory, permission-filtered delivery monitoring/POD and minimal private completion-based review. Implement these as experiences/projections across existing domains, not a new module or writable duplicate Booking/Shipment table. Follow [24 — Access Governance v2](24-access-control-tdd-matrix-v2.md) and [23 — Customer Portal](23-external-customer-portal.md); historical [22 — v1 matrix](22-role-permission-scope-approval-matrix.md) is superseded. Separate scoped read guards from approval workflows. No new business module.
