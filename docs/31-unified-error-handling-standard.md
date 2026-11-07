@@ -1,6 +1,6 @@
 # 31 — Unified API Error Contract & Central Handler (Spring MVC / Security / Jobs)
 
-**Version:** 1.0 (proposed) · **Date:** 2026-11-07 · **Target:** Java 21, Spring Boot 4.1.2 (Spring MVC) · **Status:** DESIGN + REFERENCE BACKEND BOOTSTRAP / NOT CI QUALIFIED.
+**Version:** 1.0 (proposed) · **Date:** 2026-11-07 · **Target:** Java 21, Spring Boot 4.1.2 (Spring MVC) · **Status:** DESIGN + IMPLEMENTED ERROR-ONLY BOOTSTRAP. Initial 13-contract-test Maven run passed on SHA `0117f8dc`; subsequent commits require their own exact-SHA CI. Domain/RLS/E2E qualification remains outstanding.
 **Machine catalog:** [api-error-catalog.v1.json](contracts/api-error-catalog.v1.json). **Baseline:** [28 — TDD Acceptance](28-r0-tdd-acceptance-bank.md), [30 — Negative Scenarios](30-negative-and-failure-scenario-bank.md), [20 — Engineering Standard](20-mapstruct-tdd-engineering-standard.md).
 
 ## 1. Decision
@@ -106,7 +106,7 @@ OncePerRequestFilter -> server UUID requestId + X-Request-ID + MDC
 
 **Important:** `@ControllerAdvice` cannot intercept every authentication failure from a Security filter before MVC. Do **not** duplicate JSON bodies: use one problem factory for both filter and MVC errors. A `ProblemDetail` schema is an **HTTP presentation contract**, not a persistence model or Outbox event schema. For async workers keep `ErrorCode` and `failureCategory` without blindly encoding a whole HTTP problem body.
 
-The code bootstrap targets [Spring Boot 4.1.2](https://spring.io/blog/2026/10/23/spring-boot-4-1-2-available-now/) with `spring-boot-starter-webmvc` and Servlet Spring Security; **not** Spring WebFlux. It is deliberately fail-closed (no working authentication, no public business endpoints) until Tenancy/JWT integration is implemented. Domain modules will throw typed failures only after authorization and aggregate guard checks.
+The code bootstrap targets [Spring Boot 4.1.2](https://spring.io/blog/2026/10/23/spring-boot-4-1-2-available-now/) with `spring-boot-starter-webmvc` and Servlet Spring Security; **not** Spring WebFlux. It is deliberately fail-closed (no working authentication, no public business endpoints) until Tenancy/JWT integration is implemented. A separate [catalog parity script](../backend/scripts/check_error_catalog.py) is part of the [Maven CI workflow](../.github/workflows/backend-error-contract.yml). Domain modules will throw typed failures only after authorization and aggregate guard checks.
 
 ### Source organization
 
@@ -161,13 +161,13 @@ Define internal `FailureClassification`: `PERMANENT`, `TRANSIENT`, `CONFLICT_REC
 | `ERR-011` | RequestId filter + security error | same server-generated ID in header/body/MDC; injection ignored |
 | `ERR-012` | Response already committed | no double response or accidental sensitive fallback |
 
-The first bootstrap test class can prove only isolated handler/service cases; **full `ERR-004..012` and RLS/Outbox tests remain planned until authentication/DB/platform modules exist**. Reference [30](30-negative-and-failure-scenario-bank.md) for 48 high-risk business-negative cases and 8 MIX scenarios. Do not conflate `ERR` unit tests and business acceptance.
+The initial bootstrap includes standalone MVC contract tests, live Spring Security filter integration tests and servlet-fallback tests. **Real JWT/Tenancy, RLS/Outbox and transactional `ERR-010` business tests remain pending**; some `ERR-*` rows are only partially qualified by these error-only tests. Reference [30](30-negative-and-failure-scenario-bank.md) for 48 high-risk business-negative cases and 8 MIX scenarios. Do not conflate `ERR` unit tests and business acceptance.
 
 ## 8. Change management / Definition of Done
 
 1. Freeze **code/status/retryability** and public detail in [catalog v1](contracts/api-error-catalog.v1.json). Add codes append-only; no frontend parsing of free text.
 2. Integrate global servlet handler and Security `401/403`; no duplicate default `BasicErrorController` JSON envelope for API. Document `/error` behavior for container/filters as a separate integration gate.
-3. Run `mvn -f backend/pom.xml test`; verify via real network-enabled CI and lock exact SHA. Bootstrap is **not qualified** by document commit alone.
+3. Run `mvn -f backend/pom.xml test`; verify via real network-enabled CI and lock exact SHA. Initial JUnit contract tests were verified against one concrete SHA; every later change requires a new verified CI run.
 4. Roll out per-module typed exceptions only after domain authorization policies, not as a shortcut for RLS or business aggregate consistency.
 5. Monitor P0 error rate, `5xx`, `429/503`, denied cross-tenant accesses, idempotency conflicts and late Outbox retry; do not tag high-cardinality tenant/resource IDs.
 6. Version public code catalog and OpenAPI `application/problem+json` examples. Every new negative `NEG-R0-*` should map to the correct code and assert lack of forbidden persistence, events and UI state.
