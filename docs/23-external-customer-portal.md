@@ -2,7 +2,7 @@
 
 **Version:** 0.1 / User Story Book iteration 1 extension · **Date:** 2026-11-07 · **Status:** DESIGN / business and security review required. **Implementation/tests:** NOT STARTED.
 
-**Decision:** introduce `EXTERNAL_CUSTOMER` (code `EXC`), an external buyer of logistic services with a **customer order cabinet** and a provider-Tenant-facing **inbound order inbox**. This is a **role/experience and read-model capability**, not an 18th business module or a second platform. It belongs to existing Tenancy, Commercial, Booking, Execution, Tracking and Documents boundaries. Reviews are private B2B service feedback in R0; public reputation is a separately governed later feature.
+**Authoritative security policy:** [Access Governance v2](24-access-control-tdd-matrix-v2.md), [JSON v2](contracts/access-policy-matrix.v2.json). The earlier v1.1 policy references below are historical. **Decision:** introduce `EXTERNAL_CUSTOMER` (code `EXC`), an external buyer of logistic services with a **customer order cabinet** and a provider-Tenant-facing **inbound order inbox**. This is a **role/experience and read-model capability**, not an 18th business module or a second platform. It belongs to existing Tenancy, Commercial, Booking, Execution, Tracking and Documents boundaries. Reviews are private B2B service feedback in R0; public reputation is a separately governed later feature.
 
 **Relationships:** [User Story Book](21-user-story-book.md), [Role/Permission Matrix](22-role-permission-scope-approval-matrix.md), [machine matrix](contracts/role-permission-scope-approval.v1.json), [Lifecycle](10-commercial-execution-lifecycle-v1.md), [MVP qualification](05-mvp-qualification.md).
 
@@ -100,7 +100,7 @@ principal identity
 
 ## 6. Role-to-permission and acceptance extension
 
-The canonical machine contract [v1.1](contracts/role-permission-scope-approval.v1.json) preserves 24 earlier policies and adds 12 lines:
+The historical machine contract [v1.1](contracts/role-permission-scope-approval.v1.json) preserved 24 original policies and added 12 lines. The **current design authority** is [v2](contracts/access-policy-matrix.v2.json), which further adds booking, evidence, finance, customer revocation, and negative-access policies:
 
 | Policy | Permission | Scope / critical gate | Acceptance |
 |---|---|---|---|
