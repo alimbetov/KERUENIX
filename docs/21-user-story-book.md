@@ -23,6 +23,8 @@ Roles are **personas**, not a fixed one-role-per-user permission scheme. A perso
 
 | Role code | Actor / organization | Primary goal | Relevant contexts | Priority |
 |---|---|---|---|---|
+| PSA | Platform Super Administrator / KERUENIX operator | Provision tenant and first TENANT_OWNER; optional approved initial TENANT_ADMIN; recover ownership safely | Platform Control Plane, Tenancy | R0 |
+| TNO | Tenant Owner / authorized legal-entity representative | Accept control of company, appoint admins, transfer owner with verification | Tenancy | R0 |
 | SHP | Грузовладелец / customer logistics employee | Request, approve terms, track, accept evidence | Commercial, Tracking, Documents | R0 |
 | SAL | Экспедитор / коммерческий менеджер | Qualify RFQ, quote, customer commitments | Commercial | R0 |
 | PLN | Логист / транспортный планировщик | Determine eligible carrier/vehicle and route | Fleet, Booking, Compliance | R0 |
