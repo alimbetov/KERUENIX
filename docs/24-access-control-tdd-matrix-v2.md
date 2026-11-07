@@ -256,3 +256,23 @@ Each policy row additionally maps to its own `AUTH-...` acceptance ID. The follo
 - What exact performance/load metrics are required for high-volume external order listing, tracking and authorization checks?
 
 **Architectural verdict:** v2 is a design draft ready for cross-functional review, not legal acceptance, executable TDD or production-grade authorization. Earlier v1 content remains historical; do not use it to generate new role code without v2 review.
+
+## 10. Coverage boundary — remaining nine business modules
+
+This v2 is the **R0 vertical-slice authorization baseline**, not permission sign-off for all 17 business modules. The following need separate actor/scenario passes when enabled:
+
+| Business module | Roles/access question | Recommended phase |
+|---|---|---|
+| Cargo | Cargo profile owner, customer-provided attributes, evidence correction | R0 safety rules with module-specific guards; full policy matrix later |
+| Compliance | Expert assessment, HOLD denial, independent release, proof of qualification | R0 hard-deny defaults, R1 full access catalog |
+| Optimization | Planner/dispatcher job request, solver result approvals and quotas | R1 |
+| Intelligence | Data steward, feature/model approval, training scopes and export restrictions | R1/R2 |
+| Recovery | Subcontract rescue authorization, custody and cost change approvals | R1 |
+| Warehouse | Warehouse operator, inventory ledger adjustments, owner/custodian scope | R1 |
+| Marketplace | Listing author, moderator, counterparty trust, complaints and reputation | R2 |
+| Regulatory | Official rule-set editor, independent approver and version provenance | R1/R2 |
+| SaaS Control | Subscription administrator, plans, billing records and provisioning quotas | R1 |
+
+The existence of a role name does not grant access to these modules. Apply `deny-by-default` until the relevant business module defines its own policies. Integrate with [User Story Book](21-user-story-book.md) passes and exact-`SHA` tests instead of implementing hypothetical UI and policy engines prematurely.
+
+**Contract qualification before implementation:** validate JSON schema/version, uniqueness of policy IDs and acceptance IDs, reference to a known role, referenced approval/guard definition, and linkage to a real `USB-*` story. These are documentation checks today; they are not CI checks until implementation.
