@@ -204,3 +204,7 @@ Use [25 — Business Scenario Book](25-business-scenario-book.md) to qualify rol
 ## Third-pass role/process walkthrough qualification
 
 After 11 business narratives, [26 — Role/Process Simulation & Gap Audit](26-role-process-simulation-and-gap-audit.md) adds 42 desk simulations across all 22 role personas, including cross-tenant EXC, own tenant shipper, carrier, driver, receiver, Finance, Warehouse/Marketplace/ML (later) and two strategic exceptions: Sales-assisted RFQ and live transport during SaaS suspension. The JSON matrix is [here](contracts/role-process-simulation.v1.json). There are 33 gap hypotheses, not 33 new modules. Keep 17 module boundaries and 67 unchanged Access Governance v2.1 policies. Only approved R0 commands get authorization design/test code; R1/R2 personas stay deferred.
+
+## R0 fourth-pass proposed policy and test qualification
+
+Use [27 — 12 Blocker Decisions](27-r0-blocker-policy-decisions.md), [28 — TDD Acceptance Bank](28-r0-tdd-acceptance-bank.md), and [29 — Business Stakeholder Workshops](29-r0-business-acceptance-workshop-kit.md) to freeze business/legal permission and lifecycle contracts **before** code. Full planned catalog: 60 blocker tests + 14 R0 safety tests + 10 E2E cases = 84 planned, **zero executed**. No new business module, IAM service, generic BPM or Kafka is required. Sequence: signoff of relevant `BR-*` → TDD JUnit domain guard → real PG RLS/transaction races → Modulith contract/Outbox → customer/carrier E2E → exact-SHA CI. Missing approval/supplier/EDS/cash proof must never be inferred.
