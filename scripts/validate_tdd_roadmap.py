@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CI contract verification for KERUENIX TDD Roadmap v1.1.
+"""CI contract verification for KERUENIX TDD Roadmap v1.2.
 
 Standard library only; checks documentary consistency, NOT executable-domain
 qualification or real stakeholder signoff.
@@ -17,6 +17,116 @@ CONTRACT = ROOT / "docs/contracts/tdd-development-roadmap.v1.json"
 
 def load(rel: str) -> dict:
     return json.loads((ROOT / rel).read_text(encoding="utf-8"))
+
+
+
+def audit_v12_pr_contract(road: dict, known_cases: set[str],
+                          valid_permissions: dict[str, str],
+                          known_br: set[str]) -> list[str]:
+    """Check v1.2 PR risk claims; these are planned contracts, not executed tests."""
+    issues: list[str] = []
+    required_ui = {
+        "PR-02", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07",
+        "PR-10", "PR-11", "PR-12", "PR-13", "PR-14", "PR-15",
+        "PR-16", "PR-17", "PR-18", "PR-19", "PR-20",
+    }
+    valid_modes = {
+        "DOCUMENTATION_ONLY", "FOUNDATION_FAIL_CLOSED", "POLICY_SCOPED",
+        "BLOCKED_UNTIL_BUSINESS_SIGNOFF", "BLOCKED_UNTIL_PERMISSION_APPROVED",
+        "SAFE_DRAFT_ONLY", "FAIL_CLOSED_LEGAL_SIGNOFF", "PURE_DOMAIN_INPUT",
+        "RELEASE_ACCEPTANCE", "RELEASE_SIGNOFF",
+    }
+    cuts = {p["id"]: p for p in road["r0Prcuts"]}
+    for pr in road["r0Prcuts"]:
+        pid = pr["id"]
+        gate = pr.get("activationGate") or {}
+        if gate.get("mode") not in valid_modes:
+            issues.append(f"{pid}: invalid or missing activationGate.mode")
+        for br in gate.get("br", []):
+            if br not in known_br:
+                issues.append(f"{pid}: unknown activation business rule {br}")
+        cases = pr.get("criticalCaseIds")
+        if not isinstance(cases, list):
+            issues.append(f"{pid}: missing criticalCaseIds list")
+        else:
+            if len(cases) != len(set(cases)):
+                issues.append(f"{pid}: duplicate criticalCaseIds")
+            for case_id in cases:
+                if case_id not in known_cases:
+                    issues.append(f"{pid}: unknown critical case {case_id}")
+            if not cases and not pr.get("caseCoverageNote"):
+                issues.append(f"{pid}: missing rationale for empty critical cases")
+        ui = pr.get("uiAcceptance") or {}
+        if pid in required_ui and ui.get("required") is not True:
+            issues.append(f"{pid}: missing mandatory role-UI acceptance")
+        if ui.get("required"):
+            if not ui.get("deliverables"):
+                issues.append(f"{pid}: required UI has no deliverable")
+            if ui.get("requiredTest") != "ROLE_API_UI_AND_FAILURE_STATES":
+                issues.append(f"{pid}: UI missing role/error-state test contract")
+        if not pr.get("caseCoverageNote"):
+            issues.append(f"{pid}: per-PR case applicability rationale missing")
+    if cuts.get("PR-04", {}).get("activationGate", {}).get("mode") != "SAFE_DRAFT_ONLY":
+        issues.append("PR-04 must be safe DRAFT only")
+    if "DRAFT" not in cuts.get("PR-04", {}).get("outcome", ""):
+        issues.append("PR-04 must explicitly limit write to DRAFT")
+    if cuts.get("PR-05", {}).get("activationGate", {}).get("mode") != "BLOCKED_UNTIL_PERMISSION_APPROVED":
+        issues.append("PR-05 submit must remain blocked until policy approval")
+    permission_gate = road.get("authorizationGates", {})
+    for key in ("rfqDraft", "rfqList", "rfqDetail", "providerInbox"):
+        value = permission_gate.get(key) or {}
+        if valid_permissions.get(value.get("catalogRef")) != value.get("permission"):
+            issues.append(f"authorizationGates.{key}: unknown/mismatched policy ID")
+    submit = permission_gate.get("rfqSubmit") or {}
+    if submit.get("currentPolicy") != "NOT_GRANTED_BY_EXISTING_MATRIX" or submit.get("activation") != "DENY_UNTIL_OWNER_AND_SECURITY_ACCEPT":
+        issues.append("RFQ submit policy unexpectedly enabled without explicit approval")
+    owners = {x.get("resource"): x for x in road.get("domainOwnershipDecisions", [])}
+    ca = owners.get("CustomerAccount", {})
+    if (ca.get("canonicalWriter") != "commercial" or ca.get("otherOwner") != "tenancy"
+            or ca.get("decision") != "PROPOSED_AWAITING_ADR"):
+        issues.append("CustomerAccount owner/grant split must remain explicitly proposed pending ADR")
+    evidence = road.get("proofIntegrityProtocol") or {}
+    if evidence.get("writeOwner") != "execution" or not evidence.get("storageTransactionRule") or len(evidence.get("required", [])) < 8:
+        issues.append("Missing original POD/custody evidence and external object consistency protocol")
+    settlement = road.get("financeSettlementGate") or {}
+    if "SIMULATED" not in settlement.get("mockRule", "") or not settlement.get("withoutVerifiedProvider"):
+        issues.append("Finance settlement gate permits false production PAID")
+    if not road.get("tddExecutableSelection", {}).get("requiredManifestFields"):
+        issues.append("Missing per-PR actual TDD applicability evidence schema")
+    return issues
+
+
+def audit_v12_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
+    """Compare rendered PR DAG table to the machine graph, not just ID presence."""
+    issues: list[str] = []
+    if "## 16. Executable delivery increments" not in main_doc or "## 17. Mandatory ownership" not in main_doc:
+        return ["Roadmap Markdown missing PR table boundaries"]
+    section = main_doc.split("## 16. Executable delivery increments", 1)[1].split(
+        "## 17. Mandatory ownership", 1)[0]
+    rows = {}
+    for line in section.splitlines():
+        if not re.match(r"^\|\s*"+ chr(96) + r"PR-\d{2}" + chr(96), line):
+            continue
+        cols = [x.strip() for x in line.split("|")[1:-1]]
+        if len(cols) < 5:
+            issues.append("Malformed PR table row")
+            continue
+        pid, phase, owner, deps = [x.replace(chr(96), "") for x in cols[:4]]
+        if pid in rows:
+            issues.append(f"Duplicate Markdown PR {pid}")
+        rows[pid] = {"phase": phase, "owner": owner,
+                     "dependsOnPrs": re.findall(r"PR-\d{2}", deps)}
+    expected = {p["id"]: p for p in road["r0Prcuts"]}
+    if set(rows) != set(expected):
+        issues.append("Markdown PR IDs differ from JSON r0Prcuts")
+    for pid in sorted(set(rows) & set(expected)):
+        actual, planned = rows[pid], expected[pid]
+        for field in ("phase", "owner"):
+            if actual[field] != planned[field]:
+                issues.append(f"{pid}: Markdown {field} differs from machine contract")
+        if actual["dependsOnPrs"] != planned.get("dependsOnPrs", []):
+            issues.append(f"{pid}: Markdown prerequisites differ from machine DAG")
+    return issues
 
 
 def main() -> int:
@@ -40,8 +150,8 @@ def main() -> int:
         check(len(values) == len(set(values)), f"Duplicate {label} ID")
         return set(values)
 
-    check(road["schemaVersion"] == "1.1.0", "Roadmap schema version must be 1.1.0")
-    check("v1.1" in main_doc[:400], "Roadmap Markdown version and JSON must match")
+    check(road["schemaVersion"] == "1.2.0", "Roadmap schema version must be 1.2.0")
+    check("v1.2" in main_doc[:400], "Roadmap Markdown version and JSON must match")
     module_ids = unique(modules["modules"], "id", "business module")
     check(len(module_ids) == 17, f"Expected 17 business module IDs, got {len(module_ids)}")
     phase_ids = unique(road["phases"], "id", "phase")
@@ -100,6 +210,9 @@ def main() -> int:
                                 if d["businessApproval"] == "BUSINESS_APPROVED"}
                     check(set(p["br"]).issubset(approved),
                           f"{pid}: QUALIFIED with unapproved business decisions")
+                if pid in {"RD-03", "RD-07", "RD-11", "RD-12"}:
+                    check(bool(evidence.get("frontendE2eEvidence")),
+                          f"{pid}: QUALIFIED without required frontendE2eEvidence")
                 if pid in {"RD-11", "RD-12"}:
                     check(bool(evidence.get("frontendE2eEvidence")),
                           f"{pid}: QUALIFIED without frontendE2eEvidence")
@@ -146,7 +259,7 @@ def main() -> int:
     pr_ids = unique(cuts, "id", "PR cut")
     check(len(cuts) == 21, f"Expected 21 slices, got {len(cuts)}")
     check(pr_ids == {f"PR-{i:02d}" for i in range(21)}, "PR IDs missing or reused")
-    check(road["audit"]["findingsTotal"] == 13, "Expected 13 audited findings")
+    check(road["audit"]["findingsTotal"] == 21, "Expected 21 audited findings")
     pr_map = {pr["id"]: pr for pr in cuts}
     for pr in cuts:
         for upstream in pr.get("dependsOnPrs", []):
@@ -209,6 +322,9 @@ def main() -> int:
         base_tests["crossRoleCases"] + neg_tests["cases"], "id", "test case")
     check(len(full_case_ids) == counts["individualPlanned"],
           "Planned test case identity total drift")
+    problems.extend(audit_v12_pr_contract(
+        road, full_case_ids, {e["id"]: e["permission"] for e in access["entries"]}, br_ids))
+    problems.extend(audit_v12_markdown_pr_table(road, main_doc))
     for path in road["testBanks"]:
         check((ROOT / path).is_file(), f"Missing linked test source {path}")
     for item in road["r0Prcuts"]:
