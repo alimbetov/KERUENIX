@@ -208,8 +208,9 @@ def main() -> int:
                           f"{pid}: QUALIFIED without applicable businessDecisionRefs")
                     approved = {d["decisionId"] for d in br["decisions"]
                                 if d["businessApproval"] == "BUSINESS_APPROVED"}
-                    check(set(p["br"]).issubset(approved),
-                          f"{pid}: QUALIFIED with unapproved business decisions")
+                    if pid != "RD-00":
+                        check(set(p["br"]).issubset(approved),
+                              f"{pid}: QUALIFIED with unapproved business decisions")
                 if pid in {"RD-03", "RD-07", "RD-11", "RD-12"}:
                     check(bool(evidence.get("frontendE2eEvidence")),
                           f"{pid}: QUALIFIED without required frontendE2eEvidence")
@@ -257,8 +258,8 @@ def main() -> int:
 
     cuts = road["r0Prcuts"]
     pr_ids = unique(cuts, "id", "PR cut")
-    check(len(cuts) == 21, f"Expected 21 slices, got {len(cuts)}")
-    check(pr_ids == {f"PR-{i:02d}" for i in range(21)}, "PR IDs missing or reused")
+    check(len(cuts) == 23, f"Expected 23 slices, got {len(cuts)}")
+    check(pr_ids == ({f"PR-{i:02d}" for i in range(21)} | {"PR-03C", "PR-17S"}), "PR IDs missing or reused")
     check(road["audit"]["findingsTotal"] == 21, "Expected 21 audited findings")
     pr_map = {pr["id"]: pr for pr in cuts}
     for pr in cuts:
@@ -292,12 +293,44 @@ def main() -> int:
                   f"{pr['id']}: phase deliveryPrs mismatched")
         check(pr["owner"] in module_ids | {"platform", "architecture", "cross-functional", "release"},
               f"{pr['id']}: unrecognized owner {pr['owner']}")
+        if pid in phase_map:
+            check(pr["owner"] in phase_map[pid].get("primaryWriteOwners", []),
+                  f"{pr['id']}: PR owner {pr['owner']} not a declared phase writer")
         check(pr["outcome"].strip() != "" and pr["testGate"].strip() != "",
               f"{pr['id']}: missing outcome/test gate")
         check(f"`{pr['id']}`" in main_doc, f"{pr['id']}: missing in Markdown cuts table")
     for phase in road["phases"]:
         for pr_id in phase["deliveryPrs"]:
             check(pr_id in pr_ids, f"{phase['id']}: unknown PR {pr_id}")
+    # Verify that published Markdown PR table faithfully mirrors JSON dependencies,
+    # not merely that every PR number appears somewhere in the document.
+    pr_table = {}
+    for line in main_doc.splitlines():
+        if not line.startswith("| `PR-"):
+            continue
+        parts = [piece.strip() for piece in line.strip().split("|")[1:-1]]
+        if len(parts) < 5:
+            continue
+        pr_id = parts[0].strip("`")
+        if pr_id in pr_table:
+            problems.append(f"Markdown duplicate PR table row {pr_id}")
+        pr_table[pr_id] = parts
+    check(set(pr_table) == pr_ids, "Markdown PR rows differ from JSON PR cuts")
+    for pr in cuts:
+        row = pr_table.get(pr["id"])
+        if row:
+            check(row[1].strip("`") == pr["phase"],
+                  f"{pr['id']}: Markdown phase mismatch")
+            check(row[2].strip("`") == pr["owner"],
+                  f"{pr['id']}: Markdown owner mismatch")
+            markdown_deps = set(re.findall(r"`(PR-[0-9]{2}[A-Z]?)`", row[3]))
+            check(markdown_deps == set(pr.get("dependsOnPrs", [])),
+                  f"{pr['id']}: Markdown dependency mismatch")
+    # RD-00 records a truthful BR signoff backlog; it does not require every BR signed.
+    if phase_map["RD-00"]["status"] == "QUALIFIED":
+        check(bool(phase_map["RD-00"].get("evidence", {}).get("traceabilityReport")),
+              "RD-00 QUALIFIED without proof of traceability report")
+
 
     inf_ids = unique(road["earlyInfrastructure"], "id", "foundation infrastructure item")
     check(len(inf_ids) == 5, "Foundation should record five minimum infrastructure contracts")
@@ -322,6 +355,24 @@ def main() -> int:
         base_tests["crossRoleCases"] + neg_tests["cases"], "id", "test case")
     check(len(full_case_ids) == counts["individualPlanned"],
           "Planned test case identity total drift")
+    # Critical cases must resolve to a real, stable test ID, never a guessed prefix.
+    for pr in cuts:
+        for case in pr.get("criticalCaseIds", []):
+            check(case in full_case_ids, f"{pr['id']}: unknown critical TDD case {case}")
+        check("criticalCaseIds" in pr, f"{pr['id']}: no criticalCaseIds/none justification")
+        activation = pr.get("activationGate", {})
+        check(bool(activation.get("mode")), f"{pr['id']}: no activation mode")
+        check(bool(activation.get("effect")), f"{pr['id']}: no activation effect")
+        for decision in activation.get("br", []):
+            check(decision in br_ids, f"{pr['id']}: unknown activation BR {decision}")
+        ui = pr.get("uiAcceptance", {})
+        check(isinstance(ui.get("required"), bool), f"{pr['id']}: missing UI obligation")
+        check(bool(ui.get("requiredTest")), f"{pr['id']}: UI test contract missing")
+        if ui.get("required"):
+            check(bool(ui.get("deliverables")), f"{pr['id']}: required UI deliverables absent")
+        check(bool(pr.get("caseCoverageNote")) or pr["id"] in {"PR-00", "PR-01", "PR-08"},
+              f"{pr['id']}: test case-selection rationale missing")
+
     problems.extend(audit_v12_pr_contract(
         road, full_case_ids, {e["id"]: e["permission"] for e in access["entries"]}, br_ids))
     problems.extend(audit_v12_markdown_pr_table(road, main_doc))
@@ -331,6 +382,21 @@ def main() -> int:
         check(item["phase"].startswith("RD-"), f"Unexpected R1/R2 PR in R0: {item['id']}")
     check(road["noAutoActivationOfExtensionModules"] is True,
           "R1/R2 modules must not auto-activate in R0")
+    owners = {d["resource"]: d for d in road.get("domainOwnershipDecisions", [])}
+    check(owners.get("CustomerAccount", {}).get("canonicalWriter") == "commercial",
+          "CustomerAccount must have an explicit Commercial canonical writer proposal")
+    check(pr_map["PR-03C"]["owner"] == "commercial" and
+          "PR-03C" in pr_map["PR-03"]["dependsOnPrs"],
+          "Tenancy grants must depend on canonical Commercial CustomerAccount")
+    check("PR-17S" in pr_map["PR-18"]["dependsOnPrs"] and
+          "PR-17S" in pr_map["PR-19"]["dependsOnPrs"],
+          "Recovery/E2E depend on qualified verified settlement path")
+    proof = road.get("proofIntegrityProtocol", {})
+    check("EvidenceBlobGateway" in proof.get("immutableObjectOwner", ""),
+          "Proof bytes must be verified through non-cyclic platform EvidenceBlobGateway")
+    check(road["audit"]["findingsTotal"] ==
+          len(re.findall(r"^\\| `AUD-RD-[0-9]{2}` \\|", (ROOT / "docs/34-tdd-roadmap-technical-audit.md").read_text(encoding="utf-8"), re.M)),
+          "Audit Markdown rows must match the machine finding count")
 
     if problems:
         for problem in problems:
