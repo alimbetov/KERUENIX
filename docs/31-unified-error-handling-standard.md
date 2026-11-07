@@ -40,10 +40,10 @@ Example UUID and timestamp are illustrative. Server generates a different reques
 |---|---|---:|---|---|
 | `BAD_REQUEST` | `KX-GEN-400-001` | 400 | Malformed JSON, unsupported request syntax | No |
 | `VALIDATION_FAILED` | `KX-GEN-400-002` | 400 | Invalid input with optional `violations` field names/codes only | No |
+| `FRAMEWORK_HTTP_ERROR` | `KX-GEN-000-001` | actual 4xx | Safe generic fallback for uncommon framework 4xx (406, 413 etc.), preserves actual HTTP status | No |
 | `AUTHENTICATION_REQUIRED` | `KX-AUTH-401-001` | 401 | Missing/invalid authentication; bearer challenge if configured | No |
 | `PERMISSION_DENIED` | `KX-AUTH-403-001` | 403 | Authenticated but lacking permission | No |
-| `RESOURCE_HIDDEN` | `KX-AUTH-404-001` | 404 | Deliberately indistinguishable private resource from missing | No |
-| `RESOURCE_NOT_FOUND` | `KX-GEN-404-001` | 404 | Resource missing with same generic public detail | No |
+| `RESOURCE_NOT_FOUND` | `KX-GEN-404-001` | 404 | Both absent and foreign/private resource: same public status, code and detail | No |
 | `METHOD_NOT_ALLOWED` | `KX-GEN-405-001` | 405 | Incorrect HTTP method; preserve `Allow` header | No |
 | `UNSUPPORTED_MEDIA_TYPE` | `KX-GEN-415-001` | 415 | Incorrect request media type | No |
 | `STALE_VERSION` | `KX-GEN-409-001` | 409 | expectedVersion / optimistic concurrency mismatch | No |
@@ -70,7 +70,7 @@ Codes are **append-only identifiers** once clients depend on them; never reuse o
 | Bean Validation | 400 `VALIDATION_FAILED` | `violations: [{field, rule}]`, no rejectedValue |
 | No authentication / expired token | 401 `AUTHENTICATION_REQUIRED` | Spring Security `AuthenticationEntryPoint`; send `WWW-Authenticate` for Bearer resource-server when JWT is configured |
 | Authenticated, insufficient capability | 403 `PERMISSION_DENIED` | Security `AccessDeniedHandler` + method/security advice |
-| Resource from foreign Tenant/CustomerAccount | 404 `RESOURCE_HIDDEN` | Check exact grant first; same body as a nonexistent private resource (avoid existence side channels) |
+| Resource from foreign Tenant/CustomerAccount | 404 `RESOURCE_NOT_FOUND` | Check exact grant first; same public code/title/detail as nonexistent private resource (avoid existence side channels) |
 | Missing resource | 404 `RESOURCE_NOT_FOUND` | No foreign ID in detail/log |
 | Stale aggregate `expectedVersion` | 409 `STALE_VERSION` | Domain-owned exception or known optimistic locking failure |
 | Same idempotency key, different payload | 409 `IDEMPOTENCY_CONFLICT` | Stable dedup digest, no second command effect |
