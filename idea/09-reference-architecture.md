@@ -44,6 +44,7 @@ Broker selection (Kafka, RabbitMQ or Postgres-backed jobs) must follow measured 
         shipments/         # cargo and custody
         trips/             # assignments, stops, route plan versions
         dispatch/          # events and exceptions
+        recovery/          # incidents, rescue offers, subcontract, cargo handover
         routing/           # provider-independent routing contracts
         optimization/      # constraints and solver adapter
         prediction/        # baseline, Tribuo and model registry

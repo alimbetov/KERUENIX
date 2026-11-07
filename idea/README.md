@@ -24,6 +24,7 @@ KERUENIX — многоклиентская платформа управлен�
 | [11 — ADR Backlog](11-adr-and-open-questions.md) | Предложенные решения и открытые вопросы |
 | [12 — Benchmark](12-competitive-benchmark.md) | Идеи SAP, Oracle, Wialon, PTV и других систем |
 | [13 — Deployment Models](13-deployment-models.md) | Cloud SaaS, Dedicated и Enterprise/On-Prem из одного кода |
+| [14 — Rescue Network](14-emergency-recovery-subcontracting.md) | Аварийный перехват груза, поиск замены и субподряд между компаниями |
 
 ## Неизменные правила дизайна
 

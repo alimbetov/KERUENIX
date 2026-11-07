@@ -25,6 +25,9 @@ Scope:
 
 ## Phase 2 — operational efficiency
 
+Rescue scenario: vehicle breakdown, manually approved internal reassignment and custody evidence; then opt-in trusted-carrier rescue offers, consent-based subcontract confirmation and route/cost recalculation. Complex marketplace matching and cross-installation federation come only after safety, authorization and contract tests. See [14 — Rescue Network](14-emergency-recovery-subcontracting.md).
+
+
 Multi-order vehicle assignment, VRP stop optimization, automatic backhaul suggestions, partner availability workflow, traffic-aware departure planning, fuel card import and external AЗС reconciliation, driver offline sync, robust exception and alert handling.
 
 ## Phase 3 — cost and warehouse precision

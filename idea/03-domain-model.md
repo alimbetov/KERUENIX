@@ -64,3 +64,7 @@ Each TransportLeg has mode, operator, contracted capacity, origin/destination fa
 ## Integrity and privacy
 
 Optimistic locking for edited plans and assignments; unique idempotency key per tenant/action; composite key constraints; custody quantity reconciliation; money represented in decimal minor units/BigDecimal plus currency; preserve snapshots of contract rates. No unsafe delete of evidence or finance records. Document retention and tenant deletion must be policy-driven.
+
+## Emergency re-assignment and subcontracts
+
+A breakdown may interrupt a Trip without canceling the commercial Order or physical Shipment. A RecoveryCase links the incident to the affected CargoUnits, approved alternative TransportLegs and a SubcontractAgreement. Reassignment requires verified CargoHandover and must preserve immutable custody history. See [14 — Rescue Network](14-emergency-recovery-subcontracting.md).

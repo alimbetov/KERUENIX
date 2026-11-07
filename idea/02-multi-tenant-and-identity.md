@@ -74,3 +74,7 @@ TenantProvisioning -> Trial/Active -> GracePeriod -> Suspended -> Export/Deletio
 ## Open policy choices
 
 Data residency and retention by contract/jurisdiction; tenant BYOK requirement; exact billing units; third-party collaboration consent; customer support impersonation policy; formal data processing agreements and cross-border transfers. These require legal/security review before production.
+
+## Incident rescue collaboration
+
+When a failed vehicle needs external assistance, authorized partners may receive a narrowly scoped RescueRequest and submit offers. Reveal generalized pickup zone and cargo requirements initially; exact pickup location and custody documents only after confirmed contractual authorization. Preserve original tenant's customer identity, rates, margins and historical GPS confidentiality. See [14 — Rescue Network](14-emergency-recovery-subcontracting.md).

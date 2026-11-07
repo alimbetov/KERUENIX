@@ -72,3 +72,7 @@ Prohibited: bypass vehicle safety rules, auto-approve payments or evidence witho
 ## Acceptance scenarios
 
 Two tenants use the same vehicle nickname and same customer reference: no leak. A closure triggers proposed route change with correct cost delta; old version remains audit-visible. A shipment transfers to another truck: tracking follows cargo custody not old truck. Offline pickup sync duplicate creates one custody event. Carrier rejects job: reservation released and new quote/assignment required.
+
+## Journey G — vehicle breakdown and rescue subcontract
+
+Driver or telemetry reports a verified issue; dispatcher checks safety and whether transfer is permitted. Planner selects safe handover facilities and searches replacement capacity first internally, then via consented partner offers. After approvals, reserve the selected partner, confirm cargo handover with evidence, create a replacement route leg and recalculate ETA and cost. Do not replace the commercial order or treat a accepted offer as completed physical transfer. For state machine, privacy and financial controls, see [14 — Rescue Network](14-emergency-recovery-subcontracting.md).

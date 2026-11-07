@@ -20,6 +20,7 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-014 | Location | GPS observed vs inferred cargo location/custody separated | Multi-modal pilot |
 | ADR-015 | Deployment | Containerized pilot with backup/observability | Verified demand for Kubernetes |
 | ADR-016 | SaaS + Enterprise parity | One versioned logistics core supports pooled SaaS and dedicated/on-prem through configuration | Deployment pilot and enterprise requirements |
+| ADR-017 | Emergency recovery and subcontract | Preserve the original order; create incident, approved replacement leg, scoped partner offer and cargo handover evidence | Carrier/insurer contract and operational pilot |
 
 ## Questions to settle before code
 

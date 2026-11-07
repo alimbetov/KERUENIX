@@ -68,3 +68,7 @@ Per order, trip, vehicle, route corridor, customer, partner and tenant: planned 
 - Currency conversion is reproducible from stored rate.
 - Reconciliation of split shipments does not double count costs.
 - Missing provider prices yield provisional offers, not false fixed guarantees.
+
+## Recovery and subcontract cost allocation
+
+A rescue event produces a distinct cost estimate and subsequent actuals: replacement vehicle positioning, safe transloading, storage, partner purchase, extra tolls, waiting and potential claims. Preserve the original customer quote; contractually approved amendments create new quote versions. Original carrier liability and compensation are not automatically passed to the shipper. See [14 — Rescue Network](14-emergency-recovery-subcontracting.md).
