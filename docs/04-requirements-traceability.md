@@ -130,7 +130,17 @@
 
 ## User Story Book — actor-centered traceability
 
-[21 — User Story Book](21-user-story-book.md) — единый банк пользовательских сценариев. ID `USB-<role>-NNN` связывает роли/tenant scope с `KX-*`, `LFC-*` и будущими `TDD-USB-*`. Итерация 1: реестр ролей и 12 draft сценариев; это не утверждённые бизнес-правила и не исполняемые тесты.
+[21 — User Story Book](21-user-story-book.md) — единый банк пользовательских сценариев. ID `USB-<role>-NNN` связывает роли/tenant scope с `KX-*`, `LFC-*` и будущими `TDD-USB-*`. Итерация 1: реестр ролей и 22 draft сценария; это не утверждённые бизнес-правила и не исполняемые тесты.
+
+## Access Governance — Tenancy & Commercial (итерация матрицы 1)
+
+[22 — Role / Permission / Scope / Approval / TDD Matrix](22-role-permission-scope-approval-matrix.md) и [машинный JSON](contracts/role-permission-scope-approval.v1.json) задают 24 проектные политики с тестовыми ID `AUTH-TEN-001..011`, `AUTH-COM-001..013`. Политики обязаны учитывать `tenantId, legalEntityId, branchId, membership, delegated permissions, resource owner, partner grant, approval actor/limit, expiry, expectedVersion`. Default = DENY.
+
+- `KX-AUTH-TEN-001` (R0 P0): Platform Super Admin bootstrap/recovery, Tenant Owner transfer, Tenant Admin delegation, revocation, PartnerGrant; отрицательные cross-tenant/self-escalation tests.
+- `KX-AUTH-COM-001` (R0 P0): Separate RFQ/Quote prepare, issue, approve, accept and CarrierOffer select, each with resource scope and field-level data minimization.
+- `KX-AUTH-SOD-001` (R0 P0): The author of exceptional commercial terms cannot approve the same exception; tenant admin cannot elevate self; no automatic platform-admin access to tenant business data.
+
+Acceptance statuses are **planned**, not green TDD tests. Thresholds, signatory authorization and recovery approval rules still require business/legal/security confirmation.
 
 ## Acceptance status
 
