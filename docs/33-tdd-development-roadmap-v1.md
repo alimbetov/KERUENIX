@@ -1,0 +1,622 @@
+# 33 — KERUENIX TDD Development Roadmap v1
+
+**Дата:** 2026-11-07 · **Версия:** 1.0.0 · **Статус:** PROPOSED DELIVERY ROADMAP / BUSINESS SIGNOFF PENDING / ROADMAP NOT EXECUTED.
+
+**Цель:** поэтапно реализовать KERUENIX как один надёжный Spring Modulith modular monolith в Java 21, от имеющегося error bootstrap до полной, безопасной и воспроизводимой автомобильной перевозки между независимыми компаниями. Технические решения и бизнес-требования должны квалифицироваться через TDD, реальные PostgreSQL/PostGIS транзакции, RLS, API и cross-role E2E. Не заявлять готовность по наличию документации, mock-тестов или единичного happy path.
+
+**Machine roadmap:** [tdd-development-roadmap.v1.json](contracts/tdd-development-roadmap.v1.json). Эта JSON-модель содержит единые ID этапов, связи, owners, scope, связанные BSC/BR и gates. Это план, не GitHub Actions/issue tracker и не CI evidence.
+
+**Опорные спецификации:**
+- [32 — Scenario-Driven Backend Design](32-scenario-driven-backend-design-v1.md) + [query/soft delete contract](contracts/backend-query-soft-delete.v1.json): DDD, command/query repositories, DTO/MapStruct, controllers, pagination, filters, Soft Delete.
+- [14 — Modular Delivery Blueprint](14-modular-delivery-blueprint.md), [13 — Architecture](13-modular-architecture-options-v1.md), [module boundaries](contracts/module-boundaries.v1.json).
+- [20 — MapStruct/TDD](20-mapstruct-tdd-engineering-standard.md), [28 — 84 proposed TDD](28-r0-tdd-acceptance-bank.md), [30 — 48 negative cases](30-negative-and-failure-scenario-bank.md).
+- [21 — 80 User Stories](21-user-story-book.md), [25 — BSC-001..011](25-business-scenario-book.md), [26 — Role Simulations](26-role-process-simulation-and-gap-audit.md), [27 — BR-01..12](27-r0-blocker-policy-decisions.md), [29 — Signoff Workshop](29-r0-business-acceptance-workshop-kit.md).
+- [24 — Authorization](24-access-control-tdd-matrix-v2.md), [31 — RFC 9457 errors](31-unified-error-handling-standard.md), [15 — PostGIS/Partitioning](15-data-platform-partitioning-postgis.md), [18 — Jobs/State Machines](18-platform-jobs-state-machines-workflows.md), [19 — Reliability](19-architecture-hardening-priorities.md), [05 — MVP Gates](05-mvp-qualification.md).
+
+## 1. Baseline: what is real today
+
+| Component | Checked state | Must not be claimed |
+|---|---|---|
+| Backend | Java 21 / Spring Boot 4.1.2 minimal error/bootstrap under backend/ | Not a complete logistics backend, JWT/tenancy/SQL not implemented |
+| RFC 9457 | 15 error contract tests previously green at commit \`ac459923\` per backend README | Not proof the **current** HEAD or end-to-end service is qualified |
+| Business modules | 17 planned logical modules, structural/architecture contracts | No implemented DDD aggregate/API/migration or accepted business correctness |
+| User stories | 80 candidates + BSC-001..011 | Real customer/forwarder/carrier/legal review not completed |
+| TDD banks | 84 R0 candidates + 48 negative/failure candidates = 132 existing planned tests | Not 132 executed tests, no fixed 132-test release quota |
+| Scenario backend | docs/32 plus 20 SDB trace/testing anchors | SDB are not automatically 20 disjoint new tests; overlap with AUTH/NEG/TDD-SIM |
+| BR-01..12 | Fail-closed technical proposals | No real stakeholder signature; cannot turn proposals into unconditional production permission |
+| Soft Delete | Opt-in design only | No generic soft-delete for Booking, POD, payments, custody, documents |
+
+**Status methodology:** DESIGN/PLANNED, RED, GREEN, IMPLEMENTED and QUALIFIED mean different things. The phase tables below use PLANNED until exact-SHA evidence exists; future tracking updates must cite actual CI logs, business approvals and migration version, not memory or estimated completion.
+
+## 2. Delivery strategy and dependency map
+
+**Architecture:** single modular business runtime; Spring MVC with JDBC/typed SQL baseline for R0 pending dependency PoC; PostgreSQL + PostGIS, Flyway, Spring Security, explicit transaction-scoped RLS, bounded jobs, MapStruct only at mapping boundaries. SQL names and business flags must be authorized on the server; all write models have exactly one owner. CQRS-light separates query and command handlers, not databases.
+
+**Execution logic (dependencies, not calendar duration):**
+
+~~~text
+RD-00 Business decisions & traceability ─────────────┐
+RD-01 Build/CI/PG/PostGIS foundation ────────────────┼─→ RD-02 Tenancy / auth
+                                                    │       ├→ RD-03 RFQ / Inbox → RD-04 Quote
+                                                    │       └→ RD-05 Fleet / Cargo / Compliance
+                                                    │                         └─────────┬──────┘
+                                                    │                                   ↓
+                                                    │                             RD-06 Booking
+                                                    │                                   ↓
+                                                    │                             RD-07 Execution
+                                                    │                                   ↓
+                                                    │                       RD-08 Tracking/Documents
+                                                    │                                   ↓
+                                                    │                            RD-09 Finance-lite
+                                                    └────────→ RD-10 Jobs / resilience / safety
+                                                                 ↓
+                                                        RD-11 Full E2E / restore
+                                                                 ↓
+                                                        RD-12 Pilot / R0 release
+                                                                 ↓
+                                                    RX-01/02/03 targeted expansion
+~~~
+
+**Dependency note:** RD-01 can proceed while business workshops prepare BR signoffs; RD-04/06/07/09 require signoff of the **specific** affected legal/payment/custody rule before turning a transition into a production-accepted action. A module may deliver safe read-only, mock fixture, or DENY/NEEDS_REVIEW placeholders while unaccepted policy remains blocked. No fake approvals.
+
+**R0 phase plan (13 gates):**
+
+| ID | Vertical slice | Depends on | Domain focus |
+|---|---|---|---|
+| `RD-00` | Discovery → Testable Contracts | Параллельный старт | tenancy, commercial, fleet, booking, execution, documents, finance |
+| `RD-01` | Build + Platform Foundation | Параллельный старт | tenancy |
+| `RD-02` | Tenancy + Identity + Customer Scope | `RD-01` | tenancy, commercial |
+| `RD-03` | Commercial RFQ + Customer Inbox | `RD-02` | commercial, tenancy |
+| `RD-04` | Commercial Quote + Approvals | `RD-03` | commercial, tenancy |
+| `RD-05` | Fleet + Cargo + Compliance + PostGIS | `RD-02` | fleet, cargo, compliance |
+| `RD-06` | Booking Process + External Carrier | `RD-04`, `RD-05` | booking, fleet, commercial |
+| `RD-07` | Execution + Custody + Partial POD | `RD-06` | execution, cargo, compliance |
+| `RD-08` | Tracking + Documents + Query/Soft Delete Qualification | `RD-07` | tracking, documents, fleet, execution |
+| `RD-09` | Finance-lite + Verified Settlement | `RD-06`, `RD-07`, `RD-08` | finance, commercial, booking, documents |
+| `RD-10` | Jobs + Resilience + Subscription Safety | `RD-02`, `RD-06`, `RD-07`, `RD-09` | tenancy, booking, execution, finance |
+| `RD-11` | R0 Full E2E + Recovery + Performance | `RD-03`, `RD-04`, `RD-05`, `RD-06`, `RD-07`, `RD-08`, `RD-09`, `RD-10` | tenancy, commercial, fleet, cargo, compliance, booking, execution, tracking, documents, finance |
+| `RD-12` | Pilot Acceptance + Release Qualification | `RD-11`, `RD-00` | tenancy, commercial, fleet, booking, execution, tracking, documents, finance |
+
+**Release after R0:** \`RX-01\` Recovery/Warehouse/SaaS Control; \`RX-02\` Optimization/Intelligence; \`RX-03\` Marketplace/Regulatory. These are future bounded modules, **not** prerequisites for the first full freight journey. RD-10 covers only the minimum fail-safe subscription continuity contract if BR-04 approves it, not full SaaS Control billing.
+
+## 3. Universal TDD implementation protocol
+
+**One vertical slice = one delivered business outcome, not a batch of entities:**
+
+1. Select stable story \`USB-*\` / \`BSC-*\`, requirement ID and related \`BR-*\`; check actual status of real approval.
+2. Write structured Given / When / Then for happy path, forbidden operation, stale version, replay/idempotency, concurrency, tenant boundary, external outage and recovery. Record expected **DB state, outbox, customer/provider UI projection, sanitized API error**.
+3. Define aggregate owner, state machine guard, role/scope/SoD, transaction boundary, domain event, failure and compensating action. No implicit generic role permissions.
+4. **RED:** committed failing unit tests before business code; when SQL constraints/RLS are material, real PostgreSQL Testcontainers tests also start failing against missing capability. An unapproved BR may get a fail-closed test now, never a pretend positive legal test.
+5. **GREEN:** minimum code to satisfy **accepted** AC — aggregate/value objects, domain policy, owner repositories, SQL/Flyway/RLS, application command or query handler, explicit DTO/MapStruct, controller and event/outbox. Business policy never lives only in controller annotation or mapper.
+6. **REFACTOR:** remove duplication, keep published contracts stable, check indexes and resource bounds; run regression, security and failure tests again.
+7. **QUALIFY:** exact SHA CI, contract and architecture verification, reproducible database fixture, negative tests, cross-role demo and business signoff where applicable.
+
+**Test levels:**
+
+| Level | Test goal | Tool/evidence |
+|---|---|---|
+| L1 Domain Unit | transition, Value Objects, money/cargo invariants, policy pure functions | JUnit 5, optional property tests |
+| L2 Modulith/Mapper | dependency direction, no internal imports, DTO allowlist/MapStruct | \`ApplicationModules.verify()\`, module tests, strict compiler |
+| L3 HTTP/Security | JWT, permission, customer/proxy, RFC 9457, DTO field leaks | Spring MVC/Security tests |
+| L4 PostgreSQL/PostGIS | RLS, partial/unique/exclusion constraints, Flyway, pool A→B | Testcontainers real PostgreSQL+PostGIS |
+| L5 Concurrency/Replay | two transactions, expiration races, duplicate webhook, expectedVersion, outbox | concurrent real SQL + forced restart |
+| L6 Contract/Events | OpenAPI/event version + backward compatibility | schema tests, type snapshots |
+| L7 Multi-role E2E | entire journey across tenant/customer/provider/carrier/driver/receiver | HTTP + DB + document storage adapter |
+| L8 Reliability & Query | backup/restore, partition/retention, SQL EXPLAIN, p95/p99 measured, fault injection | controlled environment/artifacts |
+
+**Risk-based acceptance:** 100% line coverage is not the gate. A missing critical negative test for payment, RLS, Booking, POD or custody is **blocking**, even if JaCoCo looks green. An accepted P0 test that fails blocks merge; non-applicable tests require explicit owner-approved rationale and evidence.
+
+## 4. Execution passports: R0 stages
+
+### RD-00 — Discovery → Testable Contracts
+
+**Зависимости:** нет; разрешено начать сейчас. **Ответственные модули:** `tenancy`, `commercial`, `fleet`, `booking`, `execution`, `documents`, `finance`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Актуализировать traceability, ownership Order/CustomerAccount/Invoice; разграничить signed и proposed BR; согласовать с реальными ролями W1..W5. Описать Gherkin Given/When/Then для приоритетных сценариев, включая негативные, конкуренцию и отключение внешних интеграций.
+
+**Изменения в коде/артефактах:**
+- docs/contracts/ ownership registry (proposed)
+- ADR для агрегатов и transactional boundaries
+- AC cards/BR signoff ledger with reviewer + date + evidence
+
+**Обязательная TDD-проверка:**
+- documentation JSON validation, uniqueness and cross-reference
+- negative-case coverage mapping (not executable business acceptance)
+
+**Gate выхода:** Для каждого функционального среза — подтверждённые actor/resource scope, бизнес-владелец, AC, отказ и legal/finance signoff, где необходим; не подписанный BR не превращается в продуктовый allow.
+
+**Затем:** RD-01 возможен параллельно; бизнес-срезы используют только подписанные правила.
+
+### RD-01 — Build + Platform Foundation
+
+**Зависимости:** нет; разрешено начать сейчас. **Ответственные модули:** `tenancy`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Flyway/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, минимальные audit/idempotency/outbox порты и fail-closed security. Docker Compose/local smoke.
+
+**Изменения в коде/артефактах:**
+- backend Maven BOM lock and reproducible build
+- Modulith verify() and @ApplicationModuleTest harness
+- Flyway + real PG/PostGIS + RLS template
+- CI exact SHA; issue/artifact refs; readme
+
+**Обязательная TDD-проверка:**
+- ERR-* existing contract regression on current SHA
+- ApplicationModules.verify no cycles/internal imports
+- DB migration, startup and rollback/no phantom outbox
+- RLS fail-closed + two tenant pool reuse
+- invalid JWT/401/403 shared ProblemDetail
+
+**Gate выхода:** mvn verify и startup на конкретном SHA; реальные PG/PostGIS+RLS интеграции, не H2 вместо PG; не открывать бизнес API без auth.
+
+**Затем:** RD-02.
+
+### RD-02 — Tenancy + Identity + Customer Scope
+
+**Зависимости:** `RD-01`. **Ответственные модули:** `tenancy`, `commercial`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Tenant/LegalEntity, Member/RoleAssignment, Provider↔CustomerOrg relationship, CustomerAccount grants, PartnerGrant, invitation, verified identity, customer vs tenant employee, revoke/suspension, SoD. Разделить identity/authorization grant (Tenancy) и commercial relationship facts (Commercial).
+
+**Изменения в коде/артефактах:**
+- domain aggregates and repository ports
+- verified principal context + transaction-scoped RLS
+- JWT/OIDC adapter + scoped application commands
+- customer-safe API DTO + MapStruct + migrations
+
+**Обязательная TDD-проверка:**
+- AUTH-X-* cross tenant, customer-org, delegated role escalation
+- deny foreign entity counts and UUID enumeration
+- revoke while cache warm; worker privilege revalidation
+- two JDBC connections and pooled tenant switch
+- same person with multiple roles, no self-approval
+
+**Gate выхода:** Два Tenant + минимум два CustomerOrg в одном provider не видят чужих записей; сквозной authorization HTTP→DB подтверждён.
+
+**Затем:** RD-03, RD-05.
+
+### RD-03 — Commercial RFQ + Customer Inbox
+
+**Зависимости:** `RD-02`. **Ответственные модули:** `commercial`, `tenancy`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Создать Draft RFQ, submit/clarification/qualification по принятому lifecycle; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие.
+
+**Изменения в коде/артефактах:**
+- RFQ aggregate and transitions
+- command + query repositories, Flyway and RLS
+- Create/Submit/List/Detail DTO and MapStruct
+- safe SQL indexed searches + page metadata
+- audit/outbox and idempotency
+
+**Обязательная TDD-проверка:**
+- BSC-002, AUTH-EXT-*/AUTH-COM-* applicable
+- SDB-001..005, SDB-007..009, SDB-013..015, SDB-017
+- same-createdAt deterministic ordering, size cap, invalid sort
+- cross-account filtering before COUNT/OFFSET; SQL EXPLAIN
+- double submit changed payload conflict; draft deletion/quote issuance race if enabled
+
+**Gate выхода:** External customer sees only own RFQs; provider only allowed Inbox; pagination/count and DTO no leak; one logical create/submit effect.
+
+**Затем:** RD-04.
+
+### RD-04 — Commercial Quote + Approvals
+
+**Зависимости:** `RD-03`. **Ответственные модули:** `commercial`, `tenancy`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Immutable QuoteVersion/terms hash, issue/expire/supersede, price approval and SoD; independent authority to sign, version-specific customer acceptance and optional decline; never treat acceptance as confirmed booking.
+
+**Изменения в коде/артефактах:**
+- QuoteVersion aggregate and guarded state machine
+- CommercialApi customer/procurement snapshots
+- approval proof/evidence and typed domain events
+- outbox consumer/notification jobs; audit
+
+**Обязательная TDD-проверка:**
+- BR-01/02/05 TDD-SIM variants after signoff
+- AUTH-EXT-006, AUTH-X-005/006 as applicable
+- race accept/expiry/supersede, stale expectedVersion
+- approve own exception denied; no hidden buy rate in response
+
+**Gate выхода:** Only authorized exact current quote version can be accepted; never mutate issued terms; no implicit Booking.CONFIRMED.
+
+**Затем:** RD-06 (with RD-05).
+
+### RD-05 — Fleet + Cargo + Compliance + PostGIS
+
+**Зависимости:** `RD-02`. **Ответственные модули:** `fleet`, `cargo`, `compliance`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** VehicleCombination/driver/capacity windows; CargoProfile weights, volume, dimensions and controlled eligibility; ComplianceAssessment with UNKNOWN fail-closed. PostGIS verified coordinates and proximity search; Fleet owns transactional CapacityHold, no read-model guard.
+
+**Изменения в коде/артефактах:**
+- FleetCapacityApi hold/confirm/release
+- vehicle/cargo master repositories + geo query port
+- PostgreSQL exclusive booking interval guard/constraint
+- Compliance module decision snapshots + provenance
+- GIS migrations/indexes, geospatial smoke
+
+**Обязательная TDD-проверка:**
+- BR-07, BR-08; DATA-*, GEO-* applicable
+- two competing reservations on separate transactions
+- expiry vs confirmation race; old GPS cannot authoritatively reserve
+- missing safety rule returns hold/needs review; no automatic allow
+- postgis ST_DWithin meters + cross-tenant nearest exclusion
+
+**Gate выхода:** No double hold in DB, no unsafe UNKNOWN release, correct coordinate/units and geo tenant isolation; real concurrency test green.
+
+**Затем:** RD-06.
+
+### RD-06 — Booking Process + External Carrier
+
+**Зависимости:** `RD-04`, `RD-05`. **Ответственные модули:** `booking`, `fleet`, `commercial`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Booking.ResourcePending→Confirmed only after quote and confirmed capacity; CarrierOffer selected is not exclusive reserve. Own-fleet vs partner carrier, hold TTL, durable orchestration/recovery and cancellation before/after start with compensation.
+
+**Изменения в коде/артефактах:**
+- Booking aggregate, BookingProcessManager persisted steps
+- Fleet API integration; typed events/outbox/inbox
+- carrier adapter mock with status reconciliation
+- booking read model and scoped endpoint
+
+**Обязательная TDD-проверка:**
+- TDD-R0-E2E-02/03/10 candidates
+- WF-001/002, SM-001..005, JOB-001..005 as applicable
+- crash after Fleet hold before Booking commit
+- carrier withdraw while confirmation races, lease fencing
+- retry duplicate command and process restart no double booking
+
+**Gate выхода:** Confirmed Booking always has valid evidence of Quote + exclusive CapacityReservation + compliance; crash/retry converges and cleans hold.
+
+**Затем:** RD-07.
+
+### RD-07 — Execution + Custody + Partial POD
+
+**Зависимости:** `RD-06`. **Ответственные модули:** `execution`, `cargo`, `compliance`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered.
+
+**Изменения в коде/артефактах:**
+- Execution state machines and custody ledger
+- offline command intake with verifier and quarantine
+- per-unit DeliveryAttempt/POD receipt
+- append-only evidence/audit/Outbox
+
+**Обязательная TDD-проверка:**
+- TDD-R0-E2E-04, BR-09/10 variants
+- online/offline pickup duplicate/out-of-order
+- custody conservation 8/10; cannot close 10/10
+- driver reassignment/revoke before offline replay, evidence quarantine
+- GPS and Trip.STARTED never become pickup/POD evidence
+
+**Gate выхода:** No custody loss or forged POD; verified cargo-unit reconciliation and negative/replay invariants pass.
+
+**Затем:** RD-08.
+
+### RD-08 — Tracking + Documents + Query/Soft Delete Qualification
+
+**Зависимости:** `RD-07`. **Ответственные модули:** `tracking`, `documents`, `fleet`, `execution`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Event-derived customer timeline, permission-filtered milestone, ETA freshness/watermarks; verified document packages and downloads; cursor/keyset for immutable chronological streams; data lifecycle/retention/legal hold, default active lists exclude soft deleted where policy eligible.
+
+**Изменения в коде/артефактах:**
+- TrackingQueryApi filtered projection and rebuild
+- DocumentPackageVersion and proof access adapter
+- cursor signer/validator keyed to scope revision + filter
+- retention/tombstone propagation + audit
+
+**Обязательная TDD-проверка:**
+- SDB-006, 009..016, 018..019 as applicable
+- DATA-08..10, GEO-05..08 conditional GPS slice
+- foreign tracking/cursor, stale signed URL after revoke
+- read model lag, backfill, out-of-order, delete tombstone replay
+- verified document access, legal hold blocks purge
+
+**Gate выхода:** No raw GPS/foreign documents, truthful freshness, no erased legal evidence, cursor cannot cross authorizations.
+
+**Затем:** RD-09.
+
+### RD-09 — Finance-lite + Verified Settlement
+
+**Зависимости:** `RD-06`, `RD-07`, `RD-08`. **Ответственные модули:** `finance`, `commercial`, `booking`, `documents`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Distinct invoice, receivable, payable, payment allocation, advance, claim references and approval; exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or audited manual verification, not GPS or user toggle. Independent finance approver.
+
+**Изменения в коде/артефактах:**
+- Finance domain aggregates/ledger, repository
+- immutable Invoice, controlled correction/credit note
+- payment evidence/status adapter, SoD
+- AR/AP read projections and privacy-filtered APIs
+
+**Обязательная TDD-проверка:**
+- TDD-R0-E2E-06, FIN-* and BR-11/12 cases
+- duplicate bank callback, amount precision, currency mismatch
+- approve own payment denied; no over-allocation
+- delivered!=paid, advanced funds!=performed service
+- unknown banking result reconciliation, not blind retry
+
+**Gate выхода:** No fictitious PAID or duplicate money effect; financial balance and independent approval verified on real PostgreSQL.
+
+**Затем:** RD-10/11.
+
+### RD-10 — Jobs + Resilience + Subscription Safety
+
+**Зависимости:** `RD-02`, `RD-06`, `RD-07`, `RD-09`. **Ответственные модули:** `tenancy`, `booking`, `execution`, `finance`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Cross-cutting durable Job Engine, outbox/inbox, retry classification/dead letter, fencing, observability, error catalog consistency. Subscription suspension during live cargo follows BR-04 with explicit safety continuity; do not build full SaaS Control billing in R0.
+
+**Изменения в коде/артефактах:**
+- PostgreSQL-backed durable jobs and reclaim supervisor
+- policy-scoped service principals, retry/replay approvals
+- health metrics, structured logs/correlation
+- outage modes and safety continuity adapter
+
+**Обязательная TDD-проверка:**
+- JOB-001..008 / WF-* and NEG-R0-ASYN* applicable
+- worker dies after effect before ack; duplicate callback
+- expired lease stale attempt cannot commit
+- revocation, fallback, cache/Redis outage fail safe
+- R0-E2E-07 subscription suspended but POD/custody guarded
+
+**Gate выхода:** No lost committed event or job, no duplicate logical effect, no cross-tenant worker privilege, operable degraded state.
+
+**Затем:** RD-11.
+
+### RD-11 — R0 Full E2E + Recovery + Performance
+
+**Зависимости:** `RD-03`, `RD-04`, `RD-05`, `RD-06`, `RD-07`, `RD-08`, `RD-09`, `RD-10`. **Ответственные модули:** `tenancy`, `commercial`, `fleet`, `cargo`, `compliance`, `booking`, `execution`, `tracking`, `documents`, `finance`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Reproduce full route two tenants + two customer accounts + external carrier + driver + receiver. Include all accepted applicable 84 TDD and 48 negative scenarios by traceability, not merely test count. Fault injection, CI exact SHA, migrations, backup/restore, partition test conditional GPS and load benchmark.
+
+**Изменения в коде/артефактах:**
+- single documented R0 E2E fixture
+- smoke runner and CI jobs with reports
+- load/perf script with p95/p99 and EXPLAIN
+- backup/restore and data integrity/tenant isolation checklist
+
+**Обязательная TDD-проверка:**
+- TDD-R0-E2E-01..10 when accepted
+- SDB-001..020 applicability and exclusions recorded
+- AUTH/NEG-R0*/JOB/SM/WF, DB and Outbox assertions
+- two independent DB sessions plus network failure matrix
+- restore persisted facts and document checksums
+
+**Gate выхода:** Every accepted P0 applicable contract green on exact SHA, zero known P0 leak/dup booking/custody/finance bug, documented SLO from measured benchmark; no mock-only release claim.
+
+**Затем:** RD-12.
+
+### RD-12 — Pilot Acceptance + Release Qualification
+
+**Зависимости:** `RD-11`, `RD-00`. **Ответственные модули:** `tenancy`, `commercial`, `fleet`, `booking`, `execution`, `tracking`, `documents`, `finance`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Business/legal/finance signoff for applicable BR and corresponding user journeys; selected KZ road corridor/ordinary cargo, supported deployment profiles. Release image SBOM, secret scan, rollback/runbook, tenant/customer onboarding, incident process, measurable pilot KPIs.
+
+**Изменения в коде/артефактах:**
+- versioned release manifest and exact SHA test attestation
+- deployment profiles + backup/restore/incident runbook
+- pilot handoff and business acceptance report
+
+**Обязательная TDD-проверка:**
+- repeat E2E on release artifact and production-like database
+- restore drill + data/PII retention review
+- sanitized audit and monitoring alert exercise
+- manual user walkthrough for customer/forwarder/carrier/receiver/finance
+
+**Gate выхода:** Signed business/legal/finance acceptance where required, exact release SHA artifacts/CI green, operational recovery proved; otherwise NO RELEASE.
+
+**Затем:** Enable RX work by measured demand.
+
+
+## 5. Future stages and module coverage
+
+### RX-01 — R1 Operations Extensions
+
+**Зависимости:** `RD-12`. **Ответственные модули:** `recovery`, `warehouse`, `saas-control`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Rescue/cross-dock/warehouse ledger, subscriptions and billing; each as small TDD vertical with domain ownership and multi-tenant security, never automatic full stack at once.
+
+**Изменения в коде/артефактах:**
+- R1 module-owned APIs/migrations
+- owner-specific query filters and retention
+
+**Обязательная TDD-проверка:**
+- custody transfer, warehouse conservation, billing control, cancellation compensation
+
+**Gate выхода:** New module tests + regression R0 all green, measured business value.
+
+**Затем:** RX-02 / RX-03 conditional.
+
+### RX-02 — R1/R2 Optimization + Intelligence
+
+**Зависимости:** `RD-12`. **Ответственные модули:** `optimization`, `intelligence`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Optimization jobs and ML history separated: approved data lineage, point-in-time features, model version, source provenance; workers optional after workload evidence.
+
+**Изменения в коде/артефактах:**
+- optimization solver adapter
+- intelligence dataset and model registry
+- optional isolated CPU training workers
+
+**Обязательная TDD-проверка:**
+- reproducible datasets, no cross tenant training leak
+- solver outputs never bypass mandatory compliance and booking guards
+
+**Gate выхода:** Use-case benefit/quality/latency and tenant security verified; fallback deterministic.
+
+**Затем:** Optional activation.
+
+### RX-03 — R2+ Market / Regulations
+
+**Зависимости:** `RD-12`. **Ответственные модули:** `marketplace`, `regulatory`. **Статус:** PLANNED / NOT QUALIFIED.
+
+**Scope и результат:** Private load board then optional public freight marketplace, country-specific authoritative rules and typed standards only with licensing/expert signoff; no unverified eCMR/customs guarantees.
+
+**Изменения в коде/артефактах:**
+- verified listing and trust contracts
+- versioned regulatory rules and provenance
+
+**Обязательная TDD-проверка:**
+- fraud/disclosure negative cases, no booking ownership leakage
+- rule version rollback, unknown jurisdiction fail closed
+
+**Gate выхода:** Separate business/legal/regulatory acceptance and R0 regression.
+
+**Затем:** Feature release only.
+
+
+**Every one of the 17 modules has at least one planned phase owner; a module's presence in a later phase is not an instruction to implement its full future backlog now.** Retain clean module contracts for future extraction to workers/services only when needed.
+
+## 6. API, filtering, pagination, DTO & mapping gates
+
+For **every query endpoint** agree typed allowlisted \`filter\`, \`sort\`, pagination mode and permissions **before repository SQL**:
+- Offset for RFQ, Booking/provider board/reference lists: page 0-based, default size 20, max 100 subject to benchmarks; fixed tie-break \`id\`, forbidden deep offset may require cursor; \`totalElements\` optional and secured.
+- Cursor/keyset for GPS, Tracking timeline, audit and high-volume immutable event lists: signed/opaque, versioned, time-limited, filter/sort/scope-bound, no cross-account replay; \`limit+1\` and stable tuple; no false snapshot claim.
+- \`createdFrom\` inclusive, \`createdTo\` exclusive; user-specified query text/radii bounded, SQL parameters bound; column and sort expressions only from server-side allowlist.
+- Apply resource scope before filtering, counting, ordering and pagination; test lists, aggregate counts and existence inference with multiple CustomerAccounts. Never trust caller's \`tenantId\`.
+- \`RfqListItemResponse\` and customer detail vs provider detail are distinct field allowlists. MapStruct cannot map user-supplied \`tenantId\`, \`deletedBy\`, \`approvedBy\`, state or internal margin onto writable aggregates.
+- EXPLAIN ANALYZE with realistic two-tenant fixture; no guessed SLO or index blindly copied from an example.
+- Query read models can be lagging and carry watermark/source timestamp; **Booking, money, custody and Stock write guards must read authoritative state**.
+
+**Soft Delete gates:** active default lists/count exclude deleted eligible drafts; only owner policy can authorize delete/restore; restore must recheck unique keys and stale dependencies; deletion event/outbox/audit commit together, derived projection tombstone and rebuild cannot resurrect; signed documents/Booking/finance/custody never soft-delete. No global JPA \`@Where\` assumption or generic cascade; per-owner design and legal hold/retention determine erasure. See [32 §10](32-scenario-driven-backend-design-v1.md) and SDB-009..016.
+
+## 7. Data modeling, migrations, transactions and module boundaries
+
+**Migrations:** Flyway, named schema/table ownership, PostgreSQL RLS policies, not superuser runtime app; transaction \`SET LOCAL\` or equivalent from verified context, no pool leakage. Expand/contract migrations and executable migration smoke on an existing DB snapshot; if rollback is impossible, document forward-recovery and backup restore procedure.
+
+**Concurrency:** aggregate expectedVersion plus named unique/exclusion constraints; one Fleet authority for temporal capacity. Database constraint violation translated to a specific domain code **only for known owner-named constraints**; no blanket SQLSTATE 23505/23P01→409.
+
+**Events:** local state change + audit + outbox in one committed transaction; inbox dedup per tenant/producer/event; handlers at least once, no arbitrary external exactly-once promise. External carrier/bank uncertainty routes to reconciliation rather than blind money retries. Job workers have attempts, leases/fencing and explicit scoped service identity. Redis optional only, not authoritative.
+
+**GIS:** own Fleet geo position and separate Tracking customer projection; query in meters with PostGIS geography/appropriate GiST and tenant filtering; if live GPS ingestion is enabled, add RANGE(observed_at) partitions, future premake and global ingest dedup registry. No GIS-derived POD or legal road-routing approval.
+
+## 8. Engineering PR plan and branching discipline
+
+Use one independently testable vertical increment per PR (or smaller when needed), retaining a single business runtime. No unsupported claim that a document branch is already a compiled implementation branch.
+
+**Suggested sequence:** \`feat/r0-foundation\` → \`feat/r0-tenancy\` → \`feat/r0-rfq\` → \`feat/r0-quote\`; independent \`feat/r0-fleet-cargo-compliance\`; then \`feat/r0-booking\`, \`feat/r0-execution\`, \`feat/r0-tracking-documents\`, \`feat/r0-finance\`, \`feat/r0-ops-hardening\`, \`feat/r0-e2e-qualification\`. These are proposed branch names; **none is automatically created** by this roadmap.
+
+**PR template:**
+
+~~~yaml
+storyIds: [USB-...]
+scenarioIds: [BSC-...]
+businessRuleIds: [BR-...]
+businessSignoff: PENDING | APPROVED
+aggregateOwner: ...
+permissions: [ ... ]
+databaseMigrations: [ ... ]
+apiDtoAndMapper: [ ... ]
+queriesAndIndexes: [ ... ]
+softDeleteAndRetentionPolicy: NOT_APPLICABLE | ...
+tddRedEvidence: ...
+tddGreenEvidence: ...
+unitTests: ...
+postgresRlsConcurrency: ...
+negativeAndRecovery: ...
+exactSha: ...
+ciRunUrl: ...
+releaseRisk: ...
+~~~
+
+No PR containing a new legally binding command or financial effect can merge based solely on future test IDs or unreviewed policy drafts. Read-only/denied stubs are clearly labeled and tested.
+
+## 9. CI workflow and quality gates
+
+**Every PR (minimum, when applicable):**
+- \`contracts\`: JSON schema/IDs/links; no orphan story→BR→test→owner mapping; OpenAPI/error-code compatibility.
+- \`compile-and-unit\`: Maven, pinned compatible BOM, MapStruct annotation processor, JUnit tests and JaCoCo diagnostics.
+- \`modulith\`: \`ApplicationModules.verify()\`, named public interfaces only; no foreign SQL writes.
+- \`pg-integration\`: PostgreSQL+PostGIS Testcontainers, Flyway, tenant A/B isolation, CustomerOrg-X/Y counts, pool reuse, transaction/outbox/soft delete.
+- \`security-and-api\`: JWT/permissions/SoD, ProblemDetail RFC9457 parity (Security filter vs MVC), request field overposting, field leakage.
+- \`critical-races\`: only impacted/accepted race suites (hold/expiry, quote acceptance, POD/offline, bank duplicate).
+- \`supply-chain\`: secrets scanning, dependency/license/SBOM checks; exact baseline before R0 release.
+
+**Release qualification (RD-11/12):** all applicable accepted P0 checks, ten cross-role E2E candidates when signed, recovery/restart/backup drill, spatial/partition tests if GPS enabled, document store integrity, load benchmarks, observed p95/p99, incident playbook and real stakeholder signoffs. Long-running load/chaos may be a separately required release workflow, but results must be attached to the **same release candidate SHA** or a documented unchanged artifact digest. Do not mark green if a required job was skipped.
+
+**Machine readable evidence record**:
+
+~~~json
+{
+  "phaseId": "RD-05",
+  "gitSha": "<exact-real-sha>",
+  "ciRunUrl": "<actual-ci-url>",
+  "businessDecisionVersions": ["BR-07:APPROVED", "BR-08:APPROVED"],
+  "postgresVersion": "<actual-version>",
+  "migrationVersion": "<actual-flyway-version>",
+  "tests": {"passed": "<actual>", "failed": "<actual>", "skipped": "<actual>"},
+  "negativeAndRaceProofs": ["<actual-artifact-url>"],
+  "qualification": "QUALIFIED"
+}
+~~~
+
+**The above is a schema example, not a result.** All placeholders must be replaced by actual run evidence before status changes.
+
+## 10. Synthetic test environment and fault injection
+
+Minimum DB fixture:
+
+~~~text
+Provider Tenant-A (forwarder)
+  ├── CustomerOrg-X / ExternalCustomer-X1, X2
+  ├── CustomerOrg-Y / ExternalCustomer-Y1
+  ├── Sales, CommercialApprover, Procurement, Planner, Dispatcher
+  ├── FinanceInitiator + independent FinanceApprover
+  └── own vehicle(s) and customer-safe read-model projection
+Tenant-B (own subscribing shipper)
+Tenant-C (independent external carrier/driver; scoped PartnerGrant)
+Tenant-Z (foreign/forbidden, no access)
+Receiver-R (one delivery attempt only)
+  ├── RFQ/Quote accepted and expired variants
+  ├── Capacity windows with overlap + expiry race
+  ├── Shipment with 10 CargoUnits; partial POD 8/10, return 2/10
+  ├── Documents signed/unsigned and revoked signed URL
+  └── Finance partial allocation + duplicate bank reference
+~~~
+
+**Repeat across:** same request, changed idempotency payload, competing workers/transactions, unauthorized tenant/customer, revoke mid-operation, clock boundary, offline delivery replay, external timeout after side effect, Redis outage, restored DB and event projection rebuild.
+
+Negative tests assert: safe HTTP Problem code, **no forbidden DB mutation**, no aggregate version slip, no fake outbox/notification, no customer/carrier data leak and accurate UI state. HTTP status only is insufficient.
+
+## 11. Definition of Ready, Done, and no-go rules
+
+| Gate | Entry/exit criterion | No-go when |
+|---|---|---|
+| DoR BUSINESS | agreed actor, legal entity, tenant/customer scope, actual accepted AC/BR (or explicit fail-closed scope) | signature/amount/charge/custody rule ambiguous but code assumes allow |
+| DoR TECH | aggregate owner, command/query interfaces, SQL/RLS/index, DTO/maps, API/error/retention, test fixture | direct cross-module internals or generic CRUD would bypass invariants |
+| DoD CODE | production code + migrations/constraints + docs + repeatable unit/security/DB tests | green mocks but not real PG when DB rule matters |
+| DoD E2E | real multi-role flow + accepted negative cases + crash/replay and observations | fake paid, fake POD, cross-tenant record count leak, double booking |
+| DoD RELEASE | exact SHA and release artifact, accepted business and legal evidence, restore and deployment procedure, critical CI green | any P0 violation or missing applicable signoff |
+
+**Hard no-go:** unverified customer signatory may not accept a binding quote; carrier OFFER selection is not reserved vehicle; UNKNOWN compliance cannot become legal approval; stale GPS is not a delivery receipt; unsigned/offline custody must not silently overwrite newer authorized facts; payment approver cannot self approve; "paid" cannot be toggled without verified bank/ERP evidence; generic soft delete cannot hide invoice, booking, cargo custody or POD; no cross-tenant data or logs leak.
+
+## 12. Planning & reporting cadence without invented deadlines
+
+Track each stage with owner (role, not guessed person), status, dependency, AC approved/unapproved, PR URL, exact SHA, test results, blocker and next unblock action. Use **weekly gate review** when active implementation begins: update only with evidence. Do not represent P0..P5 or RD-00..12 numbers as day/week estimates. Establish durations after RD-01 baseline throughput and stakeholder workshop availability.
+
+An example progress record:
+
+~~~text
+Phase RD-03
+Status: DESIGNED (not GREEN)
+Requirements: USB-EXC-002, BSC-002
+Prerequisites: RD-02 QUALIFIED; customer relationship and RFQ rule approved
+Evidence: none (planned)
+Blocking: CustomerAccount scopes/submit permission not signed
+Next action: finalize owner and consent/identity AC, then failing tests
+~~~
+
+**Workstream anti-overengineering:** no separate service per module, no universal search DSL, no premature event sourcing, no Java reflection generic mapper, no Kubernetes/Kafka as R0 gates, no measured performance claim before benchmark, no ML provider before reliable historical facts.
+
+## 13. Decisions to close before the first business PR
+
+1. Confirm business owner of Order, CustomerAccount, Invoice in module-boundaries contract.
+2. Record business signatures for applicable BR-01..12 via docs/29 before allowing legal/custody/finance transitions.
+3. Confirm R0 trusted customer relationship and exact permission for RFQ submit; \`customer:rfq:list\` and \`customer:rfq:read\` are distinct from \`customer:orders:*\`.
+4. Confirm user-facing semantics of "discard draft" and opt-in soft delete vs Archive/Cancel/Erase.
+5. Select production runtime library versions only after RD-01 exact SHA compatibility CI.
+6. Define baseline pilot volume, query SLO targets and PostgreSQL index measurements; no guessed p95/ETA guarantee.
+7. Determine authoritative payment evidence source, tenant provisioning and emergency continuity policy.
+
+## 14. First concrete implementation package
+
+**Recommended immediate PR:** RD-01 \`feat/r0-foundation\`. Start from existing error-handler bootstrap and keep Security \`anyRequest().denyAll()\` until tested identity authentication is ready.
+
+Minimum contents: pinned supported Java/Boot/Modulith/MapStruct/Flyway/Testcontainers stack, \`mvn verify\` CI, \`ApplicationModules.verify()\`, PostgreSQL/PostGIS + Flyway smoke, two-tenant RLS tests using real transactions and connection pooling, runtime configuration samples without secrets, error-handler regression, and a README exact-SHA verification. Do not write a broad RFQ/Booking CRUD scaffold in that PR.
+
+**Then:** RD-02 Tenancy, RD-03 customer/provider RFQ with query+soft-delete rules, RD-04 and RD-05 after signoffs, converging at RD-06 Booking. The first material release proof is **one real fully scoped business vertical slice**, not the number of created packages.
