@@ -29,6 +29,7 @@ KERUENIX — многоклиентская платформа управлен�
 | [16 — System Needs & Gap Analysis](16-system-needs-gap-analysis.md) | Системные потребности, разрывы бизнес-процессов, требования и приёмка |
 | [17 — Day-in-Life Simulation](17-forwarder-dispatcher-day-simulation.md) | Симуляция рабочего дня экспедитора, логиста, диспетчера и финансов |
 | [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md) | Классы грузов, товарное соседство, правила перевозки и хранения, нормативные профили |
+| [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md) | Клиентские статусы, ETA, этапы маршрута, трекинг груза и защита данных |
 
 ## Неизменные правила дизайна
 

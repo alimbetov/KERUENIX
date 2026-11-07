@@ -84,3 +84,7 @@ Pre-advised inbound shipment -> dock slot -> gate/yard check-in -> actual SSCC/L
 ## Journey I — mixed cargo, vehicle and warehouse compatibility
 
 During RFQ, validate cargo classification and evidence; during quote/booking, assess vehicle type, cargo mix, packaging, temperature and road/mode rules. Before pickup and each warehouse putaway, dock transfer, load, rescue handover or modal change, re-evaluate active approved rule set against physical adjacency/compartments and actual cargo conditions. Incompatible combinations are blocked with reason codes; conditional allowances demand measured/verified controls. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).
+
+## Journey J — shipper tracks the shipment
+
+Customer opens an authenticated portal, selects authorized Shipment, sees versioned milestones and ETA with freshness, optionally permitted map coordinates, exception messages and proof-of-delivery. Truck GPS feeds a provisional location only while cargo custody still links Shipment to that Trip; warehouse and rescue handovers switch the active leg without breaking the tracking history. Partial POD must remain partial; contract changes require approval. See [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md).

@@ -78,3 +78,7 @@ Data residency and retention by contract/jurisdiction; tenant BYOK requirement; 
 ## Incident rescue collaboration
 
 When a failed vehicle needs external assistance, authorized partners may receive a narrowly scoped RescueRequest and submit offers. Reveal generalized pickup zone and cargo requirements initially; exact pickup location and custody documents only after confirmed contractual authorization. Preserve original tenant's customer identity, rates, margins and historical GPS confidentiality. See [14 — Rescue Network](14-emergency-recovery-subcontracting.md).
+
+## Customer shipment tracking and visibility
+
+A customer (shipper/consignee) may see only authorized shipment milestones and derived ETA, not full vehicle telemetry, the freight forwarder's purchase rates, drivers' personal details or other clients' stops. Guest tracking links, if enabled, must be narrow, expiring, revocable, backed by hashes of cryptographically random tokens and never become universal data permissions. Tracking API, SSE, cache, signed document access and notifications all enforce grants. See [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md).

@@ -21,7 +21,7 @@ Scope:
 - baseline ETA, fuel norm and itemized cost with price version;
 - dispatcher route approval, changes and audit trail;
 - one GPS adapter or simulator, latest position with freshness state;
-- shipment milestones and proof-of-delivery evidence;
+- shipment milestones, a customer-facing shipment timeline/ETA with freshness, and proof-of-delivery evidence;
 - plan vs actual kilometers/time/cost, basic customer and dispatcher UI.
 
 **Not required for MVP:** AI training, nationwide truck legal data guarantee, own fuel depot equipment, automated customs clearance, rail/air/sea/drones, billing for public SaaS at scale.

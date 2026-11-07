@@ -70,3 +70,7 @@ Take the same 20–50 road-corridor and last-mile cases, including known height/
 ## Warehouse automation adapters
 
 Adapters for ASN/EDI, barcode/SSCC, scales, gate ANPR, access control, RFID, temperature telemetry, dock appointment and local WMS/WCS must be permission-scoped, idempotent, timestamped and have manual recovery paths. Equipment measurements are evidence inputs, not automatically authoritative legal/customs events. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).
+
+## Customer tracking projections
+
+Normalize event sources from GPS, warehouse, carrier, driver and POD into confirmed shipment milestones, with event_time, received_at, source quality and trust. External API providers must never directly publish raw vehicle telemetry to the customer portal. Project permission-filtered snapshots and explicit observed/estimated timestamps, with robust stale/offline handling. See [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md).

@@ -42,6 +42,7 @@ Broker selection (Kafka, RabbitMQ or Postgres-backed jobs) must follow measured 
         tenancy/           # organizations, membership, entitlements
         orders/            # offers and booking
         shipments/         # cargo and custody
+        tracking/          # customer shipment timeline, ETA/read-model and visibility
         trips/             # assignments, stops, route plan versions
         dispatch/          # events and exceptions
         recovery/          # incidents, rescue offers, subcontract, cargo handover
