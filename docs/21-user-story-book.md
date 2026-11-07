@@ -1,10 +1,10 @@
 # 21 — KERUENIX User Story Book: Role-Based Scenario Bank
 
-**Version:** 0.3 — ITERATION 1 REWORK / CUSTOMER PORTAL AND ACCESS POLICY V2. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
+**Version:** 0.4 — ITERATION 1 REWORK / ACCESS POLICY V2.1 SECOND REVIEW. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
 
 **Purpose:** Maintain a single versioned, traceable bank of actor-centered scenarios; build it incrementally in several iterations, *then* derive acceptance tests, TDD unit tests and integration/E2E cases. Do not confuse role catalog with a list of software privileges or tenant membership.
 
-**Canonical authorization matrix (v2):** [24 — Access Governance & TDD](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json). **External customer journey:** [23 — External Customer Portal](23-external-customer-portal.md). The [v1 matrix](22-role-permission-scope-approval-matrix.md) is retained as historical draft.
+**Canonical authorization matrix (v2.1):** [24 — Access Governance & TDD](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json). **External customer journey:** [23 — External Customer Portal](23-external-customer-portal.md). The [v1 matrix](22-role-permission-scope-approval-matrix.md) is retained as historical draft.
 
 **Based on:** [operational journeys](../idea/04-operational-workflows.md), [dispatcher day](../idea/17-forwarder-dispatcher-day-simulation.md), [commercial lifecycle](10-commercial-execution-lifecycle-v1.md), [existing lifecycle test plan](11-commercial-execution-acceptance-v1.md), [requirements matrix](04-requirements-traceability.md), [engineering TDD standard](20-mapstruct-tdd-engineering-standard.md).
 
@@ -140,7 +140,21 @@ These **15 additional DRAFT stories** supply missing external-client/product and
 
 **Interpretation:** `FIN` can prepare accounting evidence; `FAP` is a separate **approval capability** (may belong to another appointed person, not automatically a separate headcount). `SHP` and `EXC` must never be used interchangeably in security decisions. A person with several roles still cannot approve their own exception.
 
-**Traceability:** all existing `USB-*` identifiers are preserved; v2 maps `57` draft policy rows and `18` cross-cutting adversarial cases. See [policy JSON](contracts/access-policy-matrix.v2.json). Approval and acceptance requirements must be reviewed before turning into executable `TDD-USB-*` tests.
+**Traceability:** all existing `USB-*` identifiers are preserved; v2 maps `67` draft policy rows and `27` cross-cutting adversarial cases. See [policy JSON](contracts/access-policy-matrix.v2.json). Approval and acceptance requirements must be reviewed before turning into executable `TDD-USB-*` tests.
+
+## 4D. Second-pass access review — three missing business stories (DRAFT)
+
+These stories address gaps discovered in [24 — Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and map to planned `AUTH-*` acceptance checks. No TDD test or legal approval is claimed.
+
+| Story ID | Primary actor | Business result | Hard guard / affected permissions |
+|---|---|---|---|
+| USB-EXC-010 | EXC | Report damaged, delayed, disputed or missing shipment service and follow status **before or after** completion | `customer:issue:report/read`; exact order/grant, evidence, no direct POD or payment mutation |
+| USB-DSP-003 | DSP | Review a customer's request to cancel a confirmed Booking using contract/financial policy | `booking:cancel_request:review`; authorized Booking owner, state/version, charge assessment, independent approval if terms require |
+| USB-TNO-003 | TNO | Suspend provider's customer-organization relationship with reason and notification | `tenant:customerrelationship:suspend` (R1); business authority, audit, scope not data erasure |
+
+**Rights clarification:** a verified external customer account may have distinct capability grants `CUSTOMER_VIEWER`, `CUSTOMER_REQUESTER`, `CUSTOMER_SIGNATORY`, and `CUSTOMER_FEEDBACK_AUTHOR`. These are not four new mandatory role templates. A customer who can create RFQ cannot automatically accept a legally significant QuoteVersion or publish a review. Closing an external user's session is not deleting the customer organization or its coworkers.
+
+**Coverage:** 40 unique story seeds, 67 draft policy rows, 27 cross-cutting negative tests. No executed code or tests; business approval is still required.
 
 ## 5. Detailed seed example — USB-DSP-001 (ready for business elaboration, NOT ready for TDD)
 
