@@ -36,6 +36,7 @@ KERUENIX — многоклиентская платформа управлен�
 | [23 — Cross-border Regulatory Registry](23-cross-border-regulatory-compliance-registry.md) | Правила Казахстана, ЕАЭС, ADR, CMR, TIR/eTIR, таможня и документы |
 | [24 — International Cargo Simulation](24-international-cargo-simulation.md) | Четыре сценария квалификации международных грузовых операций |
 | [25 — Consolidation v0.2](25-consolidation-v0.2.md) | Общая карта идеи, принятые к проектированию направления и следующие решения |
+| [26 — Commercial Lifecycle Risks](26-commercial-execution-lifecycle-risks.md) | Особенности переговоров, подтверждения транспорта, документов и расчётов |
 | [standards/identifier-catalog.v0.1.json](standards/identifier-catalog.v0.1.json) | Machine-readable namespace catalog, валидация форматов и источники |
 | [standards/external-identifier.schema.json](standards/external-identifier.schema.json) | JSON Schema для записи внешнего идентификатора с issuer/verified/evidence |
 
@@ -61,5 +62,7 @@ KERUENIX — многоклиентская платформа управлен�
 Данные о поставщиках и демонстрационные экономические числа не считать сертифицированными, юридически обязательными или универсальными для Казахстана.
 
 **Начать реализацию рекомендуется с:** [единого реестра требований](../docs/04-requirements-traceability.md), [канонической доменной модели](../docs/03-domain-lifecycle.md) и [R0 qualification plan](../docs/05-mvp-qualification.md).
+
+**Новая проектная база:** [Commercial & Execution Lifecycle v1](../docs/10-commercial-execution-lifecycle-v1.md), [Acceptance Matrix](../docs/11-commercial-execution-acceptance-v1.md), [JSON с разрешёнными переходами](../docs/contracts/commercial-execution-lifecycle.v1.json).
 
 **Приоритет источников:** `docs/` объединяет текущие проектные требования и границы релизов, а `idea/` хранит подробные гипотезы и первоначальные варианты. Расхождения оформляются как открытые решения, а не молча считаются утверждёнными.

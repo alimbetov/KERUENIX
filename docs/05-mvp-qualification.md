@@ -20,6 +20,14 @@
 
 **Упрощения допустимы:** ручная квалификация контрагента, ручной финансовый статус при наличии evidence, одна машина на первый Shipment, без публичного marketplace и без настоящего eCMR/KEDEN integration. Упрощение должно быть явно обозначено.
 
+## Commercial & Execution v1: обязательный Gate R0
+
+Новый проектный стандарт [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) разделяет 12 агрегатных state machines и ресурсную/договорную/финансовую ответственность. В Release 0 должны быть реализованы основные happy path и безопасные error branches **RFQ → QuoteVersion → CarrierOffer/own capacity → Reservation → Booking → Trip → Shipment/POD → DocumentPackage → Invoice/AR/AP reconciliation**. Отдельные предложения подрядчика допускается заменить own-fleet сценарием, но при этом тест **CarrierOffer vs Booking** всё равно должен быть проверен на pilot fixture.
+
+**Блокирующие проверки:** просроченная цена не принимается; нет подтверждённой машины — нет Booking.CONFIRMED; рейс не доказывает pickup; частичная доставка не закрывает всё; документы не отмечаются complete без проверки; платёж не ставится paid без доказанного поступления; отмена после старта не удаляет custody. Дополнительная матрица: [11 — Lifecycle Acceptance](11-commercial-execution-acceptance-v1.md).
+
+До sign-off реальными владельцами процессов это **проектная база тестов**, не утверждённое бизнес-ТЗ.
+
 ## Что делать после R0
 
 | Релиз | Содержание | Gate |

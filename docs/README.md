@@ -16,7 +16,11 @@
 | 07 | [Decisions & Risks](07-decisions-and-risks.md) | Какие вопросы блокируют проектирование? | Draft |
 | 08 | [Glossary](08-glossary.md) | Что значат ключевые бизнес-термины? | Draft |
 | 09 | [Deployment & Operations](09-deployment-operations.md) | Как Cloud и Enterprise используют один код? | Draft |
+| 10 | [Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md) | Каковы команды, состояния, инварианты, согласования и исключения? | Proposed / review |
+| 11 | [Lifecycle Acceptance & Simulation](11-commercial-execution-acceptance-v1.md) | Как проверить коммерческий и операционный цикл? | Test plan |
+| JSON | [Lifecycle State Machines](contracts/commercial-execution-lifecycle.v1.json) | Машинно-читаемый контракт допустимых переходов (12 агрегатов) | Proposed |
 | 25 | [Сводка изменений идей v0.2](../idea/25-consolidation-v0.2.md) | Что уточнили и что ещё нужно доказать? | Draft |
+| 26 | [Lifecycle gaps and decisions](../idea/26-commercial-execution-lifecycle-risks.md) | Коммерческие риски, исключения и бизнес-вопросы | Proposed |
 
 ## Источники концепций
 
@@ -49,4 +53,4 @@
 
 Есть реализация в точном SHA; unit + integration + permission/security tests; migration/backfill; contract test при внешнем API; audit/observability; документация изменений; воспроизводимый smoke; проверка на Cloud и соответствующих изолированных профилях.
 
-**Следующая обязательная задача:** согласование Commercial & Execution Lifecycle с реальными экспедиторами, логистами и финансистами перед построением финансово-договорных API.
+**Следующая обязательная задача:** провести **бизнес-приёмку подготовленного [Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md)** с реальными экспедиторами, логистами, перевозчиком, юристом и финансистом. До sign-off статус документа — PROPOSED; 12 state machines и 94 перехода являются проектным кандидатом, а не действующей реализацией.

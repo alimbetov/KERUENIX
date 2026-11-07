@@ -1,0 +1,748 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": "1.0",
+  "documentStatus": "PROPOSED_FOR_BUSINESS_APPROVAL_NOT_IMPLEMENTED",
+  "owner": "KERUENIX product architecture (proposed)",
+  "effectiveDraftDate": "2026-11-07",
+  "semantics": "candidate state transitions; guard names denote business rules that must be implemented and proven separately",
+  "outboxEventEnvelope": [
+    "eventId",
+    "tenantId",
+    "aggregateType",
+    "aggregateId",
+    "aggregateVersion",
+    "eventType",
+    "occurredAt",
+    "recordedAt",
+    "actor",
+    "correlationId",
+    "causationId",
+    "schemaVersion",
+    "source",
+    "evidenceRefs"
+  ],
+  "globalInvariants": [
+    "AUTHORIZATION_ON_EVERY_COMMAND",
+    "TENANT_SCOPE_ON_ALL_AGGREGATES",
+    "EXPECTED_VERSION_FOR_STATE_CHANGES",
+    "IDEMPOTENCY_KEY_FOR_MUTATIONS",
+    "TRANSACTIONAL_OUTBOX_FOR_CROSS_MODULE_EVENTS",
+    "SAFETY_AND_CUSTOMS_DENY_CANNOT_BE_OVERRIDDEN",
+    "QUOTE_ACCEPTED_NOT_EQUIVALENT_TO_CAPACITY_CONFIRMED",
+    "TRIP_GPS_NOT_EQUIVALENT_TO_CARGO_CUSTODY",
+    "SHIPPING_DELIVERED_NOT_EQUIVALENT_TO_DOCUMENTS_COMPLETE_OR_PAID"
+  ],
+  "machines": [
+    {
+      "machine": "RFQ",
+      "initial": "DRAFT",
+      "terminal": [
+        "CLOSED_QUOTED",
+        "CANCELLED",
+        "REJECTED"
+      ],
+      "description": "Separate client inquiry from binding quotation.",
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "to": "SUBMITTED",
+          "command": "submitRfq",
+          "guard": "RFQ_MINIMUM_SUBMISSION"
+        },
+        {
+          "from": "SUBMITTED",
+          "to": "NEEDS_INFO",
+          "command": "requestClarification",
+          "guard": "MISSING_REQUIRED_FIELDS"
+        },
+        {
+          "from": "NEEDS_INFO",
+          "to": "SUBMITTED",
+          "command": "resubmitRfq",
+          "guard": "VALIDATED_REVISION"
+        },
+        {
+          "from": "SUBMITTED",
+          "to": "QUALIFIED",
+          "command": "qualifyRfq",
+          "guard": "RFQ_COMPLETE_AND_CARGO_SAFE"
+        },
+        {
+          "from": "QUALIFIED",
+          "to": "CLOSED_QUOTED",
+          "command": "closeRfqAfterQuote",
+          "guard": "QUOTE_ISSUED"
+        },
+        {
+          "from": "SUBMITTED",
+          "to": "REJECTED",
+          "command": "rejectRfq",
+          "guard": "REJECTION_REASON"
+        },
+        {
+          "from": "NEEDS_INFO",
+          "to": "REJECTED",
+          "command": "rejectRfq",
+          "guard": "REJECTION_REASON"
+        },
+        {
+          "from": "DRAFT",
+          "to": "CANCELLED",
+          "command": "cancelRfq",
+          "guard": "AUTHORIZED"
+        },
+        {
+          "from": "SUBMITTED",
+          "to": "CANCELLED",
+          "command": "cancelRfq",
+          "guard": "AUTHORIZED"
+        },
+        {
+          "from": "NEEDS_INFO",
+          "to": "CANCELLED",
+          "command": "cancelRfq",
+          "guard": "AUTHORIZED"
+        },
+        {
+          "from": "QUALIFIED",
+          "to": "CANCELLED",
+          "command": "cancelRfq",
+          "guard": "NO_ACCEPTED_QUOTE"
+        }
+      ]
+    },
+    {
+      "machine": "CUSTOMER_QUOTE_VERSION",
+      "initial": "DRAFT",
+      "terminal": [
+        "ACCEPTED",
+        "DECLINED",
+        "EXPIRED",
+        "SUPERSEDED",
+        "WITHDRAWN"
+      ],
+      "description": "A quote is an immutable price and terms snapshot; amendments create new versions.",
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "to": "INTERNAL_REVIEW",
+          "command": "submitPriceApproval",
+          "guard": "APPROVAL_THRESHOLD"
+        },
+        {
+          "from": "DRAFT",
+          "to": "ISSUED",
+          "command": "issueQuote",
+          "guard": "APPROVAL_NOT_REQUIRED_AND_FULL_SNAPSHOT"
+        },
+        {
+          "from": "INTERNAL_REVIEW",
+          "to": "ISSUED",
+          "command": "approveAndIssueQuote",
+          "guard": "APPROVED_AND_FULL_SNAPSHOT"
+        },
+        {
+          "from": "DRAFT",
+          "to": "WITHDRAWN",
+          "command": "withdrawDraft",
+          "guard": "AUTHORIZED"
+        },
+        {
+          "from": "INTERNAL_REVIEW",
+          "to": "WITHDRAWN",
+          "command": "withdrawDraft",
+          "guard": "AUTHORIZED"
+        },
+        {
+          "from": "ISSUED",
+          "to": "ACCEPTED",
+          "command": "acceptQuote",
+          "guard": "VALID_UNEXPIRED_VERSION_AND_CUSTOMER_AUTH"
+        },
+        {
+          "from": "ISSUED",
+          "to": "DECLINED",
+          "command": "declineQuote",
+          "guard": "CUSTOMER_AUTH"
+        },
+        {
+          "from": "ISSUED",
+          "to": "EXPIRED",
+          "command": "expireQuote",
+          "guard": "EXPIRES_AT_REACHED"
+        },
+        {
+          "from": "ISSUED",
+          "to": "SUPERSEDED",
+          "command": "supersedeQuote",
+          "guard": "NEW_QUOTE_VERSION_ISSUED"
+        },
+        {
+          "from": "ISSUED",
+          "to": "WITHDRAWN",
+          "command": "withdrawIssuedQuote",
+          "guard": "WITHDRAWAL_PER_CONTRACT"
+        }
+      ]
+    },
+    {
+      "machine": "CARRIER_OFFER",
+      "initial": "REQUESTED",
+      "terminal": [
+        "SELECTED",
+        "DECLINED",
+        "REJECTED",
+        "EXPIRED",
+        "WITHDRAWN"
+      ],
+      "description": "Selected offer is an input to a reservation, not a committed truck.",
+      "transitions": [
+        {
+          "from": "REQUESTED",
+          "to": "OFFERED",
+          "command": "submitCarrierOffer",
+          "guard": "PARTNER_AUTH_AND_EXPIRY"
+        },
+        {
+          "from": "REQUESTED",
+          "to": "DECLINED",
+          "command": "declineOfferRequest",
+          "guard": "PARTNER_AUTH"
+        },
+        {
+          "from": "REQUESTED",
+          "to": "EXPIRED",
+          "command": "expireOfferRequest",
+          "guard": "REQUEST_EXPIRY"
+        },
+        {
+          "from": "OFFERED",
+          "to": "SELECTED",
+          "command": "selectCarrierOffer",
+          "guard": "OFFER_VALID_AND_CARRIER_SCREENED"
+        },
+        {
+          "from": "OFFERED",
+          "to": "REJECTED",
+          "command": "rejectCarrierOffer",
+          "guard": "AUTHORIZED_SELECTION"
+        },
+        {
+          "from": "OFFERED",
+          "to": "EXPIRED",
+          "command": "expireCarrierOffer",
+          "guard": "OFFER_EXPIRY"
+        },
+        {
+          "from": "OFFERED",
+          "to": "WITHDRAWN",
+          "command": "withdrawCarrierOffer",
+          "guard": "PARTNER_AUTH_AND_NOT_BOOKED"
+        }
+      ]
+    },
+    {
+      "machine": "CAPACITY_RESERVATION",
+      "initial": "REQUESTED",
+      "terminal": [
+        "REJECTED",
+        "RELEASED",
+        "EXPIRED",
+        "CONSUMED"
+      ],
+      "description": "Reservation enforces physical resource exclusivity and expiry.",
+      "transitions": [
+        {
+          "from": "REQUESTED",
+          "to": "HELD",
+          "command": "holdCapacity",
+          "guard": "ATOMIC_NO_RESOURCE_CONFLICT"
+        },
+        {
+          "from": "REQUESTED",
+          "to": "REJECTED",
+          "command": "rejectCapacity",
+          "guard": "NO_CAPACITY_OR_INCOMPATIBLE"
+        },
+        {
+          "from": "HELD",
+          "to": "CONFIRMED",
+          "command": "confirmCapacity",
+          "guard": "GUARDS_STILL_VALID_AND_PARTNER_ACK"
+        },
+        {
+          "from": "HELD",
+          "to": "RELEASED",
+          "command": "releaseHeldCapacity",
+          "guard": "AUTHORIZED"
+        },
+        {
+          "from": "HELD",
+          "to": "EXPIRED",
+          "command": "expireHold",
+          "guard": "EXPIRES_AT_REACHED"
+        },
+        {
+          "from": "CONFIRMED",
+          "to": "CONSUMED",
+          "command": "consumeCapacity",
+          "guard": "TRIP_STARTED"
+        },
+        {
+          "from": "CONFIRMED",
+          "to": "RELEASED",
+          "command": "releaseConfirmedCapacity",
+          "guard": "TRIP_NOT_STARTED_AND_COMPENSATION"
+        }
+      ]
+    },
+    {
+      "machine": "BOOKING",
+      "initial": "RESOURCE_PENDING",
+      "terminal": [
+        "CANCELLED",
+        "EXECUTION_FINISHED",
+        "TERMINATED_WITH_EXCEPTION"
+      ],
+      "description": "Commercial booking becomes confirmed only after resource and obligations checks.",
+      "transitions": [
+        {
+          "from": "RESOURCE_PENDING",
+          "to": "CONFIRMED",
+          "command": "confirmBooking",
+          "guard": "ACCEPTED_QUOTE_AND_CONFIRMED_RESOURCES"
+        },
+        {
+          "from": "RESOURCE_PENDING",
+          "to": "CANCELLED",
+          "command": "cancelPendingBooking",
+          "guard": "AUTHORIZED_AND_RELEASE_RESOURCES"
+        },
+        {
+          "from": "CONFIRMED",
+          "to": "IN_EXECUTION",
+          "command": "startBookingExecution",
+          "guard": "ASSIGNED_TRIP_STARTED"
+        },
+        {
+          "from": "CONFIRMED",
+          "to": "CANCELLED",
+          "command": "cancelBeforePickup",
+          "guard": "AUTHORIZED_AND_COMPENSATION"
+        },
+        {
+          "from": "IN_EXECUTION",
+          "to": "EXECUTION_FINISHED",
+          "command": "finishBookingExecution",
+          "guard": "ALL_SHIPMENTS_PHYSICALLY_DISPOSED"
+        },
+        {
+          "from": "IN_EXECUTION",
+          "to": "TERMINATED_WITH_EXCEPTION",
+          "command": "terminateBooking",
+          "guard": "EXCEPTION_APPROVAL_AND_CUSTODY_RESOLUTION"
+        }
+      ]
+    },
+    {
+      "machine": "TRIP",
+      "initial": "PLANNED",
+      "terminal": [
+        "CANCELLED",
+        "COMPLETED",
+        "CLOSED_INTERRUPTED"
+      ],
+      "description": "Trip is a vehicle movement, not a cargo shipment or financial close.",
+      "transitions": [
+        {
+          "from": "PLANNED",
+          "to": "ASSIGNED",
+          "command": "assignTrip",
+          "guard": "CAPACITY_RESERVATION_CONFIRMED"
+        },
+        {
+          "from": "PLANNED",
+          "to": "CANCELLED",
+          "command": "cancelTrip",
+          "guard": "NOT_STARTED"
+        },
+        {
+          "from": "ASSIGNED",
+          "to": "READY",
+          "command": "prepareTrip",
+          "guard": "CARGO_VEHICLE_ROUTE_DOCS_CHECKED"
+        },
+        {
+          "from": "ASSIGNED",
+          "to": "CANCELLED",
+          "command": "cancelTrip",
+          "guard": "NOT_STARTED_AND_RELEASE"
+        },
+        {
+          "from": "READY",
+          "to": "STARTED",
+          "command": "startTrip",
+          "guard": "AUTH_DRIVER_AND_DEPARTURE_CHECKS"
+        },
+        {
+          "from": "READY",
+          "to": "CANCELLED",
+          "command": "cancelTrip",
+          "guard": "NOT_STARTED_AND_RELEASE"
+        },
+        {
+          "from": "STARTED",
+          "to": "COMPLETED",
+          "command": "completeTrip",
+          "guard": "VERIFIED_TRIP_END"
+        },
+        {
+          "from": "STARTED",
+          "to": "INTERRUPTED",
+          "command": "interruptTrip",
+          "guard": "INCIDENT_CONFIRMED"
+        },
+        {
+          "from": "INTERRUPTED",
+          "to": "CLOSED_INTERRUPTED",
+          "command": "closeInterruptedTrip",
+          "guard": "CUSTODY_AND_NEXT_LEG_RECONCILED"
+        }
+      ]
+    },
+    {
+      "machine": "SHIPMENT",
+      "initial": "REGISTERED",
+      "terminal": [
+        "CANCELLED",
+        "DELIVERED",
+        "RETURNED",
+        "CLOSED_WITH_EXCEPTION"
+      ],
+      "description": "Warehouse transfer, GPS and route segments are milestone events within IN_CUSTODY, not forced linear state transitions.",
+      "transitions": [
+        {
+          "from": "REGISTERED",
+          "to": "READY_FOR_PICKUP",
+          "command": "prepareShipment",
+          "guard": "CARGO_PROFILE_AND_BOOKING_READY"
+        },
+        {
+          "from": "REGISTERED",
+          "to": "CANCELLED",
+          "command": "cancelShipment",
+          "guard": "NOT_IN_CUSTODY"
+        },
+        {
+          "from": "READY_FOR_PICKUP",
+          "to": "IN_CUSTODY",
+          "command": "confirmPickup",
+          "guard": "VERIFIED_CUSTODY_EVIDENCE"
+        },
+        {
+          "from": "READY_FOR_PICKUP",
+          "to": "CANCELLED",
+          "command": "cancelShipment",
+          "guard": "NOT_IN_CUSTODY"
+        },
+        {
+          "from": "IN_CUSTODY",
+          "to": "PARTIALLY_DELIVERED",
+          "command": "recordPartialDelivery",
+          "guard": "SUBSET_UNITS_PROVEN"
+        },
+        {
+          "from": "IN_CUSTODY",
+          "to": "DELIVERED",
+          "command": "recordFullDelivery",
+          "guard": "ALL_UNITS_PROVEN"
+        },
+        {
+          "from": "IN_CUSTODY",
+          "to": "RETURNED",
+          "command": "finishReturn",
+          "guard": "ALL_REMAINING_UNITS_DISPOSED"
+        },
+        {
+          "from": "IN_CUSTODY",
+          "to": "CLOSED_WITH_EXCEPTION",
+          "command": "closeShipmentException",
+          "guard": "APPROVED_EXCEPTION_DISPOSITION"
+        },
+        {
+          "from": "PARTIALLY_DELIVERED",
+          "to": "DELIVERED",
+          "command": "completeRemainingDelivery",
+          "guard": "ALL_REMAINING_UNITS_PROVEN"
+        },
+        {
+          "from": "PARTIALLY_DELIVERED",
+          "to": "RETURNED",
+          "command": "finishPartialReturn",
+          "guard": "ALL_REMAINING_UNITS_DISPOSED"
+        },
+        {
+          "from": "PARTIALLY_DELIVERED",
+          "to": "CLOSED_WITH_EXCEPTION",
+          "command": "closePartialException",
+          "guard": "APPROVED_EXCEPTION_DISPOSITION"
+        }
+      ]
+    },
+    {
+      "machine": "DELIVERY_ATTEMPT",
+      "initial": "PLANNED",
+      "terminal": [
+        "ACCEPTED",
+        "PARTIAL",
+        "REJECTED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "description": "One delivery attempt may end partially; further attempts are new aggregate instances.",
+      "transitions": [
+        {
+          "from": "PLANNED",
+          "to": "ARRIVED",
+          "command": "confirmArrival",
+          "guard": "VERIFIED_ARRIVAL_SIGNAL"
+        },
+        {
+          "from": "PLANNED",
+          "to": "CANCELLED",
+          "command": "cancelAttempt",
+          "guard": "AUTHORIZED"
+        },
+        {
+          "from": "ARRIVED",
+          "to": "EVIDENCE_PENDING",
+          "command": "submitDeliveryProof",
+          "guard": "CARGO_UNIT_COUNTS_AND_SIGNER"
+        },
+        {
+          "from": "ARRIVED",
+          "to": "FAILED",
+          "command": "failAttempt",
+          "guard": "FAILED_REASON"
+        },
+        {
+          "from": "EVIDENCE_PENDING",
+          "to": "ACCEPTED",
+          "command": "acceptDelivery",
+          "guard": "ALL_ATTEMPT_UNITS_ACCEPTED_AND_PROOF"
+        },
+        {
+          "from": "EVIDENCE_PENDING",
+          "to": "PARTIAL",
+          "command": "acceptPartialDelivery",
+          "guard": "SUBSET_UNITS_AND_DISCREPANCY"
+        },
+        {
+          "from": "EVIDENCE_PENDING",
+          "to": "REJECTED",
+          "command": "rejectDelivery",
+          "guard": "AUTHORIZED_REJECTION_AND_EVIDENCE"
+        },
+        {
+          "from": "EVIDENCE_PENDING",
+          "to": "DISPUTED",
+          "command": "disputeProof",
+          "guard": "EVIDENCE_CONFLICT"
+        },
+        {
+          "from": "DISPUTED",
+          "to": "ACCEPTED",
+          "command": "resolveProofAccepted",
+          "guard": "APPROVED_RESOLUTION"
+        },
+        {
+          "from": "DISPUTED",
+          "to": "PARTIAL",
+          "command": "resolveProofPartial",
+          "guard": "APPROVED_RESOLUTION"
+        },
+        {
+          "from": "DISPUTED",
+          "to": "REJECTED",
+          "command": "resolveProofRejected",
+          "guard": "APPROVED_RESOLUTION"
+        }
+      ]
+    },
+    {
+      "machine": "DOCUMENT_PACKAGE_VERSION",
+      "initial": "OPEN",
+      "terminal": [
+        "COMPLETE"
+      ],
+      "description": "Documents and required list are per shipment/order/corridor; COMPLETE freezes that package version.",
+      "transitions": [
+        {
+          "from": "OPEN",
+          "to": "COLLECTING",
+          "command": "startDocumentCollection",
+          "guard": "REQUIREMENT_MATRIX_SNAPSHOT"
+        },
+        {
+          "from": "OPEN",
+          "to": "REVIEW_PENDING",
+          "command": "submitDocumentPackage",
+          "guard": "ALL_REQUIRED_DOCUMENTS_SUBMITTED"
+        },
+        {
+          "from": "COLLECTING",
+          "to": "REVIEW_PENDING",
+          "command": "submitDocumentPackage",
+          "guard": "ALL_REQUIRED_DOCUMENTS_SUBMITTED"
+        },
+        {
+          "from": "REVIEW_PENDING",
+          "to": "COMPLETE",
+          "command": "approveDocumentPackage",
+          "guard": "VALID_AND_SIGNED_EVIDENCE"
+        },
+        {
+          "from": "REVIEW_PENDING",
+          "to": "REJECTED",
+          "command": "rejectDocumentPackage",
+          "guard": "REJECTION_REASON"
+        },
+        {
+          "from": "REJECTED",
+          "to": "COLLECTING",
+          "command": "resubmitDocumentPackage",
+          "guard": "NEW_DOCUMENT_REVISION"
+        }
+      ]
+    },
+    {
+      "machine": "INVOICE",
+      "initial": "DRAFT",
+      "terminal": [
+        "ISSUED",
+        "VOIDED"
+      ],
+      "description": "Issued invoice is immutable; credit notes and correcting documents are separate objects.",
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "to": "ISSUED",
+          "command": "issueInvoice",
+          "guard": "FINANCE_AUTH_AND_VALID_LINES"
+        },
+        {
+          "from": "DRAFT",
+          "to": "VOIDED",
+          "command": "voidDraftInvoice",
+          "guard": "FINANCE_AUTH"
+        }
+      ]
+    },
+    {
+      "machine": "RECEIVABLE",
+      "initial": "OPEN",
+      "terminal": [
+        "SETTLED",
+        "WRITTEN_OFF"
+      ],
+      "description": "Customer money is tracked as allocations/ledger; disputed and overdue are orthogonal flags.",
+      "transitions": [
+        {
+          "from": "OPEN",
+          "to": "PARTIALLY_SETTLED",
+          "command": "allocateCustomerPayment",
+          "guard": "MATCHED_PAYMENT_AND_BALANCE_POSITIVE"
+        },
+        {
+          "from": "OPEN",
+          "to": "SETTLED",
+          "command": "allocateCustomerPayment",
+          "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
+        },
+        {
+          "from": "PARTIALLY_SETTLED",
+          "to": "SETTLED",
+          "command": "allocateCustomerPayment",
+          "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
+        },
+        {
+          "from": "OPEN",
+          "to": "WRITTEN_OFF",
+          "command": "writeOffReceivable",
+          "guard": "FINANCE_APPROVAL_AND_EVIDENCE"
+        },
+        {
+          "from": "PARTIALLY_SETTLED",
+          "to": "WRITTEN_OFF",
+          "command": "writeOffRemaining",
+          "guard": "FINANCE_APPROVAL_AND_EVIDENCE"
+        }
+      ]
+    },
+    {
+      "machine": "PAYABLE",
+      "initial": "PENDING_VERIFICATION",
+      "terminal": [
+        "REJECTED",
+        "SETTLED"
+      ],
+      "description": "Supplier expense, approved payable, cash transfer and bank reconciliation must be distinct.",
+      "transitions": [
+        {
+          "from": "PENDING_VERIFICATION",
+          "to": "APPROVAL_REQUIRED",
+          "command": "requestPayableApproval",
+          "guard": "INVOICE_MATCHED_WITH_VARIANCE"
+        },
+        {
+          "from": "PENDING_VERIFICATION",
+          "to": "APPROVED",
+          "command": "verifyPayable",
+          "guard": "INVOICE_MATCHED_AND_POLICY"
+        },
+        {
+          "from": "PENDING_VERIFICATION",
+          "to": "REJECTED",
+          "command": "rejectPayable",
+          "guard": "REJECTION_REASON"
+        },
+        {
+          "from": "APPROVAL_REQUIRED",
+          "to": "APPROVED",
+          "command": "approvePayable",
+          "guard": "AUTHORIZED_FINANCE_APPROVAL"
+        },
+        {
+          "from": "APPROVAL_REQUIRED",
+          "to": "REJECTED",
+          "command": "rejectPayable",
+          "guard": "AUTHORIZED_FINANCE_REJECTION"
+        },
+        {
+          "from": "APPROVED",
+          "to": "OPEN",
+          "command": "postPayable",
+          "guard": "POSTED_IN_FINANCIAL_LEDGER"
+        },
+        {
+          "from": "OPEN",
+          "to": "PARTIALLY_SETTLED",
+          "command": "allocateSupplierPayment",
+          "guard": "MATCHED_PAYMENT_AND_BALANCE_POSITIVE"
+        },
+        {
+          "from": "OPEN",
+          "to": "SETTLED",
+          "command": "allocateSupplierPayment",
+          "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
+        },
+        {
+          "from": "PARTIALLY_SETTLED",
+          "to": "SETTLED",
+          "command": "allocateSupplierPayment",
+          "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
+        }
+      ]
+    }
+  ]
+}

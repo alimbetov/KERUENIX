@@ -21,6 +21,21 @@
 | DEC-13 | Отображение GPS/ETA клиенту и partner rights | Security + Logistics | Privacy/customer confidence |
 | DEC-14 | Нужен ли SSCC issuer или только импорт | WMS/GS1 owner | Нельзя печатать GS1 код без правомерного выделения |
 
+## Вопросы для утверждения Lifecycle v1
+
+| Код | Решение | Бизнес-владелец |
+|---|---|---|
+| LFC-DEC-01 | Binding или conditional quote до подтверждения машины? | Коммерческий руководитель + юрист |
+| LFC-DEC-02 | Момент обязательств перевозчика/поставщика и точная семантика `SELECTED` | Экспедитор + договорной юрист |
+| LFC-DEC-03 | Подтверждение ресурсов: машина, водитель, прицеп, складские окна, сроки холда | Логист + fleet |
+| LFC-DEC-04 | Кто подтверждает pickup/POD и юридическая сила доказательств | Operations + юридический представитель |
+| LFC-DEC-05 | Физическое закрытие при partial delivery/return и claim | Экспедитор + клиент + финансы |
+| LFC-DEC-06 | Source of truth и процесс Posting для invoice, AR/AP, advances и payments | Главный бухгалтер/финансовый контролёр |
+| LFC-DEC-07 | Credit limits, скидки, дотации, approvals и separation of duties | Finance + Security |
+| LFC-DEC-08 | Права раскрытия заказчику информации о подрядчике, маршруте и задержке | Security + коммерческий отдел |
+
+**Документы:** [Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md) · [LFC tests](11-commercial-execution-acceptance-v1.md). До рассмотрения на реальном workshop всё `PROPOSED`.
+
 ## Реестр основных рисков
 
 | Код | Риск | Воздействие | Предохранитель |

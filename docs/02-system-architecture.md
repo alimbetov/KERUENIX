@@ -71,6 +71,10 @@ flowchart TB
 
 Java 21, поддерживаемая версия Spring Boot, PostgreSQL/PostGIS, React/Next.js и Flutter — предложенный стек; версии, лицензии, совместимость Timefold, карта/трафик и доступность внешних интеграций следует проверять в отдельном техническом PoC.
 
+## Lifecycle process orchestration (v1)
+
+Предлагается `CommercialWorkflow` и `ExecutionWorkflow` как явные application-level process managers, которые вызывают агрегаты RFQ/Quote/Booking/Reservation и Shipment/Trip/Delivery без прямого доступа к чужим таблицам. Для внешнего Carrier confirmation, документов и финансового ERP использовать outbox/inbox, команды с expectedVersion + idempotency key и компенсационные операции (release reservation, invalidate pending confirmation, open exception); не обещать распределённую ACID транзакцию. Набор команд/переходов закреплён в [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) и [машинном контракте](contracts/commercial-execution-lifecycle.v1.json). Публикация агрегированных статусов для Customer Tracking отделена от фактов cargo custody, а finance ledger — от физического shipment.
+
 ## Security / reliability gates
 
 Два tenant, пересекающиеся Order reference и одно GPS-устройство с несколькими CargoUnit должны пройти изоляционные проверки. Duplicate webhooks, two dispatchers on same vehicle, stale GPS, out-of-order cargo scan, provider outage, blocked customs release, invalid label and timeout optimization обязаны давать **объяснимые безопасные** результаты.

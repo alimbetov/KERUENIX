@@ -35,6 +35,9 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-027 | Customs and transport documents | Separate customs release, eCMR, TIR/eTIR and contract terms; no assumed official API | Approved provider/corridor compliance tests |
 | ADR-028 | Documentation governance | `idea/` remains hypothesis and source; `docs/` carries consolidated draft requirements and release gates | Product-owner and domain-expert review |
 | ADR-029 | Release 0 boundary | Road-freight E2E with tenant isolation, cargo safety, client tracking, POD and financial evidence; regulated integrations phased | Pilot contract/customer selection |
+| ADR-030 | Explicit commercial and execution lifecycles | Distinct RFQ, QuoteVersion, CarrierOffer, Reservation, Booking, Trip, Shipment, DeliveryAttempt, DocumentPackage, Invoice, AR and AP state machines | Real expeditor/finance/legal workshop and sign-off |
+| ADR-031 | State transition and event contract | Versioned machine-readable transitions with expectedVersion, idempotency, scoped auth, transactional outbox and compensations | Contract test implementation and exact-SHA CI |
+| ADR-032 | Operational vs financial close | Order operational closure derived from cargo disposition; financial closure derived from documents, invoices, payment allocations and claims | Accounting owner and contract approval |
 
 ## Questions to settle before code
 

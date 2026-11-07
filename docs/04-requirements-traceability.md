@@ -47,6 +47,23 @@
 | KX-SRE-002 | Backup, restore, metrics, SLO and incident runbooks | P0 | Staging restore, no cross-tenant leakage | [08](../idea/08-security-reliability-and-sre.md) |
 | KX-PLT-001 | Tenant provisioning, plans, quotas, metering | P1 | Изоляция затрат/лимитов tenant, без смешивания счетов | [13](../idea/13-deployment-models.md) |
 
+## Lifecycle v1 — дополнение к матрице требований
+
+**Источник:** [Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md), [проверки LFC-001…LFC-036](11-commercial-execution-acceptance-v1.md). Это Draft требования, тесты ещё не выполнялись.
+
+| ID | Требование | Приор. | Acceptance evidence |
+|---|---|---|---|
+| KX-LFC-001 | RFQ может требовать уточнения; квалификация не равна акцепту | P0 | LFC-002 |
+| KX-LFC-002 | QuoteVersion неизменяем, акцепт ограничен сроком и версией | P0 | LFC-003,004,010 |
+| KX-LFC-003 | CarrierOffer.SELECTED не подтверждает CapacityReservation | P0 | LFC-005,006 |
+| KX-LFC-004 | Booking.CONFIRMED только при акцепте условий + ресурсном confirmation | P0 | LFC-005…008 |
+| KX-LFC-005 | Trip.STARTED не подтверждает pickup Shipment | P0 | LFC-011,012 |
+| KX-LFC-006 | DeliveryAttempt/POD по каждой CargoUnit, включая partial/rejected | P0 | LFC-013,014,035 |
+| KX-LFC-007 | DocumentPackageVersion отдельно от Shipment и Invoice | P0 | LFC-020,027 |
+| KX-LFC-008 | Invoice, AR, AP, payment/advance и финансовое закрытие раздельны | P0 | LFC-021…026,028 |
+| KX-LFC-009 | Отмена, сбой перевозки и смена перевозчика через exception/compensation | P0 contract / P1 Rescue automation | LFC-016,018,019,034 |
+| KX-LFC-010 | Tenant/role protection, expectedVersion, idempotency and event replay | P0 | LFC-007,008,014,017,022,029,032,033,036 |
+
 ## Отдельная матрица критических владельцев
 
 - **Product owner / эксперт-экспедитор:** COM, OPS, TRK.

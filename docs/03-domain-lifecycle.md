@@ -30,19 +30,26 @@
 
 ## Разделение жизненных циклов
 
-**Commercial:** `RFQ_DRAFT → NEEDS_INFO → QUOTED → NEGOTIATING → ACCEPTED → CAPACITY_PENDING → BOOKED`. При отсутствии подтверждённой машины статус не должен быть `BOOKED`.
+**Канонические переходы определены в [Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md) и [машинном контракте](contracts/commercial-execution-lifecycle.v1.json).** Ниже — навигационная сводка. Более ранние эскизы последовательностей не следует использовать как API enum.
 
-**Order:** `CREATED → CONFIRMED → IN_EXECUTION → FULFILLED → CLOSED`, с отдельными отменой и спором.
+| Агрегат | Основные состояния | Смысл |
+|---|---|---|
+| RFQ | DRAFT → SUBMITTED ↔ NEEDS_INFO → QUALIFIED → CLOSED_QUOTED | Квалификация запроса, не контракт |
+| CUSTOMER_QUOTE_VERSION | DRAFT → INTERNAL_REVIEW? → ISSUED → ACCEPTED / DECLINED / EXPIRED / SUPERSEDED / WITHDRAWN | Неизменяемая версия цены и условий |
+| CARRIER_OFFER | REQUESTED → OFFERED → SELECTED / REJECTED / EXPIRED / WITHDRAWN | Выбор подрядчика, не резерв |
+| CAPACITY_RESERVATION | REQUESTED → HELD → CONFIRMED → CONSUMED | Атомарная эксклюзивность ресурса |
+| BOOKING | RESOURCE_PENDING → CONFIRMED → IN_EXECUTION → EXECUTION_FINISHED | Клиентские обязательства + ресурсы |
+| TRIP | PLANNED → ASSIGNED → READY → STARTED → COMPLETED / INTERRUPTED | Выполнение конкретной машиной |
+| SHIPMENT | REGISTERED → READY_FOR_PICKUP → IN_CUSTODY → PARTIALLY_DELIVERED / DELIVERED | Подтверждённое движение физического груза |
+| DELIVERY_ATTEMPT | PLANNED → ARRIVED → EVIDENCE_PENDING → ACCEPTED / PARTIAL / REJECTED | Отдельная попытка и доказательства |
+| DOCUMENT_PACKAGE_VERSION | OPEN → COLLECTING → REVIEW_PENDING → COMPLETE | Проверка документов и их версий |
+| INVOICE | DRAFT → ISSUED | Финансовый документ неизменен после выпуска |
+| RECEIVABLE | OPEN → PARTIALLY_SETTLED → SETTLED | Долг клиента и денежные аллокации |
+| PAYABLE | PENDING_VERIFICATION → APPROVED → OPEN → PARTIALLY_SETTLED → SETTLED | Обязательство перед партнёром |
 
-**Shipment/Cargo:** `REGISTERED → READY_FOR_PICKUP → PICKED_UP → IN_TRANSIT → AT_HUB/TRANSFER → OUT_FOR_DELIVERY → DELIVERED / PARTIALLY_DELIVERED`. В зависимости от процессной модели `AT_HUB` и `IN_TRANSIT` могут повторяться; это события/участки, не обязательно линейный enum.
+В таблице показаны основные ветки; `CANCELLED`, `FAILED`, `WRITTEN_OFF`, `DISPUTED`, `REJECTED` и компенсации описаны полностью только в контракте. `IN_TRANSIT`, `AT_HUB` и `TRANSFER` могут быть повторяющимися Shipment milestones по нескольким TransportLeg, а не взаимоисключающими terminal statuses.
 
-**Trip:** `PLANNED → ASSIGNED → STARTED → COMPLETED/INTERRUPTED`, затем `RECONCILED`.
-
-**Warehouse:** `EXPECTED → RECEIVED → STORED/STAGED → LOADED → DISPATCHED`, а quality hold/customs hold/reservation ведутся параллельно.
-
-**Finance:** `COST_ESTIMATED`, `INVOICE_ISSUED`, `PARTIALLY_PAID`, `PAID`, `DISPUTED` и `SETTLED` относятся к разным обязательствам. Доставка не меняет автоматически эти состояния.
-
-**Tracking:** client status — *derived read model* от фактов Shipment, Warehouse, Trip, Rescue; никогда не source of truth.
+`Order.operationalComplete`, `Order.documentsComplete`, `Order.financiallyClosed` — **разные вычисляемые состояния**, основанные на подтверждённых фактах и политике закрытия. Customer-facing tracking — permission-filtered projection, никогда не source of truth.
 
 ## Правила операций
 

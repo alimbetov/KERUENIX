@@ -20,6 +20,8 @@ KERUENIX — логистическая платформа для экспеди
 9. [Глоссарий](docs/08-glossary.md) · [Развёртывание и эксплуатация](docs/09-deployment-operations.md).
 10. [Каталог исходных идей](idea/README.md) — 00–25, подробные исследования и сценарии.
 
+**Новый базовый бизнес-контракт:** [Commercial & Execution Lifecycle v1](docs/10-commercial-execution-lifecycle-v1.md) · [Приёмочные сценарии](docs/11-commercial-execution-acceptance-v1.md) · [State machines JSON](docs/contracts/commercial-execution-lifecycle.v1.json). Документы находятся на **проектном согласовании**, не являются реализованным кодом.
+
 ## Проектные возможности (не реализация)
 
 - **Commercial:** RFQ, переговоры, расчёт цен, проверка контрагентов, бронирование и договоры.
