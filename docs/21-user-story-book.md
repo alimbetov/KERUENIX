@@ -1,6 +1,6 @@
 # 21 — KERUENIX User Story Book: Role-Based Scenario Bank
 
-**Version:** 0.6 — ROLE SIMULATION PASS / SECURITY AND BUSINESS EXCEPTION REVIEW. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
+**Version:** 0.7 — ROLE SIMULATION PASS / SECURITY AND BUSINESS EXCEPTION REVIEW. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
 
 **Purpose:** Maintain a single versioned, traceable bank of actor-centered scenarios; build it incrementally in several iterations, *then* derive acceptance tests, TDD unit tests and integration/E2E cases. Do not confuse role catalog with a list of software privileges or tenant membership.
 
@@ -218,9 +218,18 @@ These **20 newly discovered** stories are candidates. Existing IDs are never ren
 | `USB-MKT-001` | MKT | Опубликовать и модерировать предложение перевозки с проверкой поставщика | R2 | Marketplace | `SIM-39` | PENDING: listing author/moderator and fraud controls |
 | `USB-MLS-001` | MLS | Подготовить проверенный tenant-scoped dataset с provenance и разрешениями | R2 | Intelligence | `SIM-40` | PENDING: consent, data lineage, controlled feature export |
 
-**Story maturity:** 58 existing stories plus 20 new candidates = **78 unique stories** in catalog; 20 are `DISCOVERED` and are not permission grants. The canonical [Access Governance v2.1](contracts/access-policy-matrix.v2.json) remains 67 policies until business/security review accepts new or changed actions.
+**Story maturity:** 58 existing stories plus 20 initial role simulation candidates = **78 stories**, then the two service-boundary candidates in section 4G bring the catalog to **80** in catalog; 20 are `DISCOVERED` and are not permission grants. The canonical [Access Governance v2.1](contracts/access-policy-matrix.v2.json) remains 67 policies until business/security review accepts new or changed actions.
 
 **Convergence rule:**  `USB` records a user outcome; `BSC` records a multi-role transaction; `SIM` exercises one path or fault variant, `AUTH` validates scope, and `LFC` verifies domain truth. No duplicate competing lifecycle states may be introduced by a simulation.
+
+## 4G. Two strategic role gaps found at service/billing boundaries
+
+| Story ID | Actor | Desired business outcome | Phase | Owner / boundary | Simulation | Risk / decision |
+|---|---|---|---|---|---|---|
+| `USB-TNO-004` | TNO | Сохранить безопасное завершение активной перевозки и доступ к критическим доказательствам при приостановке подписки Tenant | R0 safety contract | SaaS Control / Booking / Execution | SIM-41 | Policy/contract PENDING: не выключать custody и POD из-за billing без безопасного режима; платные новые заказы могут блокироваться |
+| `USB-SAL-009` | SAL | Внести RFQ со слов клиента по телефону/email с доказательством источника, не подменяя правомочный акцепт заказчика | R0 realistic entry | Commercial / Tenancy | SIM-42 | PENDING: requester identity/source record, duplicate prevention, customer independent acceptance |
+
+**Status:** `DISCOVERED`, no automatic permissions. Both require contractual and security review, because platform billing restrictions and customer legal acceptance cannot be invented as implementation defaults.
 
 ## 5. Detailed seed example — USB-DSP-001 (ready for business elaboration, NOT ready for TDD)
 
