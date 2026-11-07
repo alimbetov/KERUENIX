@@ -11,6 +11,8 @@ public enum ErrorCode {
         "The request could not be parsed or validated.", false),
     VALIDATION_FAILED("KX-GEN-400-002", HttpStatus.BAD_REQUEST, "Validation failed",
         "One or more request fields are invalid.", false),
+    FRAMEWORK_HTTP_ERROR("KX-GEN-000-001", HttpStatus.BAD_REQUEST, "HTTP request rejected",
+        "The request could not be completed using the supplied HTTP parameters.", false),
     AUTHENTICATION_REQUIRED("KX-AUTH-401-001", HttpStatus.UNAUTHORIZED, "Authentication required",
         "Valid authentication is required to access this resource.", false),
     PERMISSION_DENIED("KX-AUTH-403-001", HttpStatus.FORBIDDEN, "Permission denied",
