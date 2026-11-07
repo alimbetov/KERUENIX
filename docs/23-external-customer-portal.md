@@ -2,7 +2,7 @@
 
 **Version:** 0.1 / User Story Book iteration 1 extension · **Date:** 2026-11-07 · **Status:** DESIGN / business and security review required. **Implementation/tests:** NOT STARTED.
 
-**Authoritative security policy:** [Access Governance v2](24-access-control-tdd-matrix-v2.md), [JSON v2](contracts/access-policy-matrix.v2.json). The earlier v1.1 policy references below are historical. **Decision:** introduce `EXTERNAL_CUSTOMER` (code `EXC`), an external buyer of logistic services with a **customer order cabinet** and a provider-Tenant-facing **inbound order inbox**. This is a **role/experience and read-model capability**, not an 18th business module or a second platform. It belongs to existing Tenancy, Commercial, Booking, Execution, Tracking and Documents boundaries. Reviews are private B2B service feedback in R0; public reputation is a separately governed later feature.
+**Authoritative security policy:** [Access Governance v2.1](24-access-control-tdd-matrix-v2.md), [JSON v2](contracts/access-policy-matrix.v2.json). The earlier v1.1 policy references below are historical. **Decision:** introduce `EXTERNAL_CUSTOMER` (code `EXC`), an external buyer of logistic services with a **customer order cabinet** and a provider-Tenant-facing **inbound order inbox**. This is a **role/experience and read-model capability**, not an 18th business module or a second platform. It belongs to existing Tenancy, Commercial, Booking, Execution, Tracking and Documents boundaries. Reviews are private B2B service feedback in R0; public reputation is a separately governed later feature.
 
 **Relationships:** [User Story Book](21-user-story-book.md), [Role/Permission Matrix](22-role-permission-scope-approval-matrix.md), [machine matrix](contracts/role-permission-scope-approval.v1.json), [Lifecycle](10-commercial-execution-lifecycle-v1.md), [MVP qualification](05-mvp-qualification.md).
 
@@ -147,3 +147,17 @@ The historical machine contract [v1.1](contracts/role-permission-scope-approval.
 **R2:** public marketplace reputation, open self-signup/anonymous lead conversion, fraud scoring, appeal/reporting policy after legal/product review.
 
 **Open decisions:** which customer person can sign quote; invoice visibility and financial status in My Orders; customer relationship onboarding without own tenant; handling disputed/partially completed service reviews; privacy/retention/moderation of opinion; customer notifications channel and consent. These require pilot stakeholders, not invented rules.
+
+## 9. Second audit — actual customer portal completeness
+
+**Customer capabilities (not automatic grants):**
+- `CUSTOMER_VIEWER`: own customer-organization RFQs and orders, versioned quote read, scoped tracking/ETA/POD and private review read.
+- `CUSTOMER_REQUESTER`: create/withdraw own RFQ and report a service issue; cannot automatically accept binding quote.
+- `CUSTOMER_SIGNATORY`: may accept an exact current QuoteVersion only with separately evidenced legal or delegated authority; can request Booking cancellation but **cannot cancel** it directly.
+- `CUSTOMER_FEEDBACK_AUTHOR`: one private, verified-service review under eligibility rules, independent from issue/claim intake.
+
+**R0 workspace completeness:** include `My RFQs` (list and detail) separately from `My Orders`. Provider `Incoming RFQs` needs branch/team-scoped visibility, atomic assignment and `NEEDS_INFO` clarification workflow, not merely a list screen. Review submission becomes eligible after verified fulfillment, while `customer:issue:report/read` handles pre-delivery complaints/damage/disputes with a traceable owner without silently rewriting POD or financial status.
+
+**Ownership:** CustomerPortalApi is the **web/application composition facade**, consumes exported Commercial/Booking/Execution/Tracking/Documents interfaces and has **no independent canonical writable Order table**. Customer cancellation request belongs to Booking. Customer self-revoke removes **only their access**, not the customer organization or other personnel. Provider owner can consider business relationship suspension separately in R1.
+
+**Additional TDD acceptance:** `AUTH-EXT-014..017`, `AUTH-COM-018..019`, `AUTH-TEN-013..014`, `AUTH-BKG-003`, `AUTH-FIN-004`, and `AUTH-X-019..027`. See [machine contract v2.1](contracts/access-policy-matrix.v2.json). All tests are planned, not executed.
