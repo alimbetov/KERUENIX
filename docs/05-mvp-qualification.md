@@ -6,6 +6,10 @@
 
 **Data/GIS qualification:** добавить [PostGIS + Read Models + GPS partition architecture](15-data-platform-partitioning-postgis.md) в foundation. Для `R0` достаточно PostGIS provisioning, корректного spatial smoke, RLS и ограниченного metadata/ETA projection. Автоматическое партиционирование GPS обязательно **с реальным потоком телеметрии**; если первый MVP работает на ручных этапах без GPS, отложить физические partitions до GPS ingestion slice, но сохранить контракт и тест-план. Не партиционировать все коммерческие таблицы.
 
+## Error-handling foundation qualification (code exists, tests not run)
+
+The platform has an initial [Java21/Spring Boot4.1.2 unified error-handler scaffold](../backend/README.md) and a [GitHub Actions Maven verification workflow](../.github/workflows/backend-error-contract.yml). [31 — RFC 9457 standard](31-unified-error-handling-standard.md) defines the shared `ProblemDetail` contract for REST, Spring Security `401/403`, and servlet `/error` fallback. **Important:** the code is an error-only bootstrap with deny-all business security; it is NOT an authenticated Tenancy implementation or a complete application, and tests/CI are not yet verified. Before merging to production: run exact-SHA Maven CI and 401/403/error fallback contract tests; then prove PostgreSQL RLS/Booking/Finance negative effects in their owning modules.
+
 ## Product slice R0 — минимальная доказуемая перевозка
 
 **Customer-facing access clarification:** Include a minimal authenticated **External Customer Portal** for customers without their own paid tenant (provider-scoped relationship), customer My RFQs/My Orders, separately authorized QuoteVersion accept, shipment timeline/POD, pre/post-delivery issue reporting and private verified-service review; also provider Tenant `Incoming RFQs` with guarded assignment/clarification. [23 — Portal](23-external-customer-portal.md), [24 — Access Matrix v2](24-access-control-tdd-matrix-v2.md). This is a frontend/API experience across existing 17 modules, not a new authoritative booking source. Reviews must not be public marketplace ratings in R0.
