@@ -115,6 +115,17 @@
 
 Нормативный источник идентификаторов, ownership, обязательных тестов и exit gates: [19 — Architecture Hardening Priorities](19-architecture-hardening-priorities.md). Требования описывают план, а не принятую реализацию. Полный R0 не блокируется наличием ML training или Redis.
 
+## Engineering Quality — MapStruct + TDD
+
+Выбран инженерный стандарт [20 — MapStruct + TDD](20-mapstruct-tdd-engineering-standard.md) для всех 17 модулей без создания нового bounded context.
+
+- `KX-ENG-MAP-001` (R0): compile-time mapping для нетривиальных DTO/adapter boundaries, политика unmapped target = ERROR, запрет массового присвоения tenant/state/security/finance-полей. Acceptance: ENG-001.
+- `KX-ENG-TDD-001` (R0): Red → Green → Refactor для новых/изменённых доменных правил и state transitions; фиксация негативных, граничных и конкурентных случаев. Acceptance: ENG-002, ENG-003.
+- `KX-ENG-QA-001` (R0): JUnit 5, Spring Modulith boundary tests, PostgreSQL/PostGIS Testcontainers, Flyway, JaCoCo, exact-SHA CI. Acceptance: ENG-003..007.
+- `KX-ENG-E2E-001` (R0 release): один tenant-safe коммерческий цикл через Booking, POD и Finance-lite, включая failure injection. Acceptance: ENG-008.
+
+Числовое покрытие не заменяет проверку бизнес-инвариантов; MapStruct не должен обходить доменные фабрики/политику. Требования проектные, исполнение ещё не подтверждено.
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.
