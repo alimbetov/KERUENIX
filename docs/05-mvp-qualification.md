@@ -27,6 +27,10 @@
 
 **Упрощения допустимы:** ручная квалификация контрагента, ручной финансовый статус при наличии evidence, одна машина на первый Shipment, без публичного marketplace и без настоящего eCMR/KEDEN integration. Упрощение должно быть явно обозначено.
 
+## Role-simulation safety review (draft)
+
+Prior to R0 implementation, prioritize [26 — Role/Process Simulation & Gap Audit](26-role-process-simulation-and-gap-audit.md): 42 paper-simulated cases; 33 candidate gaps (including 12 blockers for the affected operations). R0 must NOT infer client acceptance from a phone-entered RFQ and must have an explicit safe policy for ongoing cargo/evidence when SaaS billing is suspended. Simulations are **not** CI/DB tests; sign-off and actual code acceptance remain pending. Do not pull deferred R1/R2 workflows into first pilot.
+
 ## Business Scenario Book Gate (draft)
 
 Prior to R0 code and release qualification, select and review the critical vertical slice from [25 — Business Scenario Book](25-business-scenario-book.md): customer onboarding/RFQ → quote approval/accept → capacity hold/Booking → offline pickup → verified POD → document/finance evidence, with cancellation and authorization-negative coverage. Keep 18 additional stories in [User Story Book](21-user-story-book.md) as **DISCOVERED**, not new unconditional R0 scope. Missing policies require security review and approval before implementation. Later R1 warehouse/notifications/executive reporting must not block first reproducible transport.
