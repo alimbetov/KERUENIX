@@ -389,3 +389,9 @@ After the 42 role simulations, 12 R0 blocking decisions now have concrete propos
 The [28 — TDD Acceptance Bank](28-r0-tdd-acceptance-bank.md) contains 84 planned cases (60 blocking-rule, 14 safety, 10 cross-role). These extend `BSC-001..011` and `SIM-01..42`; do not claim executed tests or automatically expand the 67 draft access policies. If the actual pilot decision differs from this proposal, revise the `BR-*` decision and its affected `TDD-SIM-*` tests before implementing.
 
 **Integration priority:** client/forwarder signatory → external carrier/own-fleet capacity → exclusive reservation/Booking → driver custody and 8/10 POD → verified finance ledger, plus SaaS suspension during active cargo. R1/R2 features remain deferred.
+
+## I. Negative and fault-case supplement
+
+The [30 — Negative and Failure Scenario Bank](30-negative-and-failure-scenario-bank.md), [JSON](contracts/r0-negative-scenarios.v1.json), adds 48 focused failure cases to the 84 originally planned (132 combined), plus eight uncounted MIX compositions. For each `BSC` actor path, the test oracle must assert: **correct denial or conflict**, **correct canonical DB state**, **no false Outbox/Inbox/finance/custody consequence**, and **truthful actor-facing state**. These are designed, not run.
+
+Trace from a business journey through `USB / SIM / GAP / NEG-R0`. Customer quote rejection, compliance HOLD resolution, carrier withdrawal, post-acceptance material changes and bank/ERP evidence are still subject to `BR` signoffs and missing permission policy approval; the negative test catalog does not itself authorize operations.
