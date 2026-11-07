@@ -231,7 +231,7 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 
 ## Development roadmap technical audit v1.1
 
-[33 — TDD Development Roadmap v1.1](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) revise R0 development sequencing after **12 documented technical findings** (10 P0 planning/qualification issues and 2 P1 design/validation issues). [Machine roadmap](contracts/tdd-development-roadmap.v1.json) contains 13 RD phases, three optional RX phases and **21 independent implementation PR cuts**.
+[33 — TDD Development Roadmap v1.1](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) revise R0 development sequencing after **13 documented technical findings** (11 P0 planning/qualification issues and 2 P1 design/validation issues). [Machine roadmap](contracts/tdd-development-roadmap.v1.json) contains 13 RD phases, three optional RX phases and **21 independent implementation PR cuts**.
 
 - `KX-ROAD-001` P0: RD-01 owns durable transactional Outbox/Inbox, RLS, data/migration foundation *before* RD-03 state writes. RD-10 performs hardening/recovery, not first Job implementation.
 - `KX-ROAD-002` P0: RD-05 is three independently qualified Cargo, Compliance, Fleet owner PRs; Booking and Finance cross-module references only through exported API/event/snapshot.
