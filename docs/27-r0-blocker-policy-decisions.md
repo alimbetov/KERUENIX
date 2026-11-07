@@ -31,7 +31,7 @@ The earlier audit found **12 blocking decision gaps**, not 12 already-implemente
 
 **Owner of business rule:** Commercial. **Review stakeholders:** Customer legal representative, legal counsel.
 
-**Proposed safe operational contract:** Customer quote acceptance requires verified identity, org representation/delegation evidence, exact immutable QuoteVersion digest, full terms, authority valid at event time; separate signatory grant; if verified signing method unavailable: status SIGNATURE_PENDING not ACCEPTED and no binding booking.
+**Proposed safe operational contract:** Customer quote acceptance requires verified identity, org representation/delegation evidence, exact immutable QuoteVersion digest, full terms, authority valid at event time; separate signatory grant; if verified signing method unavailable: signing-evidence workflow remains pending while canonical QuoteVersion stays ISSUED, never ACCEPTED and no binding booking.
 
 **Mandatory evidence:** Signed/accepted record: signer identity, tenant/customerOrg, delegation proof ref, signature method, UTC timestamp, termsHash, version, policyVersion.
 
