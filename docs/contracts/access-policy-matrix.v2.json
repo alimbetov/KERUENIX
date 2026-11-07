@@ -1,0 +1,1578 @@
+{
+  "schemaVersion": "2.0.0",
+  "status": "DRAFT_SECURITY_AND_BUSINESS_REVIEW_NOT_IMPLEMENTED",
+  "supersedes": "docs/contracts/role-permission-scope-approval.v1.json",
+  "specification": "docs/24-access-control-tdd-matrix-v2.md",
+  "securityModel": "RBAC_ROLE_TEMPLATES_PLUS_ABAC_RESOURCE_SCOPE_AND_TRANSACTIONAL_APPROVAL_SOD",
+  "defaultDecision": "DENY",
+  "versionedRules": true,
+  "roleTemplates": {
+    "PSA": "PLATFORM_SUPER_ADMIN",
+    "TNO": "TENANT_OWNER",
+    "TEN": "TENANT_ADMIN",
+    "SHP": "SHIPPER_AUTHORIZED_SIGNATORY",
+    "SAL": "SALES_EXPEDITOR",
+    "APR": "COMMERCIAL_APPROVER",
+    "PRC": "CARRIER_PROCUREMENT_MANAGER",
+    "CAR": "CARRIER_AUTHORIZED_MANAGER",
+    "FIN": "FINANCE_OFFICER",
+    "EXC": "EXTERNAL_CUSTOMER_PORTAL",
+    "PLN": "LOGISTICS_PLANNER",
+    "DSP": "DISPATCHER",
+    "DRV": "ASSIGNED_DRIVER",
+    "RCV": "AUTHORIZED_RECEIVER",
+    "DOC": "DOCUMENT_CONTROLLER",
+    "FAP": "FINANCE_APPROVER",
+    "SUP": "PLATFORM_SUPPORT"
+  },
+  "subjectTypes": {
+    "PSA": "PLATFORM_OPERATOR",
+    "SUP": "PLATFORM_OPERATOR",
+    "TNO": "TENANT_MEMBER",
+    "TEN": "TENANT_MEMBER",
+    "SHP": "TENANT_MEMBER",
+    "SAL": "TENANT_MEMBER",
+    "APR": "TENANT_MEMBER",
+    "PRC": "TENANT_MEMBER",
+    "CAR": "PARTNER_TENANT_MEMBER",
+    "FIN": "TENANT_MEMBER",
+    "EXC": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+    "PLN": "TENANT_MEMBER",
+    "DSP": "TENANT_MEMBER",
+    "DRV": "TENANT_OR_ASSIGNED_EXTERNAL_WORKER",
+    "RCV": "AUTHORIZED_CONSIGNEE_OR_TIME_LIMITED_GUEST",
+    "DOC": "TENANT_MEMBER",
+    "FAP": "TENANT_MEMBER"
+  },
+  "identityPrincipals": [
+    {
+      "type": "PLATFORM_OPERATOR",
+      "boundary": "PLATFORM_CONTROL_PLANE",
+      "context": "platform principal and audited authorization; not tenant data membership"
+    },
+    {
+      "type": "TENANT_MEMBER",
+      "boundary": "TENANT_MEMBERSHIP",
+      "context": "verified active membership + legal-entity/branch scope"
+    },
+    {
+      "type": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "boundary": "PROVIDER_CUSTOMER_ACCOUNT_GRANT",
+      "context": "providerTenant/customerOrg/customerAccount/verified grant, not provider employment membership"
+    },
+    {
+      "type": "PARTNER_TENANT_MEMBER",
+      "boundary": "PARTNER_TENANT_AND_PARTNER_GRANT",
+      "context": "own-tenant identity + explicit provider-owned resource share"
+    },
+    {
+      "type": "TENANT_OR_ASSIGNED_EXTERNAL_WORKER",
+      "boundary": "AUTHORIZED_ASSIGNED_JOB",
+      "context": "driver assigned trip, role and operational scope"
+    },
+    {
+      "type": "AUTHORIZED_CONSIGNEE_OR_TIME_LIMITED_GUEST",
+      "boundary": "DELIVERY_ATTEMPT_SCOPE",
+      "context": "verified recipient or narrow signed one-time access grant, not tenant user"
+    },
+    {
+      "type": "SERVICE_PRINCIPAL",
+      "boundary": "INTERNAL_WORKER_JOBS",
+      "context": "non-personal authorized job types, tenant context, idempotency and audit; no global superuser"
+    }
+  ],
+  "scopeDimensions": [
+    "subjectType",
+    "activeTenantId",
+    "providerTenantId",
+    "legalEntityId",
+    "branchId",
+    "customerOrgId",
+    "customerAccountId",
+    "resourceId",
+    "ownerTenantId",
+    "assignment",
+    "PartnerGrant/customerAccessGrant",
+    "delegationCeiling",
+    "fieldAllowlist",
+    "expiry",
+    "policyVersion",
+    "resourceVersion",
+    "servicePrincipalScope"
+  ],
+  "roleTemplateAssignmentPolicy": "Role templates are examples; multiple templates per person permitted but approval separation checked per transaction; templates never automatically bypass domain policy.",
+  "approvalPolicies": {
+    "AP-PLAT-ONBOARD": {
+      "owner": "Platform/Tenancy",
+      "required": "Verified business onboarding request, MFA; first owner invitation and recipient acceptance",
+      "separation": "Provisioning operator cannot self-assign to tenant"
+    },
+    "AP-PLAT-RECOVERY": {
+      "owner": "Platform/Tenancy",
+      "required": "Independently verified company evidence, two distinct approvers and audited recovery",
+      "separation": "Initiator cannot be sole approver"
+    },
+    "AP-TEN-DELEGATION": {
+      "owner": "Tenancy",
+      "required": "Owner/delegated admin within grantable scope; verified invitation and accepted membership",
+      "separation": "No self elevation or last-owner removal"
+    },
+    "AP-COM-ISSUE": {
+      "owner": "Commercial",
+      "required": "Valid exact quote version, allowed amount/terms; exceptional cases require prior approval",
+      "separation": "Author cannot approve own exception"
+    },
+    "AP-COM-EXCEPTION": {
+      "owner": "Commercial",
+      "required": "Independent authorized approver, limit/currency/legal entity, matching quote version",
+      "separation": "Requester != approver for the approval instance"
+    },
+    "AP-COM-CUSTOMER-ACCEPT": {
+      "owner": "Commercial",
+      "required": "Verified customer signatory, accepted exact current version, explicit terms evidence",
+      "separation": "Provider's employee cannot accept for customer merely by role"
+    },
+    "AP-COM-PROCUREMENT": {
+      "owner": "Commercial",
+      "required": "Carrier offer verified, partner permission and allowed procurement scope",
+      "separation": "Carrier cannot select itself as buyer without delegated provider rights"
+    },
+    "AP-BOOKING": {
+      "owner": "Booking",
+      "required": "Accepted customer terms + confirmed exclusive reservation + approved cargo/compliance state",
+      "separation": "CarrierOffer SELECTED is not confirmation"
+    },
+    "AP-POD": {
+      "owner": "Execution",
+      "required": "Authorized receiver, cargo-unit evidence and signed/verified delivery outcome",
+      "separation": "Driver cannot assert receiver confirmation without evidence"
+    },
+    "AP-FINANCE": {
+      "owner": "Finance",
+      "required": "Independent payment approver, authority amount, legal entity, verified obligation/payment reference",
+      "separation": "Payment initiator != same payment approver"
+    },
+    "AP-CUSTOMER-REVIEW": {
+      "owner": "Commercial",
+      "required": "Execution source verified completion, customer relationship, one eligible review per service",
+      "separation": "Provider staff cannot pose as customer or alter review"
+    },
+    "AP-JOB-REPLAY": {
+      "owner": "Platform Jobs",
+      "required": "Authorized replay request, redacted diagnostics, attempt audit and dedup",
+      "separation": "No tenant data browsing or silent impersonation"
+    }
+  },
+  "separationOfDuties": [
+    {
+      "ruleId": "SOD-001",
+      "conflict": "Commercial price/terms exception requester cannot approve same exception",
+      "mechanism": "requesterId != approverId and quoteVersion equality"
+    },
+    {
+      "ruleId": "SOD-002",
+      "conflict": "Payment initiator cannot approve same payment",
+      "mechanism": "initiatorId != approverId, amount/currency/legalEntity limits"
+    },
+    {
+      "ruleId": "SOD-003",
+      "conflict": "Tenant Admin cannot grant own or others' nondelegable permissions",
+      "mechanism": "permission subset delegationCeiling and no owner/platform assignment"
+    },
+    {
+      "ruleId": "SOD-004",
+      "conflict": "Provider staff cannot accept customer quote or write customer review by provider role alone",
+      "mechanism": "verified customer signatory/review relationship"
+    },
+    {
+      "ruleId": "SOD-005",
+      "conflict": "Platform support/super-admin cannot read tenant business records by global designation",
+      "mechanism": "separate approved just-in-time support workflow if ever required"
+    },
+    {
+      "ruleId": "SOD-006",
+      "conflict": "Company owner cannot be last owner deleted without accepted successor",
+      "mechanism": "transactional last-owner constraint"
+    }
+  ],
+  "dataPolicies": {
+    "supplierRates": "Provider-owned buy rate confidential to authorized Procurement/Finance; never Customer or carrier-other than own offer",
+    "customerPrice": "Customer-facing accepted quote visible only authorized customer/org and provider commercial actors",
+    "location": "Driver/vehicle coordinates require assignment or explicit projection grant; tracking freshness + privacy filters",
+    "documents": "Server-side rights rechecked at read/download; signed URL revocation limited by issuance TTL unless proxy",
+    "reviews": "Private attributable service feedback after verified delivery; provider response append-only later; no public ratings in R0",
+    "audit": "Denied high-risk operations audited without exposing full personal data or secrets"
+  },
+  "entries": [
+    {
+      "id": "TEN-01",
+      "module": "Tenancy",
+      "roleTemplate": "PSA",
+      "permission": "platform:tenant:create",
+      "resourceScope": "PLATFORM_ONBOARDING_CASE",
+      "approvalPolicy": "KYC_ORG_VERIFIED_AND_STEP_UP_MFA",
+      "storyId": "USB-PSA-001",
+      "acceptanceId": "AUTH-TEN-001",
+      "priority": "R0",
+      "subjectType": "PLATFORM_OPERATOR",
+      "subjectConstraints": [
+        "platformPrincipalId",
+        "ticketOrProvisioningCaseId"
+      ],
+      "approvalPolicyId": "AP-PLAT-ONBOARD",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-02",
+      "module": "Tenancy",
+      "roleTemplate": "PSA",
+      "permission": "platform:owner:bootstrap",
+      "resourceScope": "PENDING_TENANT_AND_VERIFIED_INVITEE",
+      "approvalPolicy": "VERIFIED_OWNER_AND_ONE_TIME_ACCEPTANCE",
+      "storyId": "USB-PSA-001",
+      "acceptanceId": "AUTH-TEN-002",
+      "priority": "R0",
+      "subjectType": "PLATFORM_OPERATOR",
+      "subjectConstraints": [
+        "platformPrincipalId",
+        "ticketOrProvisioningCaseId"
+      ],
+      "approvalPolicyId": "AP-PLAT-ONBOARD",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-03",
+      "module": "Tenancy",
+      "roleTemplate": "PSA",
+      "permission": "platform:admin:bootstrap",
+      "resourceScope": "PENDING_TENANT_AND_VERIFIED_INVITEE",
+      "approvalPolicy": "EXPLICIT_ONBOARDING_APPROVAL_ONLY",
+      "storyId": "USB-PSA-002",
+      "acceptanceId": "AUTH-TEN-003",
+      "priority": "R0",
+      "subjectType": "PLATFORM_OPERATOR",
+      "subjectConstraints": [
+        "platformPrincipalId",
+        "ticketOrProvisioningCaseId"
+      ],
+      "approvalPolicyId": "AP-PLAT-ONBOARD",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-04",
+      "module": "Tenancy",
+      "roleTemplate": "PSA",
+      "permission": "platform:owner:recover",
+      "resourceScope": "VERIFIED_INCIDENT_AND_TARGET_TENANT",
+      "approvalPolicy": "TWO_PERSON_INDEPENDENT_APPROVAL_AND_MFA",
+      "storyId": "USB-PSA-002",
+      "acceptanceId": "AUTH-TEN-004",
+      "priority": "R0",
+      "subjectType": "PLATFORM_OPERATOR",
+      "subjectConstraints": [
+        "platformPrincipalId",
+        "ticketOrProvisioningCaseId"
+      ],
+      "approvalPolicyId": "AP-PLAT-RECOVERY",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-05",
+      "module": "Tenancy",
+      "roleTemplate": "TNO",
+      "permission": "tenant:admin:appoint",
+      "resourceScope": "OWN_ACTIVE_TENANT_LEGAL_ENTITY",
+      "approvalPolicy": "OWNER_AUTHORITY_AND_INVITEE_ACCEPTANCE",
+      "storyId": "USB-TNO-001",
+      "acceptanceId": "AUTH-TEN-005",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-TEN-DELEGATION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-06",
+      "module": "Tenancy",
+      "roleTemplate": "TNO",
+      "permission": "tenant:owner:transfer",
+      "resourceScope": "OWN_ACTIVE_TENANT_LEGAL_ENTITY",
+      "approvalPolicy": "VERIFIED_SUCCESSOR_AND_NO_LAST_OWNER_GAP",
+      "storyId": "USB-TNO-002",
+      "acceptanceId": "AUTH-TEN-006",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-TEN-DELEGATION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-07",
+      "module": "Tenancy",
+      "roleTemplate": "TEN",
+      "permission": "tenant:member:invite",
+      "resourceScope": "DELEGATED_TENANT_LEGAL_ENTITY_BRANCH",
+      "approvalPolicy": "WITHIN_GRANTABLE_SCOPE_AND_VERIFIED_INVITEE",
+      "storyId": "USB-TEN-002",
+      "acceptanceId": "AUTH-TEN-007",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-TEN-DELEGATION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-08",
+      "module": "Tenancy",
+      "roleTemplate": "TEN",
+      "permission": "tenant:role:assign",
+      "resourceScope": "DELEGATED_ROLE_SET_AND_MEMBER_SCOPE",
+      "approvalPolicy": "DELEGABLE_PERMISSIONS_ONLY_NO_SELF_ESCALATION",
+      "storyId": "USB-TEN-003",
+      "acceptanceId": "AUTH-TEN-008",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-TEN-DELEGATION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-09",
+      "module": "Tenancy",
+      "roleTemplate": "TEN",
+      "permission": "tenant:member:revoke",
+      "resourceScope": "DELEGATED_MEMBER_SCOPE",
+      "approvalPolicy": "NO_LAST_OWNER_REMOVAL_SESSION_INVALIDATION",
+      "storyId": "USB-TEN-004",
+      "acceptanceId": "AUTH-TEN-009",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-TEN-DELEGATION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-10",
+      "module": "Tenancy",
+      "roleTemplate": "TNO",
+      "permission": "tenant:partnergrant:manage",
+      "resourceScope": "AUTHORIZED_SHIPMENT_AND_PARTNER_SCOPE",
+      "approvalPolicy": "COUNTERPARTY_VERIFIED_FIELD_TTL_AND_AUDIT",
+      "storyId": "USB-TEN-001",
+      "acceptanceId": "AUTH-TEN-010",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-TEN-DELEGATION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-11",
+      "module": "Tenancy",
+      "roleTemplate": "TEN",
+      "permission": "tenant:partnergrant:revoke",
+      "resourceScope": "DELEGATED_SHIPMENT_PARTNER_SCOPE",
+      "approvalPolicy": "IMMEDIATE_FUTURE_ACCESS_DENY_AND_CACHE_RECHECK",
+      "storyId": "USB-TEN-001",
+      "acceptanceId": "AUTH-TEN-011",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-TEN-DELEGATION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-01",
+      "module": "Commercial",
+      "roleTemplate": "SHP",
+      "permission": "rfq:create",
+      "resourceScope": "OWN_SHIPPER_TENANT_OR_EXPLICIT_SUBMISSION_GRANT",
+      "approvalPolicy": "NO_BINDING_QUOTE_FROM_INCOMPLETE_RFQ",
+      "storyId": "USB-SHP-001",
+      "acceptanceId": "AUTH-COM-001",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-02",
+      "module": "Commercial",
+      "roleTemplate": "SHP",
+      "permission": "rfq:amend_draft",
+      "resourceScope": "OWN_RFQ_ALLOWED_EDITABLE_STATE",
+      "approvalPolicy": "REQUALIFICATION_AFTER_MATERIAL_CHANGE",
+      "storyId": "USB-SHP-001",
+      "acceptanceId": "AUTH-COM-002",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-03",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "rfq:qualify",
+      "resourceScope": "ASSIGNED_CUSTOMER_RFQ_IN_FORWARDER_TENANT",
+      "approvalPolicy": "MANDATORY_CARGO_AND_SERVICE_FIELDS_COMPLETE",
+      "storyId": "USB-SAL-001",
+      "acceptanceId": "AUTH-COM-003",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-04",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "quote:draft",
+      "resourceScope": "ASSIGNED_CUSTOMER_IN_FORWARDER_TENANT",
+      "approvalPolicy": "NO_SELF_ISSUE_OR_BINDING_EFFECT_IN_DRAFT",
+      "storyId": "USB-SAL-001",
+      "acceptanceId": "AUTH-COM-004",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-05",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "quote:issue",
+      "resourceScope": "ASSIGNED_QUOTE_VERSION_AND_LEGAL_ENTITY",
+      "approvalPolicy": "APPROVED_POLICY_LIMITS_OR_PRIOR_DISTINCT_APPROVAL",
+      "storyId": "USB-SAL-002",
+      "acceptanceId": "AUTH-COM-005",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-06",
+      "module": "Commercial",
+      "roleTemplate": "APR",
+      "permission": "quote:approve_exception",
+      "resourceScope": "AUTHORIZED_FORWARDER_LEGAL_ENTITY_AND_LIMIT",
+      "approvalPolicy": "INDEPENDENT_APPROVER_NOT_REQUESTOR_FOR_EXCEPTION",
+      "storyId": "USB-APR-001",
+      "acceptanceId": "AUTH-COM-006",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-EXCEPTION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-07",
+      "module": "Commercial",
+      "roleTemplate": "SHP",
+      "permission": "quote:accept",
+      "resourceScope": "EXACT_QUOTE_VERSION_FOR_AUTHORIZED_SHIPPER",
+      "approvalPolicy": "UNEXPIRED_CURRENT_VERSION_CUSTOMER_AUTHORITY_AND_EVIDENCE",
+      "storyId": "USB-SHP-002",
+      "acceptanceId": "AUTH-COM-007",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-08",
+      "module": "Commercial",
+      "roleTemplate": "SHP",
+      "permission": "quote:decline",
+      "resourceScope": "EXACT_QUOTE_VERSION_FOR_AUTHORIZED_SHIPPER",
+      "approvalPolicy": "ACTOR_AND_REASON_AUDIT",
+      "storyId": "USB-SHP-002",
+      "acceptanceId": "AUTH-COM-008",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-09",
+      "module": "Commercial",
+      "roleTemplate": "PRC",
+      "permission": "carrier_offer:request",
+      "resourceScope": "AUTHORIZED_FORWARDER_RFQ_AND_VERIFIED_PARTNER",
+      "approvalPolicy": "VALID_PARTNER_GRANT_AND_DATA_MINIMIZATION",
+      "storyId": "USB-PRC-001",
+      "acceptanceId": "AUTH-COM-009",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-PROCUREMENT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-10",
+      "module": "Commercial",
+      "roleTemplate": "CAR",
+      "permission": "carrier_offer:submit",
+      "resourceScope": "OWN_CARRIER_TENANT_AND_EXPLICIT_REQUEST_GRANT",
+      "approvalPolicy": "VALID_CAPACITY_TERMS_EVIDENCE_AND_EXPIRY",
+      "storyId": "USB-CAR-001",
+      "acceptanceId": "AUTH-COM-010",
+      "priority": "R0",
+      "subjectType": "PARTNER_TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-PROCUREMENT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-11",
+      "module": "Commercial",
+      "roleTemplate": "PRC",
+      "permission": "carrier_offer:select",
+      "resourceScope": "AUTHORIZED_FORWARDER_PROCUREMENT_SCOPE",
+      "approvalPolicy": "VALID_OFFER_COMPLIANCE_PROCUREMENT_POLICY_NO_BOOKING_CONFIRM",
+      "storyId": "USB-PRC-001",
+      "acceptanceId": "AUTH-COM-011",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-PROCUREMENT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-12",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "quote:revise",
+      "resourceScope": "OWN_ISSUED_QUOTE_CONTEXT",
+      "approvalPolicy": "NEW_IMMUTABLE_VERSION_AND_NEW_APPROVAL_IF_REQUIRED",
+      "storyId": "USB-SAL-002",
+      "acceptanceId": "AUTH-COM-012",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-13",
+      "module": "Commercial",
+      "roleTemplate": "FIN",
+      "permission": "commercial:margin:read",
+      "resourceScope": "OWN_FORWARDER_LEGAL_ENTITY_FINANCIAL_SCOPE",
+      "approvalPolicy": "EXPLICIT_FINANCE_PERMISSION_NO_PARTNER_VISIBILITY",
+      "storyId": "USB-FIN-001",
+      "acceptanceId": "AUTH-COM-013",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-01",
+      "module": "Tenancy",
+      "roleTemplate": "EXC",
+      "permission": "customer:portal:activate",
+      "resourceScope": "PROVIDER_TENANT_CUSTOMER_RELATIONSHIP_AND_VERIFIED_INVITEE",
+      "approvalPolicy": "VERIFIED_IDENTITY_EXPLICIT_SERVICE_SCOPE_NO_INTERNAL_MEMBERSHIP",
+      "storyId": "USB-EXC-001",
+      "acceptanceId": "AUTH-EXT-001",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-02",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:rfq:create",
+      "resourceScope": "CUSTOMER_RELATIONSHIP_TO_EXACT_PROVIDER_TENANT",
+      "approvalPolicy": "ACTIVE_RELATIONSHIP_AND_COMPLETE_MINIMUM_RFQ_FIELDS",
+      "storyId": "USB-EXC-002",
+      "acceptanceId": "AUTH-EXT-002",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-03",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:orders:list",
+      "resourceScope": "CUSTOMER_ACCOUNT_PROVIDER_TENANT_ALLOWED_ORDER_SET",
+      "approvalPolicy": "ONLY_OWN_OR_CUSTOMER_ORGANIZATION_AUTHORIZED_ORDERS",
+      "storyId": "USB-EXC-003",
+      "acceptanceId": "AUTH-EXT-003",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-04",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:orders:read",
+      "resourceScope": "EXACT_CUSTOMER_ORDER_ID_AND_PROVIDER_TENANT",
+      "approvalPolicy": "NO_SUPPLIER_RATES_INTERNAL_MARGIN_OR_OTHER_CUSTOMERS",
+      "storyId": "USB-EXC-003",
+      "acceptanceId": "AUTH-EXT-004",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-05",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:quote:read",
+      "resourceScope": "CUSTOMER_AUTHORIZED_QUOTE_VERSION",
+      "approvalPolicy": "ONLY_CUSTOMER_FACING_TERMS_AND_CURRENT_OR_HISTORICAL_VERSIONS_AS_POLICY",
+      "storyId": "USB-EXC-004",
+      "acceptanceId": "AUTH-EXT-005",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-06",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:quote:accept",
+      "resourceScope": "EXACT_UNEXPIRED_QUOTE_VERSION_AND_CUSTOMER_SIGNATORY_SCOPE",
+      "approvalPolicy": "EXPLICIT_CUSTOMER_ACCEPTANCE_AUTHORITY_AND_IDEMPOTENCY_NOT_BOOKING",
+      "storyId": "USB-EXC-004",
+      "acceptanceId": "AUTH-EXT-006",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-07",
+      "module": "Tracking",
+      "roleTemplate": "EXC",
+      "permission": "customer:tracking:read",
+      "resourceScope": "AUTHORIZED_SHIPMENT_CUSTOMER_PROJECTION_AND_ACTIVE_GRANT",
+      "approvalPolicy": "FRESHNESS_WATERMARK_FIELD_FILTERING_NO_RAW_OTHER_PARTY_GPS",
+      "storyId": "USB-EXC-005",
+      "acceptanceId": "AUTH-EXT-007",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-08",
+      "module": "Documents",
+      "roleTemplate": "EXC",
+      "permission": "customer:pod:read",
+      "resourceScope": "AUTHORIZED_ORDER_DELIVERY_EVIDENCE_AND_DOCUMENT_SCOPE",
+      "approvalPolicy": "VERIFIED_DOC_AND_RIGHTS_CHECK_AT_DOWNLOAD_TIME",
+      "storyId": "USB-EXC-005",
+      "acceptanceId": "AUTH-EXT-008",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-09",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:review:submit",
+      "resourceScope": "COMPLETED_ELIGIBLE_SERVICE_FOR_CUSTOMER_ORDER",
+      "approvalPolicy": "VERIFIED_DELIVERY_EVIDENCE_SINGLE_REVIEW_PER_SERVICE_NO_SELF_REVIEW",
+      "storyId": "USB-EXC-006",
+      "acceptanceId": "AUTH-EXT-009",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-CUSTOMER-REVIEW",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-10",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:rfq:withdraw",
+      "resourceScope": "OWN_CUSTOMER_RFQ_IN_ALLOWED_PRECOMMIT_STATE",
+      "approvalPolicy": "NO_SILENT_CANCELLATION_AFTER_BINDING_ACCEPTANCE",
+      "storyId": "USB-EXC-007",
+      "acceptanceId": "AUTH-EXT-010",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-14",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "rfq:inbox:read",
+      "resourceScope": "PROVIDER_TENANT_AND_ASSIGNED_INBOUND_RFQS",
+      "approvalPolicy": "SCOPED_CUSTOMER_QUEUE_NO_OTHER_TENANT_DATA",
+      "storyId": "USB-SAL-003",
+      "acceptanceId": "AUTH-COM-014",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-15",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "review:respond",
+      "resourceScope": "PROVIDER_TENANT_VERIFIED_COMPLETED_SERVICE_REVIEW",
+      "approvalPolicy": "ONLY_PROVIDER_REPLY_NO_ALTER_OR_DELETE_CUSTOMER_REVIEW_AUDIT",
+      "storyId": "USB-SAL-004",
+      "acceptanceId": "AUTH-COM-015",
+      "priority": "R1",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-11",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:review:read",
+      "resourceScope": "VERIFIED_CUSTOMER_ACCOUNT_EXACT_SERVICE",
+      "approvalPolicy": "PRIVATE_REVIEW_ONLY_OWNER_AND_PROVIDER",
+      "storyId": "USB-EXC-006",
+      "acceptanceId": "AUTH-EXT-011",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-CUSTOMER-REVIEW",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-12",
+      "module": "Tenancy",
+      "roleTemplate": "EXC",
+      "permission": "customer:access:revoke",
+      "resourceScope": "OWN_CUSTOMER_ACCOUNT_GRANT",
+      "approvalPolicy": "CUSTOMER_USER_CAN_TERMINATE_OWN_RELATIONSHIP_NO_CROSS_ACCOUNT_DELETION",
+      "storyId": "USB-EXC-008",
+      "acceptanceId": "AUTH-EXT-012",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXT-13",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:order:cancel_request",
+      "resourceScope": "OWN_CONFIRMED_BOOKING_CUSTOMER_PROJECTION",
+      "approvalPolicy": "REQUEST_ONLY_BOOKING_OWNER_APPROVES_CONTRACTUAL_CANCELLATION",
+      "storyId": "USB-EXC-009",
+      "acceptanceId": "AUTH-EXT-013",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-BOOKING",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-16",
+      "module": "Commercial",
+      "roleTemplate": "APR",
+      "permission": "quote:approval:withdraw",
+      "resourceScope": "AUTHORED_APPROVAL_FOR_SAME_VERSION",
+      "approvalPolicy": "ONLY_BEFORE_ISSUE_WITH_EXPLICIT_VERSION_AND_AUDIT",
+      "storyId": "USB-APR-001",
+      "acceptanceId": "AUTH-COM-016",
+      "priority": "R1",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-EXCEPTION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "FLT-01",
+      "module": "Fleet",
+      "roleTemplate": "PLN",
+      "permission": "fleet:capacity:hold",
+      "resourceScope": "ASSIGNED_VEHICLE_AND_TENANT_LEGAL_ENTITY_WINDOW",
+      "approvalPolicy": "AUTHORITATIVE_RESOURCE_CAPACITY_AND_ATOMIC_CONFLICT_GUARD",
+      "storyId": "USB-PLN-001",
+      "acceptanceId": "AUTH-FLT-001",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-BOOKING",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "FLT-02",
+      "module": "Fleet",
+      "roleTemplate": "CAR",
+      "permission": "fleet:capacity:confirm",
+      "resourceScope": "OWN_CARRIER_RESOURCE_AND_ACTIVE_PARTNER_AGREEMENT",
+      "approvalPolicy": "VALID_HELD_RESERVATION_AND_CARRIER_AUTHORITY",
+      "storyId": "USB-CAR-001",
+      "acceptanceId": "AUTH-FLT-002",
+      "priority": "R0",
+      "subjectType": "PARTNER_TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-BOOKING",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "BKG-01",
+      "module": "Booking",
+      "roleTemplate": "DSP",
+      "permission": "booking:confirm",
+      "resourceScope": "ASSIGNED_BOOKING_OWN_PROVIDER_TENANT",
+      "approvalPolicy": "ACCEPTED_QUOTE_AND_CONFIRMED_CAPACITY_AND_COMPLIANCE",
+      "storyId": "USB-DSP-001",
+      "acceptanceId": "AUTH-BKG-001",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-BOOKING",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "BKG-02",
+      "module": "Booking",
+      "roleTemplate": "DSP",
+      "permission": "booking:cancel",
+      "resourceScope": "ASSIGNED_BOOKING_OWN_PROVIDER_TENANT",
+      "approvalPolicy": "CONTRACT_TERMS_AND_STATE_OR_EXPLICIT_EXCEPTION_APPROVAL",
+      "storyId": "USB-DSP-001",
+      "acceptanceId": "AUTH-BKG-002",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-BOOKING",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXE-01",
+      "module": "Execution",
+      "roleTemplate": "DSP",
+      "permission": "trip:assign",
+      "resourceScope": "ASSIGNED_PROVIDER_TRIP_AND_DRIVER",
+      "approvalPolicy": "VALID_BOOKING_RESOURCE_DRIVER_SCOPE_AND_COMPATIBILITY",
+      "storyId": "USB-DSP-001",
+      "acceptanceId": "AUTH-EXE-001",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-POD",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXE-02",
+      "module": "Execution",
+      "roleTemplate": "DRV",
+      "permission": "pickup:confirm",
+      "resourceScope": "EXACT_ASSIGNED_TRIP_CARGO_UNITS",
+      "approvalPolicy": "CUSTODY_EVIDENCE_AND_DEDUP_NOT_GPS_ALONE",
+      "storyId": "USB-DRV-001",
+      "acceptanceId": "AUTH-EXE-002",
+      "priority": "R0",
+      "subjectType": "TENANT_OR_ASSIGNED_EXTERNAL_WORKER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-POD",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "EXE-03",
+      "module": "Execution",
+      "roleTemplate": "RCV",
+      "permission": "pod:submit",
+      "resourceScope": "EXACT_DELIVERY_ATTEMPT_AND_AUTHORIZED_RECEIVER",
+      "approvalPolicy": "CARGO_UNIT_QUANTITY_SIGNATURE_AND_PARTIAL_DISPUTE_RULES",
+      "storyId": "USB-RCV-001",
+      "acceptanceId": "AUTH-EXE-003",
+      "priority": "R0",
+      "subjectType": "AUTHORIZED_CONSIGNEE_OR_TIME_LIMITED_GUEST",
+      "subjectConstraints": [
+        "deliveryAttemptId",
+        "verifiedRecipientScope"
+      ],
+      "approvalPolicyId": "AP-POD",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TRK-01",
+      "module": "Tracking",
+      "roleTemplate": "DSP",
+      "permission": "tracking:provider:read",
+      "resourceScope": "ASSIGNED_PROVIDER_SHIPMENT",
+      "approvalPolicy": "PERMISSION_FILTERED_MILESTONES_GPS_FRESHNESS_AND_PRIVACY",
+      "storyId": "USB-DSP-002",
+      "acceptanceId": "AUTH-TRK-001",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-COM-ISSUE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "DOC-01",
+      "module": "Documents",
+      "roleTemplate": "DOC",
+      "permission": "document:verify",
+      "resourceScope": "OWN_PROVIDER_DOCUMENT_PACKAGE_AND_VERSION",
+      "approvalPolicy": "EVIDENCE_REQUIREMENTS_NO_UNAPPROVED_OVERRIDE",
+      "storyId": "USB-DOC-001",
+      "acceptanceId": "AUTH-DOC-001",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-POD",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "DOC-02",
+      "module": "Documents",
+      "roleTemplate": "EXC",
+      "permission": "customer:document:list",
+      "resourceScope": "CUSTOMER_ACCOUNT_AND_AUTHORIZED_ORDER_PACKAGE",
+      "approvalPolicy": "ONLY_RELEASABLE_DOCUMENT_METADATA_AND_RIGHTS_CHECK",
+      "storyId": "USB-EXC-005",
+      "acceptanceId": "AUTH-DOC-002",
+      "priority": "R0",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "approvalPolicyId": "AP-POD",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "FIN-01",
+      "module": "Finance",
+      "roleTemplate": "FIN",
+      "permission": "invoice:prepare",
+      "resourceScope": "OWN_PROVIDER_LEGAL_ENTITY_AND_AUTHORIZED_ORDER",
+      "approvalPolicy": "AUDITABLE_DOCUMENT_SNAPSHOT_AMOUNT_AND_VERSION",
+      "storyId": "USB-FIN-001",
+      "acceptanceId": "AUTH-FIN-001",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-FINANCE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "FIN-02",
+      "module": "Finance",
+      "roleTemplate": "FIN",
+      "permission": "payment:prepare",
+      "resourceScope": "OWN_PROVIDER_PAYABLE_AND_APPROVED_EVIDENCE",
+      "approvalPolicy": "NO_PAYMENT_POSTING_FROM_UI_ONLY_AND_NO_AUTO_APPROVAL",
+      "storyId": "USB-FIN-001",
+      "acceptanceId": "AUTH-FIN-002",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-FINANCE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "FIN-03",
+      "module": "Finance",
+      "roleTemplate": "FAP",
+      "permission": "payment:approve",
+      "resourceScope": "OWN_PROVIDER_LEGAL_ENTITY_AMOUNT_LIMIT_AND_PAYABLE",
+      "approvalPolicy": "INDEPENDENT_APPROVER_FROM_INITIATOR_AND_VERIFIED_ACCOUNTING_EVIDENCE",
+      "storyId": "USB-FAP-001",
+      "acceptanceId": "AUTH-FIN-003",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-FINANCE",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SUP-01",
+      "module": "Tenancy",
+      "roleTemplate": "SUP",
+      "permission": "platform:job:inspect",
+      "resourceScope": "PLATFORM_JOB_METADATA_WITH_REDACTED_FIELDS",
+      "approvalPolicy": "NO_TENANT_FINANCIAL_GPS_CARGO_PAYLOAD",
+      "storyId": "USB-SUP-001",
+      "acceptanceId": "AUTH-SUP-001",
+      "priority": "R0",
+      "subjectType": "PLATFORM_OPERATOR",
+      "subjectConstraints": [
+        "platformPrincipalId",
+        "ticketOrProvisioningCaseId"
+      ],
+      "approvalPolicyId": "AP-JOB-REPLAY",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "SUP-02",
+      "module": "Tenancy",
+      "roleTemplate": "SUP",
+      "permission": "platform:job:retry",
+      "resourceScope": "FAILED_JOB_AND_APPROVED_REPLAY_REQUEST",
+      "approvalPolicy": "EXPLICIT_REPLAY_PERMISSION_AUDIT_IDEMPOTENT_WORKER_AND_NO_IMPERSONATION",
+      "storyId": "USB-SUP-001",
+      "acceptanceId": "AUTH-SUP-002",
+      "priority": "R0",
+      "subjectType": "PLATFORM_OPERATOR",
+      "subjectConstraints": [
+        "platformPrincipalId",
+        "ticketOrProvisioningCaseId"
+      ],
+      "approvalPolicyId": "AP-JOB-REPLAY",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    }
+  ],
+  "adversarialAcceptance": [
+    {
+      "id": "AUTH-X-001",
+      "target": "external-customer cross-account listing/order UUID enumeration",
+      "expected": "DENY without record-count or field leak",
+      "testLevel": "HTTP+PostgreSQL-RLS"
+    },
+    {
+      "id": "AUTH-X-002",
+      "target": "customer EXC tries provider internal tenant role API",
+      "expected": "DENY; no provider membership",
+      "testLevel": "HTTP+RLS"
+    },
+    {
+      "id": "AUTH-X-003",
+      "target": "provider Super Admin requests customer margin or POD without grant",
+      "expected": "DENY; platform data plane separation",
+      "testLevel": "HTTP+RLS"
+    },
+    {
+      "id": "AUTH-X-004",
+      "target": "TenantAdmin assigns itself PlatformSuperAdmin or FinanceApprover",
+      "expected": "DENY; delegation ceiling enforced",
+      "testLevel": "JUnit+HTTP+PostgreSQL"
+    },
+    {
+      "id": "AUTH-X-005",
+      "target": "same user has Sales and CommercialApprover template and attempts self approval",
+      "expected": "DENY for same quote exception",
+      "testLevel": "JUnit+PostgreSQL concurrency"
+    },
+    {
+      "id": "AUTH-X-006",
+      "target": "two customer actors race QuoteVersion expiry and accept",
+      "expected": "only valid authoritative version transition occurs once",
+      "testLevel": "JUnit+PostgreSQL concurrency"
+    },
+    {
+      "id": "AUTH-X-007",
+      "target": "PartnerGrant revoked while tracking cache still warm",
+      "expected": "new reads denied, no cached restricted DTO leak",
+      "testLevel": "HTTP+Redis failure matrix"
+    },
+    {
+      "id": "AUTH-X-008",
+      "target": "two verified customers from different org submit ratings on foreign Booking",
+      "expected": "DENY for foreign; one eligible logical review by authorized owner",
+      "testLevel": "PostgreSQL unique+HTTP"
+    },
+    {
+      "id": "AUTH-X-009",
+      "target": "customer reads POD via stale signed URL after revoke",
+      "expected": "documented TTL exposure or access broker enforcement, no false immediate revoke claim",
+      "testLevel": "HTTP+RustFS acceptance"
+    },
+    {
+      "id": "AUTH-X-010",
+      "target": "support job replay executes after authorizing user membership revoked",
+      "expected": "revalidated authority, policy and idempotency; no stale privilege",
+      "testLevel": "Jobs+Testcontainers"
+    },
+    {
+      "id": "AUTH-X-011",
+      "target": "provider employee issues Quote with MapStruct-supplied tenantId or approval flag",
+      "expected": "server derives tenant, ignores/denies overposted sensitive fields",
+      "testLevel": "HTTP+Mapper Unit"
+    },
+    {
+      "id": "AUTH-X-012",
+      "target": "receiver follows leaked POD link for another delivery",
+      "expected": "DENY due exact delivery attempt or token authorization",
+      "testLevel": "HTTP+RLS"
+    },
+    {
+      "id": "AUTH-X-013",
+      "target": "one user is Tenant Owner and FinanceApprover and requests self financial approval",
+      "expected": "no bypass of payment-level SoD",
+      "testLevel": "JUnit+PostgreSQL"
+    },
+    {
+      "id": "AUTH-X-014",
+      "target": "internal event handler acts under absent tenant context",
+      "expected": "fail closed, no cross-tenant writes",
+      "testLevel": "Job+Modulith+RLS"
+    },
+    {
+      "id": "AUTH-X-015",
+      "target": "provider grants EXC to wrong customer org across shared email domain",
+      "expected": "scope verified by explicit invited identity and org mapping; no domain-based autojoin",
+      "testLevel": "HTTP+PostgreSQL"
+    },
+    {
+      "id": "AUTH-X-016",
+      "target": "quote acceptance / booking / review confuse lifecycle projections",
+      "expected": "no accepted quote implies booking; GPS not POD; delivery not payment",
+      "testLevel": "Module integration+E2E"
+    }
+  ],
+  "implementationMilestones": [
+    "A0 design signoff for legal signer, tenant/customer relationship and approval thresholds",
+    "A1 auth policy kernel + 2-tenant/multiple-customer Testcontainers negative suite",
+    "A2 customer RFQ/Quote and provider inbox with role-specific projections",
+    "A3 Booking/Execution/Tracking/POD/Finance guards and review eligibility",
+    "A4 recovery, token/grant revoke, job replay, performance and exact-SHA CI"
+  ]
+}
