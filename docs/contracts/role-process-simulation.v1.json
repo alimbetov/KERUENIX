@@ -1038,6 +1038,57 @@
       "status": "SIMULATED_ON_PAPER_ONLY",
       "execution": "NOT_EXECUTED",
       "testSuiteCandidate": "TDD-40"
+    },
+    {
+      "id": "SIM-41",
+      "primaryRole": "TNO",
+      "counterpartyRole": "DSP",
+      "process": "Subscription suspended during active shipment",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "SaaS Control + Booking + Execution",
+      "stories": [
+        "USB-TNO-004",
+        "USB-DSP-001"
+      ],
+      "relatedAcceptance": [
+        "PENDING_POLICY",
+        "LFC-005"
+      ],
+      "expected": "No new paid actions by default but active cargo safety, custody evidence, notifications and access to critical POD cannot disappear; exact continuity/retention policy needs contract signoff",
+      "adversarialVariations": [
+        "tenant subscription expires during Trip.STARTED",
+        "invoice overdue while POD pending",
+        "platform billing outage"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-41"
+    },
+    {
+      "id": "SIM-42",
+      "primaryRole": "SAL",
+      "counterpartyRole": "EXC",
+      "process": "RFQ captured by provider staff from phone/email without customer portal login",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Commercial + Tenancy",
+      "stories": [
+        "USB-SAL-009",
+        "USB-EXC-004"
+      ],
+      "relatedAcceptance": [
+        "PENDING_POLICY",
+        "LFC-002,004"
+      ],
+      "expected": "Sales may record request with verifiable origin/attribution and notify customer; cannot forge customer signature or pretend acceptance; quote requires separately authorized customer agreement",
+      "adversarialVariations": [
+        "phone request from unverified caller",
+        "duplicate phone/email and portal RFQ",
+        "employee tries to accept quote for customer"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-42"
     }
-  ]
+  ],
+  "revisionNote": "Additional uncovered cross-functional processes: subscription continuity for cargo in execution, and sales-assisted offline RFQ capture without faking customer signature"
 }
