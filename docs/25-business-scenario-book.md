@@ -373,3 +373,11 @@ A scenario is **BUSINESS_REVIEWED** only after actors, preconditions, exception 
 ## F. Scope discipline
 
 This is the **second-pass R0 business story elaboration**, not evidence that 11 workflows have been built. Later Warehouse, Marketplace, Intelligence and executive dashboards remain **R1/R2** and are not prerequisites to the pilot. Permission matrix v2.1 is not automatically expanded by new story proposals: any new endpoint capability requires a scoped policy/test entry after business/security approval. No new business modules, broker, BPM engine or ML platform is introduced here.
+
+## G. Third-pass role simulation and missing variants
+
+[26 — Role/Process Simulation & Gap Audit](26-role-process-simulation-and-gap-audit.md) complements the 11 BSC business narratives with **42** desk walkthroughs, **22** role personas, **33** identified process/policy gaps and a separate [JSON scenario matrix](contracts/role-process-simulation.v1.json). It is NOT evidence of UI/API execution or business approval.
+
+**Critical additional realistic variants:** provider staff captures a phone/email RFQ on behalf of customer but cannot forge customer consent (`SIM-42`); active Shipment/Trip retains safe custody and evidence continuity when SaaS subscription is suspended (`SIM-41`); customer quote decline and company signatory power are distinct; own fleet does not need fake CarrierOffer; physical pickup can fail due mismatched cargo; original custodian cannot be overwritten on driver replacement; receiver missing means failed attempt, not delivered; verified bank facts are different from payment approval.
+
+**Next review:** use [User Story Book v0.7](21-user-story-book.md) with 80 proposed/draft stories. The current [Access Governance v2.1](contracts/access-policy-matrix.v2.json) is **still 67 policies**. Add an `AUTH-*` policy only after the specific business action and legal/security ownership are accepted. The 33 findings are proposed gaps; no new implementation/CI results are claimed.
