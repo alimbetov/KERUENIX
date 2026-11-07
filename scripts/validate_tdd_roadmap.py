@@ -51,8 +51,18 @@ def main() -> int:
     bsc_ids = set(re.findall(r"^## (BSC-\d{3}) — ", bsc_text, re.MULTILINE))
     br_ids = unique(br["decisions"], "decisionId", "BR decision")
     check(len(br_ids) == 12, "Expected exactly twelve existing blocking BR decisions")
-    check(all(d["businessApproval"] == "PENDING_REAL_STAKEHOLDER" for d in br["decisions"]),
-          "Signoff appears changed — review the approval evidence and roadmap manually")
+    # Real approvals may arrive later: permit promotion ONLY with evidence, not
+    # by rewriting a status string in the contract.
+    accepted_br_states = {"PENDING_REAL_STAKEHOLDER", "BUSINESS_APPROVED", "REJECTED", "REVISED"}
+    for decision in br["decisions"]:
+        state = decision["businessApproval"]
+        check(state in accepted_br_states,
+              f"{decision['decisionId']}: unrecognized business approval status {state}")
+        if state == "BUSINESS_APPROVED":
+            check(bool(decision.get("approvalEvidenceRef")),
+                  f"{decision['decisionId']}: approved without approvalEvidenceRef")
+            check(bool(decision.get("approverAuthorityRef")),
+                  f"{decision['decisionId']}: approved without approverAuthorityRef")
 
     for p in road["phases"]:
         pid = p["id"]
@@ -68,10 +78,23 @@ def main() -> int:
             check(scenario in bsc_ids, f"{pid}: unknown BSC scenario {scenario}")
         for decision in p.get("br", []):
             check(decision in br_ids, f"{pid}: unknown BR decision {decision}")
-        check(p["status"] == "PLANNED_NOT_QUALIFIED",
-              f"{pid}: phase status upgraded without machine-verifiable evidence")
-        check(p.get("testExecutionStatus") == "NOT_RUN_THIS_ROADMAP",
-              f"{pid}: test execution status misreported")
+        allowed_phase_states = {"PLANNED_NOT_QUALIFIED", "DESIGNED", "RED", "GREEN", "QUALIFIED"}
+        check(p["status"] in allowed_phase_states,
+              f"{pid}: unrecognized phase status {p['status']}")
+        if p["status"] in {"GREEN", "QUALIFIED"}:
+            evidence = p.get("evidence", {})
+            for field in ("commitSha", "ciRunUrl", "testReportPath"):
+                check(bool(evidence.get(field)),
+                      f"{pid}: {p['status']} without {field}")
+            if p["status"] == "QUALIFIED":
+                for field in ("migrationVersion", "businessDecisionRefs", "securityTestRefs"):
+                    check(bool(evidence.get(field)),
+                          f"{pid}: QUALIFIED without {field}")
+                check(p.get("testExecutionStatus") == "EXECUTED_VERIFIED",
+                      f"{pid}: QUALIFIED without executed tests")
+        elif p["status"] == "PLANNED_NOT_QUALIFIED":
+            check(p.get("testExecutionStatus") == "NOT_RUN_THIS_ROADMAP",
+                  f"{pid}: planned phase inaccurately claims tests were run")
         check(f"### {pid} —" in main_doc, f"{pid}: missing Markdown phase passport")
 
     visiting: set[str] = set()
@@ -94,10 +117,19 @@ def main() -> int:
         visit(phase)
     check(set(road["blockedUntilSignoff"]) == br_ids,
           "Blocked-until-signoff catalog differs from 12 BR decisions")
-    check(road["currentVerifiedState"]["latestHeadR0Qualified"] is False,
-          "R0 cannot be marked qualified by handler-only CI")
-    check(road["currentVerifiedState"]["domainCodeQualified"] is False,
-          "R0 domain code is not qualified at this revision")
+    if road["currentVerifiedState"]["latestHeadR0Qualified"]:
+        release = road.get("releaseQualification", {})
+        for field in ("commitSha", "builtArtifactDigest", "ciRunUrl",
+                      "businessApprovalRefs", "migrationVersion",
+                      "postgresRlsEvidence", "restorationEvidence", "frontendE2eEvidence"):
+            check(bool(release.get(field)),
+                  f"R0 release promoted without {field}")
+        check(phase_map["RD-12"]["status"] == "QUALIFIED",
+              "R0 release requires qualified RD-12")
+    if road["currentVerifiedState"]["domainCodeQualified"]:
+        check(any(p["status"] == "QUALIFIED" and p["id"] in {"RD-02","RD-03","RD-04","RD-05"}
+                  for p in road["phases"]),
+              "Domain code qualified without any implemented, evidence-backed domain phase")
 
     cuts = road["r0Prcuts"]
     pr_ids = unique(cuts, "id", "PR cut")
