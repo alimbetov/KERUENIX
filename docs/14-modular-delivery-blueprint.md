@@ -208,3 +208,7 @@ After 11 business narratives, [26 — Role/Process Simulation & Gap Audit](26-ro
 ## R0 fourth-pass proposed policy and test qualification
 
 Use [27 — 12 Blocker Decisions](27-r0-blocker-policy-decisions.md), [28 — TDD Acceptance Bank](28-r0-tdd-acceptance-bank.md), and [29 — Business Stakeholder Workshops](29-r0-business-acceptance-workshop-kit.md) to freeze business/legal permission and lifecycle contracts **before** code. Full planned catalog: 60 blocker tests + 14 R0 safety tests + 10 E2E cases = 84 planned, **zero executed**. No new business module, IAM service, generic BPM or Kafka is required. Sequence: signoff of relevant `BR-*` → TDD JUnit domain guard → real PG RLS/transaction races → Modulith contract/Outbox → customer/carrier E2E → exact-SHA CI. Missing approval/supplier/EDS/cash proof must never be inferred.
+
+## Negative/failure acceptance prior to R0 code qualification
+
+[30 — Negative and Failure Bank](30-negative-and-failure-scenario-bank.md) supplements the [84-case original TDD Bank](28-r0-tdd-acceptance-bank.md) with 48 fault-focused assertions across identity, CustomerAccount, Quote, Carrier, Capacity/Booking, Compliance, Custody, POD/Documents, Finance, SaaS, Jobs and disputes. Combined **132 designed test cases** plus eight cross-domain MIX fault sequences (uncounted). Prove state correctness, data absence/preservation, Outbox/Inbox event control and truthful UI status, not simply HTTP 403. All are planned, none executed; 17 business modules and 67 draft access policies remain unchanged.
