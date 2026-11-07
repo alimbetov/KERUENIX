@@ -126,3 +126,7 @@ Qualification: unit + property-based state tests, Spring Modulith boundary tests
 Open library decision: JobRunr (or another maintained PostgreSQL-backed scheduler) is a **candidate**, not approved dependency. Check current license tier, multi-tenancy mechanics, transaction integration, lease/fencing behavior, monitoring and operational lifecycle. Keep public `JobSchedulerPort` independent of chosen framework.
 
 **Decision record:** architectural direction ACCEPTED IN DESIGN by project owner; vendor/implementation details remain PROPOSED. No implementation or production qualification has occurred.
+
+## 9. Relation to Architecture Hardening priorities
+
+This platform design supports [19 — Architecture Hardening Priorities](19-architecture-hardening-priorities.md). Jobs, state machines and process managers remain technical capabilities, **not** new business modules. R0 implements only the minimum durable scheduling, concurrency and recovery needed by Booking/CapacityReservation; advanced worker orchestration follows measured demand.
