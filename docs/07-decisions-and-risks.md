@@ -16,6 +16,12 @@
 | MOD-DEC-04 | Event publication/outbox delivery model и recovery | Platform/SRE |
 | MOD-DEC-05 | Условия выделения workers и автономная работа On-Prem | Platform + enterprise owner |
 
+## Принятое направление: Platform Jobs & State Machines (07.11.2026)
+
+**Выбрано владельцем проекта для архитектурной реализации:** PostgreSQL-backed shared Job Engine, общий небольшой Java 21 State Machine Kernel и отдельные domain-owned Process Managers. Не создавать глобальную таблицу бизнес-состояний и не увеличивать каталог из 17 бизнес-модулей. Redis не является durable job store. См. [18 — Platform Jobs, State Machines & Workflows](18-platform-jobs-state-machines-workflows.md).
+
+**Открыто до implementation gate:** сравнить JobRunr и минимальный PG scheduler; доказать transaction/outbox enqueue, lease fencing, RLS, at-least-once/idempotency и recovery. Ни библиотека, ни production readiness пока не утверждены.
+
 ## Data Platform / GIS решения для утверждения
 
 | Код | Решение | Владелец |
