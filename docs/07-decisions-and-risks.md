@@ -14,6 +14,10 @@
 
 Первый role/permission security review выявил недоопределённость внешних заказчиков, доступа к `My Orders`, входящих заявок Tenant, отзывов, роли независимого Finance Approver, прав POD и реальных scopes/approval. Обновлённый [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) с [machine contract](contracts/access-policy-matrix.v2.json) теперь является базой для дальнейшего TDD-проектирования. После повторного аудита v2.1 содержит 67 проектных policy entries и 27 adversarial scenarios; требуется согласование полномочий подписанта, лимитов, и юридического статуса отзывов до реализации. v1 сохранён исторически; тесты не выполнялись.
 
+## Business scenario and role walkthrough — third audit
+
+[User Story Book](21-user-story-book.md) now holds 80 unique draft/discovery stories; [Business Scenario Book](25-business-scenario-book.md) retains 11 cross-role narratives; [Role/Process Simulation](26-role-process-simulation-and-gap-audit.md) adds 42 desk walkthroughs, representing all 22 role personas in at least one process. There are 33 gap candidates, including 12 business/security/legal blockers for their impacted R0 actions. **Not exhaustive**, not actual user simulation, code or CI. Specifically requires sign-off on external customer authority, carrier agreement, offline custody, finance truth, and live shipment continuity if tenant billing suspends. Do not convert discovery candidates into unreviewed R0 features or expand from 17 business modules.
+
 ## Новое архитектурное решение — модульная стратегия
 
 **Рекомендуемый выбор (ещё не ACCEPTED):** один Spring Boot backend + Spring Modulith business modules для R0, впоследствии isolated background workers для GPS, routing, notifications. Сравнение альтернатив и критерии экстракции: [13 — Architecture Options](13-modular-architecture-options-v1.md). Декомпозиция и gate implementation: [14 — Delivery Blueprint](14-modular-delivery-blueprint.md).
