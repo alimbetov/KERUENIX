@@ -6,9 +6,10 @@ Includes:
 - `ApiProblemFactory`: one RFC 9457 Problem Details contract shared by Spring MVC and Security filters.
 - `ApiExceptionHandler`: MVC validation/framework/typed-domain/unknown error mapping with generic public details.
 - `SecurityProblemHandler`: 401/403 before MVC, using the same public code registry and JSON contract.
+- `ApiFallbackErrorController`: servlet `/error` dispatch when MVC/Security advice cannot handle an error.
 - `RequestIdFilter`: server-generated UUID requestId, header and MDC.
 - `SecurityConfig`: **fail-closed** `anyRequest().denyAll()`. No JWT/real user login, no Tenancy, no domain endpoints, no accidental public business route.
-- `ErrorContractTest` and `SecurityErrorContractTest`: **written, not yet executed in CI**.
+- `ErrorContractTest`, `SecurityErrorContractTest`, `ErrorCodeCatalogTest` and `FallbackErrorControllerTest`: **written, not yet executed in CI**.
 
 ## Local build
 
@@ -33,6 +34,6 @@ Outstanding acceptance:
 - Spring Modulith API boundary qualification;
 - PostgreSQL Testcontainers/RLS and concurrency;
 - real JWT/tenant authorization;
-- `/error` and non-MVC fallback route handling;
+- full `/error` servlet dispatch and error response integration;
 - propagation/localization and production metrics;
 - legitimate idempotent application-level retry headers and job failure classification.
