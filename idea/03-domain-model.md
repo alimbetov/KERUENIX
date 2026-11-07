@@ -80,3 +80,7 @@ Commercial product category, dangerous goods classification, manufacturer handli
 ## Customer-facing shipment status and projection
 
 Customer tracking is a permission-filtered read model derived from Order, Shipment, TransportLeg, Trip, Custody and Delivery events, not an independent authoritative state. A Shipment may transfer between trucks or remain at a warehouse; vehicle location does not prove cargo custody. Store CustomerVisibilityPolicy, TrackingSnapshot, ShipmentMilestone and TrackingAccessGrant separately from raw GPS and financial data. See [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md).
+
+## Vehicle/trailer/body capability and capacity
+
+Do not store vehicle capacity as a single payload_ton or volume_m3 flag. Model VehicleCombination, Body/Trailer, compartment dimensions, remaining physical capacity, pallet placements, axle loads and specialty capabilities for cold chain, bulk and regulated tanks. Driver/tractor/attached trailer configuration is time-versioned. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).

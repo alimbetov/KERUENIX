@@ -133,3 +133,7 @@
 - **R3:** Opt-in federated rescue network между Cloud/Dedicated/On-Prem, тендеры и settlement automation после юридического и операционного пилота.
 
 **Главный открытый вопрос:** KERUENIX только предоставляет инструменты для субподряда между компаниями или становится самостоятельным посредником/маркетплейсом, принимающим договорную, страховую или платёжную ответственность? Это влияет на юридическую модель, KYC и монетизацию.
+
+## Specialized replacement vehicle suitability
+
+Rescue replacement must match actual vehicle/trailer capacity, load geometry, loading equipment and certified capabilities. Fuel tanker recovery requires compatible tank sections/UN product approval and safe transfer site; refrigerated and frozen cargo require verified cold-chain equipment and transfer plan. Distance to breakdown alone is never sufficient. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).

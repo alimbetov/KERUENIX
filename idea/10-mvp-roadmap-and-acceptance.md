@@ -91,3 +91,7 @@ To prove a 3PL transit warehouse, add a deliberately bounded pilot: 2 cargo owne
 ## Mandatory cargo compatibility gates
 
 Cargo attributes and manufacturer/dangerous goods declarations are explicitly validated at RFQ/booking. First mixed-load or multi-owner warehouse pilot requires deterministic CargoCompatibilityPort, source/versioned rules, an unknown-data stop, vehicle-compartment and warehouse-zone restrictions, and adversarial tests for temperature mismatch, cross-contamination, dangerous goods uncertainty, false GPS/container compatibility, rescue re-handover and warehouse holds. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).
+
+## Mandatory vehicle suitability baseline
+
+Vehicle classification supports payload (kg), verified usable cubic volume, internal dimensions, pallet spaces, doors, equipment/availability, trailer configuration and hard route/cargo constraints. Tankers and refrigerated/freezer bodies are represented via optional specialized capabilities, not merely generic category labels. Pilot qualification must reject cargo that fits by weight but not dimensions/pallet layout, exceeds axle limits, lacks verified cold-chain capability or cannot legally use a tank. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).

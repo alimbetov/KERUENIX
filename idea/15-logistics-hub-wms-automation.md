@@ -201,3 +201,7 @@
 ## Warehouse commodity neighborhood and compatibility rules
 
 Stock allocation, cross-docking and putaway require a separate cargo-compliance check: owner/quantity and storage status alone do not prove commodity coexistence is safe. `WarehouseZoneCapability`, `BinAdjacency`, shared airflow and temperature/humidity zones must be evaluated against `CargoComplianceProfile`, packaging, cleaning history and currently occupied neighbors. Customs/quality hold independently blocks release. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).
+
+## Vehicle body and warehouse dock compatibility
+
+Gate/yard/dock scheduling checks measured truck/trailer dimensions, door/loading orientation, temperature-controlled docking, tank transfer equipment and site access. Temperature-sensitive cross-dock cannot rely on unverified “reefer” category; liquid fuels and hazardous tanks use a physically and legally permitted specialized loading/unloading zone. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).

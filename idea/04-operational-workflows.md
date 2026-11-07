@@ -88,3 +88,7 @@ During RFQ, validate cargo classification and evidence; during quote/booking, as
 ## Journey J — shipper tracks the shipment
 
 Customer opens an authenticated portal, selects authorized Shipment, sees versioned milestones and ETA with freshness, optionally permitted map coordinates, exception messages and proof-of-delivery. Truck GPS feeds a provisional location only while cargo custody still links Shipment to that Trip; warehouse and rescue handovers switch the active leg without breaking the tracking history. Partial POD must remain partial; contract changes require approval. See [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md).
+
+## Journey K — capacity, frozen goods and fuel tanker suitability
+
+At quote, verify declared cargo weight/volume/dimensions/pallet positions against a specific vehicle+trailer combination, loading opening, axles, route, cargo neighborhood and specialized equipment. Frozen goods require verified refrigeration capacity and a monitoring/handling plan; fuel tankers require product/tank compartment suitability, volumes AND mass, permits and inspections. Re-assess when driver changes trailer or Rescue transfers the goods. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).

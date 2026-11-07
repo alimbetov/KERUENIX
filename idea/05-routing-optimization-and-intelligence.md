@@ -82,3 +82,7 @@ Compare 50–100 historical completed trips and prospective pilot results agains
 ## Cargo compatibility as a hard constraint
 
 Fleet optimizer must query `CargoCompatibilityPort` for every candidate vehicle/compartment, planned co-load, ordered stop timeline and route jurisdiction. Rules are mode- and time-aware and stored in `CompatibilityAssessment` snapshots. A solver cannot lower a hard legal or hygiene prohibition into a soft optimization penalty. Tribuo predicts risks, not compliance permissions. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).
+
+## Vehicle capacity as a multidimensional hard constraint
+
+Routing and Timefold candidate eligibility must use actual capacity of assigned vehicle combination, not marketing class: available payload, volumetric/geometry fit, pallet placements, loading opening, permitted axle and gross weight by route, driver/equipment and tank/refrigerator certifications. CargoCompatibilityPort and VehicleCapabilityPort both gate assignment. A solver may optimize after hard feasibility is established. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).

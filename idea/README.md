@@ -30,6 +30,7 @@ KERUENIX — многоклиентская платформа управлен�
 | [17 — Day-in-Life Simulation](17-forwarder-dispatcher-day-simulation.md) | Симуляция рабочего дня экспедитора, логиста, диспетчера и финансов |
 | [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md) | Классы грузов, товарное соседство, правила перевозки и хранения, нормативные профили |
 | [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md) | Клиентские статусы, ETA, этапы маршрута, трекинг груза и защита данных |
+| [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md) | Грузоподъёмность, кубатура, рефрижераторы, цистерны, бензовозы, ограничения загрузки |
 
 ## Неизменные правила дизайна
 

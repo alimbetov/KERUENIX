@@ -228,3 +228,7 @@ public record CompatibilityDecision(
 ## 14. Вывод
 
 **Cargo Classification & Compatibility — сквозной доменный сервис, необходимый и TMS, и WMS, и Rescue Network.** Он не может быть полем `cargoClass` в Order и не может целиком делегироваться Timefold. Вся система должна использовать один согласованный детерминированный контур правил с явной версией и правовой/технологической основой.
+
+## Equipment-specific constraint data
+
+CargoCompatibilityPort combines cargo-side legal, sanitary and handling requirements with verified VehicleCapabilityPort attributes from a specific tractor/body/trailer/tank/reefer configuration. Two cargoes may be compatible in general but infeasible in one trailer due to compartment count, temp, pallet layout, total/axle weight, tank-product approval, cleaning, loading order or site equipment. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).

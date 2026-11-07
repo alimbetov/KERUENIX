@@ -74,3 +74,7 @@ Adapters for ASN/EDI, barcode/SSCC, scales, gate ANPR, access control, RFID, tem
 ## Customer tracking projections
 
 Normalize event sources from GPS, warehouse, carrier, driver and POD into confirmed shipment milestones, with event_time, received_at, source quality and trust. External API providers must never directly publish raw vehicle telemetry to the customer portal. Project permission-filtered snapshots and explicit observed/estimated timestamps, with robust stale/offline handling. See [19 — Customer Shipment Tracking](19-customer-shipment-tracking.md).
+
+## Specialized vehicle equipment and capacity adapters
+
+Model tractor+trailer registration/verification, refrigeration units, cold-chain temperature telemetry, tank inspection/product approval, tank level/meters and axle scales through provider-neutral adapters. Preserve calibration/source, event timestamps, freshness, warranty and authorization; never accept supplier-advertised “20t / 82m3” as a verified legal or physical rating. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).
