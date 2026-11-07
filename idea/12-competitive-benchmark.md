@@ -66,3 +66,9 @@ KERUENIX can unify feasibility, quote cost, dispatch exceptions and actual profi
 4. Cross-tenant collaboration scenario with four parties.
 5. Route-change comparison: ETA, cost delta, customer approval.
 6. Complete quote-to-settlement audit trail.
+
+## DELLA Kazakhstan — грузовая биржа и backhaul
+
+Verified 2026-11-07 from [DELLA KZ](https://della.kz/ru-KZ), [carrier page](https://mob.della.kz/ru-KZ/carriers) and [terms](https://www.della.kz/terms/): freight/vehicle advertisements, saved searches, FTL/PTL/LTL/dogruz, return-load discovery, member verification and paid contact discovery. DELLA says it connects parties but does not carry freight or settle payments itself. **No authorized third-party API for KERUENIX was verified; terms prohibit automated scraping without authorization.**
+
+KERUENIX differentiation hypothesis: not another listing site, but verified matching + actual segment-by-segment capacity + cargo neighborhood + realistic ETA and cost delta + confirmed Booking + custody and customer tracking + settlement. Phase 1 should be a private trusted carrier exchange; assess marketplace liquidity before open launch. Full proposal: [27 — Freight Exchange](27-freight-exchange-load-board-and-backhaul.md).

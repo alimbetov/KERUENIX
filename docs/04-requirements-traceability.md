@@ -76,6 +76,20 @@
 
 Требования, затрагивающие несколько ролей, считаются `NeedsCrossReview` до подписания экспертами.
 
+## Freight Exchange & Backhaul — проектное расширение после R0
+
+Источник: [idea/27 — Freight Exchange & Backhaul](../idea/27-freight-exchange-load-board-and-backhaul.md). Биржа не заменяет Commercial/Execution Lifecycle и не входит в полный объём R0.
+
+| ID | Требование | Приор. | Acceptance evidence |
+|---|---|---|---|
+| KX-MKT-001 | Внутренняя доска загрузок и свободной вместимости по маршруту/датам | P1 | MKT-01,12,16 |
+| KX-MKT-002 | Догруз допускается только по действующим договорным разрешениям и при безопасной вместимости | P1 | MKT-05…09,16 |
+| KX-MKT-003 | Trusted partner listing/offer, KYB, authority and scopes | P1 | MKT-02…04,11,14,18 |
+| KX-MKT-004 | Separate listing/offer from confirmed resource and commercial booking | P1 | MKT-05,13,15,19 |
+| KX-MKT-005 | External exchange integrations only under lawful authorized API/provider contract | P2 | MKT-17 |
+| KX-MKT-006 | Open marketplace opt-in, moderation, reputation and anti-fraud | P2 | MKT-03,12,18 |
+| KX-MKT-007 | Incremental margin and reliable backhaul opportunity ranking | P2 | MKT-09,16,20 |
+
 ## Acceptance status
 
 Все тесты в таблице — **планируемые**. Ни unit, ни интеграционный, ни юридический тест не выполнен этой документацией. Для каждого требования будущая задача должна хранить: `requirement_id → user story → API/entity → test_case → CI run/exact SHA → owner approval`.

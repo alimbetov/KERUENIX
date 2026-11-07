@@ -21,6 +21,7 @@
 | JSON | [Lifecycle State Machines](contracts/commercial-execution-lifecycle.v1.json) | Машинно-читаемый контракт допустимых переходов (12 агрегатов) | Proposed |
 | 25 | [Сводка изменений идей v0.2](../idea/25-consolidation-v0.2.md) | Что уточнили и что ещё нужно доказать? | Draft |
 | 26 | [Lifecycle gaps and decisions](../idea/26-commercial-execution-lifecycle-risks.md) | Коммерческие риски, исключения и бизнес-вопросы | Proposed |
+| 27 | [Freight Exchange & Backhaul](../idea/27-freight-exchange-load-board-and-backhaul.md) | Биржа грузов и машин, догрузы, обратные рейсы, DELLA benchmark | Idea / Proposed |
 
 ## Источники концепций
 

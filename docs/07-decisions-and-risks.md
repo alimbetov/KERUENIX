@@ -36,6 +36,19 @@
 
 **Документы:** [Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md) · [LFC tests](11-commercial-execution-acceptance-v1.md). До рассмотрения на реальном workshop всё `PROPOSED`.
 
+## Дополнительные продуктовые решения — Freight Exchange
+
+| Код | Решение | Владелец |
+|---|---|---|
+| MKT-DEC-01 | Публикация: только закрытая сеть или отдельная публичная биржа? | Product + Commercial |
+| MKT-DEC-02 | Driver vs carrier operator: полномочия на публикацию и заключение договора | Legal + Security |
+| MKT-DEC-03 | Право на догруз поверх эксклюзивного FTL и изменение SLA | Contract owner + Logistics |
+| MKT-DEC-04 | Порог полезности по уменьшению пустого пробега и incremental margin | Finance + Operations |
+| MKT-DEC-05 | Есть ли официальное разрешение на использование API/данных внешних бирж? | Partnerships + Legal |
+| MKT-DEC-06 | KYB, контрагентский риск, ответственность самой площадки и монетизация | Product + Legal + Finance |
+
+См. [idea/27 — DELLA benchmark & Freight Exchange](../idea/27-freight-exchange-load-board-and-backhaul.md).
+
 ## Реестр основных рисков
 
 | Код | Риск | Воздействие | Предохранитель |

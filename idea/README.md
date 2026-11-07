@@ -37,6 +37,7 @@ KERUENIX — многоклиентская платформа управлен�
 | [24 — International Cargo Simulation](24-international-cargo-simulation.md) | Четыре сценария квалификации международных грузовых операций |
 | [25 — Consolidation v0.2](25-consolidation-v0.2.md) | Общая карта идеи, принятые к проектированию направления и следующие решения |
 | [26 — Commercial Lifecycle Risks](26-commercial-execution-lifecycle-risks.md) | Особенности переговоров, подтверждения транспорта, документов и расчётов |
+| [27 — Freight Exchange & Backhaul](27-freight-exchange-load-board-and-backhaul.md) | Биржа грузов, догрузы, обратные рейсы, закрытая сеть перевозчиков, DELLA benchmark |
 | [standards/identifier-catalog.v0.1.json](standards/identifier-catalog.v0.1.json) | Machine-readable namespace catalog, валидация форматов и источники |
 | [standards/external-identifier.schema.json](standards/external-identifier.schema.json) | JSON Schema для записи внешнего идентификатора с issuer/verified/evidence |
 
