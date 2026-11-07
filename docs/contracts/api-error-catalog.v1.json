@@ -47,6 +47,18 @@
       "public": true
     },
     {
+      "enumName": "FRAMEWORK_HTTP_ERROR",
+      "code": "KX-GEN-000-001",
+      "httpStatus": 400,
+      "httpStatusPolicy": "REPLACE_WITH_FRAMEWORK_4XX_STATUS",
+      "title": "HTTP request rejected",
+      "publicDetail": "The request could not be completed using the supplied HTTP parameters.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-000-001",
+      "public": true
+    },
+    {
       "enumName": "AUTHENTICATION_REQUIRED",
       "code": "KX-AUTH-401-001",
       "httpStatus": 401,
