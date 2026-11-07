@@ -1,0 +1,737 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentStatus": "PROPOSED_PLAN_NOT_EXECUTION_EVIDENCE",
+  "date": "2026-11-07",
+  "roadmapRef": "docs/33-tdd-development-roadmap-v1.md",
+  "baselineRef": "docs/32-scenario-driven-backend-design-v1.md",
+  "testBanks": [
+    "docs/contracts/r0-tdd-scenarios.v1.json",
+    "docs/contracts/r0-negative-scenarios.v1.json",
+    "docs/contracts/backend-query-soft-delete.v1.json",
+    "docs/contracts/access-policy-matrix.v2.json",
+    "docs/contracts/api-error-catalog.v1.json"
+  ],
+  "currentVerifiedState": {
+    "implementation": "ERROR_HANDLER_BOOTSTRAP_ONLY",
+    "errorContractPriorSha": "ac459923",
+    "errorTestsReportedOnPriorSha": 15,
+    "latestHeadR0Qualified": false,
+    "domainCodeQualified": false,
+    "brStakeholderSignoff": "PENDING",
+    "knownPlanCounts": {
+      "r0BusinessTests": 84,
+      "negativeTests": 48,
+      "totalNamedPriorTests": 132,
+      "additionalSdbTraceAnchors": 20
+    }
+  },
+  "rules": {
+    "execution": "TEST_FIRST_WITH_APPROVED_ACCEPTANCE_CRITERIA",
+    "statusFlow": [
+      "PROPOSED",
+      "DESIGNED",
+      "ACCEPTED_FOR_TDD",
+      "RED",
+      "GREEN",
+      "REFACTORED",
+      "IMPLEMENTED",
+      "QUALIFIED"
+    ],
+    "businessSignoffRequiredForBindingRules": true,
+    "gateEvidence": [
+      "commitSha",
+      "ciRunUrl",
+      "testReportPath",
+      "testEnvironment",
+      "migrationVersion",
+      "businessDecisionVersion"
+    ],
+    "dataAndIsolation": "REAL_POSTGRESQL_POSTGIS_TESTCONTAINERS_RLS_CROSS_TENANT",
+    "metrics": "NO_UNMEASURED_SLA_OR_COVERAGE_PROMISES",
+    "codeRuntime": "ONE_MODULAR_SPRING_BOOT_21_WITH_MODULE_SPECIFIC_OWNERS",
+    "softDeletePolicy": "OPT_IN_DRAFT_ONLY_NO_FINANCE_BOOKING_POD_LEDGER_DELETE",
+    "failureResponse": "RFC9457_FROM_EXISTING_API_ERROR_CATALOG",
+    "r0ReleaseRule": "NO_P0_RED_OR_UNSIGNED_RELEVANT_BUSINESS_RULE"
+  },
+  "workstreams": {
+    "R0": [
+      "RD-00",
+      "RD-01",
+      "RD-02",
+      "RD-03",
+      "RD-04",
+      "RD-05",
+      "RD-06",
+      "RD-07",
+      "RD-08",
+      "RD-09",
+      "RD-10",
+      "RD-11",
+      "RD-12"
+    ],
+    "R1": [
+      "RX-01"
+    ],
+    "R1_R2": [
+      "RX-02"
+    ],
+    "R2_PLUS": [
+      "RX-03"
+    ]
+  },
+  "phases": [
+    {
+      "id": "RD-00",
+      "name": "Discovery → Testable Contracts",
+      "stage": "R0",
+      "dependsOn": [],
+      "modules": [
+        "tenancy",
+        "commercial",
+        "fleet",
+        "booking",
+        "execution",
+        "documents",
+        "finance"
+      ],
+      "bsc": [
+        "BSC-001",
+        "BSC-002",
+        "BSC-003",
+        "BSC-004",
+        "BSC-007",
+        "BSC-008",
+        "BSC-010",
+        "BSC-011"
+      ],
+      "br": [
+        "BR-01",
+        "BR-02",
+        "BR-03",
+        "BR-04",
+        "BR-05",
+        "BR-06",
+        "BR-07",
+        "BR-08",
+        "BR-09",
+        "BR-10",
+        "BR-11",
+        "BR-12"
+      ],
+      "scope": "Актуализировать traceability, ownership Order/CustomerAccount/Invoice; разграничить signed и proposed BR; согласовать с реальными ролями W1..W5. Описать Gherkin Given/When/Then для приоритетных сценариев, включая негативные, конкуренцию и отключение внешних интеграций.",
+      "code": [
+        "docs/contracts/ ownership registry (proposed)",
+        "ADR для агрегатов и transactional boundaries",
+        "AC cards/BR signoff ledger with reviewer + date + evidence"
+      ],
+      "tests": [
+        "documentation JSON validation, uniqueness and cross-reference",
+        "negative-case coverage mapping (not executable business acceptance)"
+      ],
+      "gate": "Для каждого функционального среза — подтверждённые actor/resource scope, бизнес-владелец, AC, отказ и legal/finance signoff, где необходим; не подписанный BR не превращается в продуктовый allow.",
+      "next": "RD-01 возможен параллельно; бизнес-срезы используют только подписанные правила.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-01",
+      "name": "Build + Platform Foundation",
+      "stage": "R0",
+      "dependsOn": [],
+      "modules": [
+        "tenancy"
+      ],
+      "bsc": [],
+      "br": [],
+      "scope": "Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Flyway/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, минимальные audit/idempotency/outbox порты и fail-closed security. Docker Compose/local smoke.",
+      "code": [
+        "backend Maven BOM lock and reproducible build",
+        "Modulith verify() and @ApplicationModuleTest harness",
+        "Flyway + real PG/PostGIS + RLS template",
+        "CI exact SHA; issue/artifact refs; readme"
+      ],
+      "tests": [
+        "ERR-* existing contract regression on current SHA",
+        "ApplicationModules.verify no cycles/internal imports",
+        "DB migration, startup and rollback/no phantom outbox",
+        "RLS fail-closed + two tenant pool reuse",
+        "invalid JWT/401/403 shared ProblemDetail"
+      ],
+      "gate": "mvn verify и startup на конкретном SHA; реальные PG/PostGIS+RLS интеграции, не H2 вместо PG; не открывать бизнес API без auth.",
+      "next": "RD-02.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-02",
+      "name": "Tenancy + Identity + Customer Scope",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-01"
+      ],
+      "modules": [
+        "tenancy",
+        "commercial"
+      ],
+      "bsc": [
+        "BSC-001",
+        "BSC-011"
+      ],
+      "br": [
+        "BR-03"
+      ],
+      "scope": "Tenant/LegalEntity, Member/RoleAssignment, Provider↔CustomerOrg relationship, CustomerAccount grants, PartnerGrant, invitation, verified identity, customer vs tenant employee, revoke/suspension, SoD. Разделить identity/authorization grant (Tenancy) и commercial relationship facts (Commercial).",
+      "code": [
+        "domain aggregates and repository ports",
+        "verified principal context + transaction-scoped RLS",
+        "JWT/OIDC adapter + scoped application commands",
+        "customer-safe API DTO + MapStruct + migrations"
+      ],
+      "tests": [
+        "AUTH-X-* cross tenant, customer-org, delegated role escalation",
+        "deny foreign entity counts and UUID enumeration",
+        "revoke while cache warm; worker privilege revalidation",
+        "two JDBC connections and pooled tenant switch",
+        "same person with multiple roles, no self-approval"
+      ],
+      "gate": "Два Tenant + минимум два CustomerOrg в одном provider не видят чужих записей; сквозной authorization HTTP→DB подтверждён.",
+      "next": "RD-03, RD-05.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-03",
+      "name": "Commercial RFQ + Customer Inbox",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-02"
+      ],
+      "modules": [
+        "commercial",
+        "tenancy"
+      ],
+      "bsc": [
+        "BSC-002"
+      ],
+      "br": [],
+      "scope": "Создать Draft RFQ, submit/clarification/qualification по принятому lifecycle; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие.",
+      "code": [
+        "RFQ aggregate and transitions",
+        "command + query repositories, Flyway and RLS",
+        "Create/Submit/List/Detail DTO and MapStruct",
+        "safe SQL indexed searches + page metadata",
+        "audit/outbox and idempotency"
+      ],
+      "tests": [
+        "BSC-002, AUTH-EXT-*/AUTH-COM-* applicable",
+        "SDB-001..005, SDB-007..009, SDB-013..015, SDB-017",
+        "same-createdAt deterministic ordering, size cap, invalid sort",
+        "cross-account filtering before COUNT/OFFSET; SQL EXPLAIN",
+        "double submit changed payload conflict; draft deletion/quote issuance race if enabled"
+      ],
+      "gate": "External customer sees only own RFQs; provider only allowed Inbox; pagination/count and DTO no leak; one logical create/submit effect.",
+      "next": "RD-04.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-04",
+      "name": "Commercial Quote + Approvals",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-03"
+      ],
+      "modules": [
+        "commercial",
+        "tenancy"
+      ],
+      "bsc": [
+        "BSC-003"
+      ],
+      "br": [
+        "BR-01",
+        "BR-02",
+        "BR-05"
+      ],
+      "scope": "Immutable QuoteVersion/terms hash, issue/expire/supersede, price approval and SoD; independent authority to sign, version-specific customer acceptance and optional decline; never treat acceptance as confirmed booking.",
+      "code": [
+        "QuoteVersion aggregate and guarded state machine",
+        "CommercialApi customer/procurement snapshots",
+        "approval proof/evidence and typed domain events",
+        "outbox consumer/notification jobs; audit"
+      ],
+      "tests": [
+        "BR-01/02/05 TDD-SIM variants after signoff",
+        "AUTH-EXT-006, AUTH-X-005/006 as applicable",
+        "race accept/expiry/supersede, stale expectedVersion",
+        "approve own exception denied; no hidden buy rate in response"
+      ],
+      "gate": "Only authorized exact current quote version can be accepted; never mutate issued terms; no implicit Booking.CONFIRMED.",
+      "next": "RD-06 (with RD-05).",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-05",
+      "name": "Fleet + Cargo + Compliance + PostGIS",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-02"
+      ],
+      "modules": [
+        "fleet",
+        "cargo",
+        "compliance"
+      ],
+      "bsc": [
+        "BSC-004"
+      ],
+      "br": [
+        "BR-07",
+        "BR-08"
+      ],
+      "scope": "VehicleCombination/driver/capacity windows; CargoProfile weights, volume, dimensions and controlled eligibility; ComplianceAssessment with UNKNOWN fail-closed. PostGIS verified coordinates and proximity search; Fleet owns transactional CapacityHold, no read-model guard.",
+      "code": [
+        "FleetCapacityApi hold/confirm/release",
+        "vehicle/cargo master repositories + geo query port",
+        "PostgreSQL exclusive booking interval guard/constraint",
+        "Compliance module decision snapshots + provenance",
+        "GIS migrations/indexes, geospatial smoke"
+      ],
+      "tests": [
+        "BR-07, BR-08; DATA-*, GEO-* applicable",
+        "two competing reservations on separate transactions",
+        "expiry vs confirmation race; old GPS cannot authoritatively reserve",
+        "missing safety rule returns hold/needs review; no automatic allow",
+        "postgis ST_DWithin meters + cross-tenant nearest exclusion"
+      ],
+      "gate": "No double hold in DB, no unsafe UNKNOWN release, correct coordinate/units and geo tenant isolation; real concurrency test green.",
+      "next": "RD-06.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-06",
+      "name": "Booking Process + External Carrier",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-04",
+        "RD-05"
+      ],
+      "modules": [
+        "booking",
+        "fleet",
+        "commercial"
+      ],
+      "bsc": [
+        "BSC-004",
+        "BSC-010"
+      ],
+      "br": [
+        "BR-06",
+        "BR-07",
+        "BR-11"
+      ],
+      "scope": "Booking.ResourcePending→Confirmed only after quote and confirmed capacity; CarrierOffer selected is not exclusive reserve. Own-fleet vs partner carrier, hold TTL, durable orchestration/recovery and cancellation before/after start with compensation.",
+      "code": [
+        "Booking aggregate, BookingProcessManager persisted steps",
+        "Fleet API integration; typed events/outbox/inbox",
+        "carrier adapter mock with status reconciliation",
+        "booking read model and scoped endpoint"
+      ],
+      "tests": [
+        "TDD-R0-E2E-02/03/10 candidates",
+        "WF-001/002, SM-001..005, JOB-001..005 as applicable",
+        "crash after Fleet hold before Booking commit",
+        "carrier withdraw while confirmation races, lease fencing",
+        "retry duplicate command and process restart no double booking"
+      ],
+      "gate": "Confirmed Booking always has valid evidence of Quote + exclusive CapacityReservation + compliance; crash/retry converges and cleans hold.",
+      "next": "RD-07.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-07",
+      "name": "Execution + Custody + Partial POD",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-06"
+      ],
+      "modules": [
+        "execution",
+        "cargo",
+        "compliance"
+      ],
+      "bsc": [
+        "BSC-005",
+        "BSC-007"
+      ],
+      "br": [
+        "BR-09",
+        "BR-10"
+      ],
+      "scope": "Shipment/Trip/TransportLeg/CargoUnit, pickup/custody handover evidence, offline driver replay after revoke/reassignment, partial delivery/rejection/return with conservation; customer claims as safe exception stub without false Delivered.",
+      "code": [
+        "Execution state machines and custody ledger",
+        "offline command intake with verifier and quarantine",
+        "per-unit DeliveryAttempt/POD receipt",
+        "append-only evidence/audit/Outbox"
+      ],
+      "tests": [
+        "TDD-R0-E2E-04, BR-09/10 variants",
+        "online/offline pickup duplicate/out-of-order",
+        "custody conservation 8/10; cannot close 10/10",
+        "driver reassignment/revoke before offline replay, evidence quarantine",
+        "GPS and Trip.STARTED never become pickup/POD evidence"
+      ],
+      "gate": "No custody loss or forged POD; verified cargo-unit reconciliation and negative/replay invariants pass.",
+      "next": "RD-08.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-08",
+      "name": "Tracking + Documents + Query/Soft Delete Qualification",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-07"
+      ],
+      "modules": [
+        "tracking",
+        "documents",
+        "fleet",
+        "execution"
+      ],
+      "bsc": [
+        "BSC-006",
+        "BSC-009"
+      ],
+      "br": [],
+      "scope": "Event-derived customer timeline, permission-filtered milestone, ETA freshness/watermarks; verified document packages and downloads; cursor/keyset for immutable chronological streams; data lifecycle/retention/legal hold, default active lists exclude soft deleted where policy eligible.",
+      "code": [
+        "TrackingQueryApi filtered projection and rebuild",
+        "DocumentPackageVersion and proof access adapter",
+        "cursor signer/validator keyed to scope revision + filter",
+        "retention/tombstone propagation + audit"
+      ],
+      "tests": [
+        "SDB-006, 009..016, 018..019 as applicable",
+        "DATA-08..10, GEO-05..08 conditional GPS slice",
+        "foreign tracking/cursor, stale signed URL after revoke",
+        "read model lag, backfill, out-of-order, delete tombstone replay",
+        "verified document access, legal hold blocks purge"
+      ],
+      "gate": "No raw GPS/foreign documents, truthful freshness, no erased legal evidence, cursor cannot cross authorizations.",
+      "next": "RD-09.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-09",
+      "name": "Finance-lite + Verified Settlement",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-06",
+        "RD-07",
+        "RD-08"
+      ],
+      "modules": [
+        "finance",
+        "commercial",
+        "booking",
+        "documents"
+      ],
+      "bsc": [
+        "BSC-008"
+      ],
+      "br": [
+        "BR-11",
+        "BR-12"
+      ],
+      "scope": "Distinct invoice, receivable, payable, payment allocation, advance, claim references and approval; exact money/FX/tax precision; payment evidence from verified bank/ERP adapter or audited manual verification, not GPS or user toggle. Independent finance approver.",
+      "code": [
+        "Finance domain aggregates/ledger, repository",
+        "immutable Invoice, controlled correction/credit note",
+        "payment evidence/status adapter, SoD",
+        "AR/AP read projections and privacy-filtered APIs"
+      ],
+      "tests": [
+        "TDD-R0-E2E-06, FIN-* and BR-11/12 cases",
+        "duplicate bank callback, amount precision, currency mismatch",
+        "approve own payment denied; no over-allocation",
+        "delivered!=paid, advanced funds!=performed service",
+        "unknown banking result reconciliation, not blind retry"
+      ],
+      "gate": "No fictitious PAID or duplicate money effect; financial balance and independent approval verified on real PostgreSQL.",
+      "next": "RD-10/11.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-10",
+      "name": "Jobs + Resilience + Subscription Safety",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-02",
+        "RD-06",
+        "RD-07",
+        "RD-09"
+      ],
+      "modules": [
+        "tenancy",
+        "booking",
+        "execution",
+        "finance"
+      ],
+      "bsc": [
+        "BSC-011",
+        "BSC-010"
+      ],
+      "br": [
+        "BR-04",
+        "BR-11"
+      ],
+      "scope": "Cross-cutting durable Job Engine, outbox/inbox, retry classification/dead letter, fencing, observability, error catalog consistency. Subscription suspension during live cargo follows BR-04 with explicit safety continuity; do not build full SaaS Control billing in R0.",
+      "code": [
+        "PostgreSQL-backed durable jobs and reclaim supervisor",
+        "policy-scoped service principals, retry/replay approvals",
+        "health metrics, structured logs/correlation",
+        "outage modes and safety continuity adapter"
+      ],
+      "tests": [
+        "JOB-001..008 / WF-* and NEG-R0-ASYN* applicable",
+        "worker dies after effect before ack; duplicate callback",
+        "expired lease stale attempt cannot commit",
+        "revocation, fallback, cache/Redis outage fail safe",
+        "R0-E2E-07 subscription suspended but POD/custody guarded"
+      ],
+      "gate": "No lost committed event or job, no duplicate logical effect, no cross-tenant worker privilege, operable degraded state.",
+      "next": "RD-11.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-11",
+      "name": "R0 Full E2E + Recovery + Performance",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-03",
+        "RD-04",
+        "RD-05",
+        "RD-06",
+        "RD-07",
+        "RD-08",
+        "RD-09",
+        "RD-10"
+      ],
+      "modules": [
+        "tenancy",
+        "commercial",
+        "fleet",
+        "cargo",
+        "compliance",
+        "booking",
+        "execution",
+        "tracking",
+        "documents",
+        "finance"
+      ],
+      "bsc": [
+        "BSC-001",
+        "BSC-002",
+        "BSC-003",
+        "BSC-004",
+        "BSC-005",
+        "BSC-006",
+        "BSC-007",
+        "BSC-008",
+        "BSC-009",
+        "BSC-010",
+        "BSC-011"
+      ],
+      "br": [],
+      "scope": "Reproduce full route two tenants + two customer accounts + external carrier + driver + receiver. Include all accepted applicable 84 TDD and 48 negative scenarios by traceability, not merely test count. Fault injection, CI exact SHA, migrations, backup/restore, partition test conditional GPS and load benchmark.",
+      "code": [
+        "single documented R0 E2E fixture",
+        "smoke runner and CI jobs with reports",
+        "load/perf script with p95/p99 and EXPLAIN",
+        "backup/restore and data integrity/tenant isolation checklist"
+      ],
+      "tests": [
+        "TDD-R0-E2E-01..10 when accepted",
+        "SDB-001..020 applicability and exclusions recorded",
+        "AUTH/NEG-R0*/JOB/SM/WF, DB and Outbox assertions",
+        "two independent DB sessions plus network failure matrix",
+        "restore persisted facts and document checksums"
+      ],
+      "gate": "Every accepted P0 applicable contract green on exact SHA, zero known P0 leak/dup booking/custody/finance bug, documented SLO from measured benchmark; no mock-only release claim.",
+      "next": "RD-12.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RD-12",
+      "name": "Pilot Acceptance + Release Qualification",
+      "stage": "R0",
+      "dependsOn": [
+        "RD-11",
+        "RD-00"
+      ],
+      "modules": [
+        "tenancy",
+        "commercial",
+        "fleet",
+        "booking",
+        "execution",
+        "tracking",
+        "documents",
+        "finance"
+      ],
+      "bsc": [
+        "BSC-001",
+        "BSC-004",
+        "BSC-008"
+      ],
+      "br": [],
+      "scope": "Business/legal/finance signoff for applicable BR and corresponding user journeys; selected KZ road corridor/ordinary cargo, supported deployment profiles. Release image SBOM, secret scan, rollback/runbook, tenant/customer onboarding, incident process, measurable pilot KPIs.",
+      "code": [
+        "versioned release manifest and exact SHA test attestation",
+        "deployment profiles + backup/restore/incident runbook",
+        "pilot handoff and business acceptance report"
+      ],
+      "tests": [
+        "repeat E2E on release artifact and production-like database",
+        "restore drill + data/PII retention review",
+        "sanitized audit and monitoring alert exercise",
+        "manual user walkthrough for customer/forwarder/carrier/receiver/finance"
+      ],
+      "gate": "Signed business/legal/finance acceptance where required, exact release SHA artifacts/CI green, operational recovery proved; otherwise NO RELEASE.",
+      "next": "Enable RX work by measured demand.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RX-01",
+      "name": "R1 Operations Extensions",
+      "stage": "R1",
+      "dependsOn": [
+        "RD-12"
+      ],
+      "modules": [
+        "recovery",
+        "warehouse",
+        "saas-control"
+      ],
+      "bsc": [],
+      "br": [],
+      "scope": "Rescue/cross-dock/warehouse ledger, subscriptions and billing; each as small TDD vertical with domain ownership and multi-tenant security, never automatic full stack at once.",
+      "code": [
+        "R1 module-owned APIs/migrations",
+        "owner-specific query filters and retention"
+      ],
+      "tests": [
+        "custody transfer, warehouse conservation, billing control, cancellation compensation"
+      ],
+      "gate": "New module tests + regression R0 all green, measured business value.",
+      "next": "RX-02 / RX-03 conditional.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RX-02",
+      "name": "R1/R2 Optimization + Intelligence",
+      "stage": "R1_R2",
+      "dependsOn": [
+        "RD-12"
+      ],
+      "modules": [
+        "optimization",
+        "intelligence"
+      ],
+      "bsc": [],
+      "br": [],
+      "scope": "Optimization jobs and ML history separated: approved data lineage, point-in-time features, model version, source provenance; workers optional after workload evidence.",
+      "code": [
+        "optimization solver adapter",
+        "intelligence dataset and model registry",
+        "optional isolated CPU training workers"
+      ],
+      "tests": [
+        "reproducible datasets, no cross tenant training leak",
+        "solver outputs never bypass mandatory compliance and booking guards"
+      ],
+      "gate": "Use-case benefit/quality/latency and tenant security verified; fallback deterministic.",
+      "next": "Optional activation.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    },
+    {
+      "id": "RX-03",
+      "name": "R2+ Market / Regulations",
+      "stage": "R2_PLUS",
+      "dependsOn": [
+        "RD-12"
+      ],
+      "modules": [
+        "marketplace",
+        "regulatory"
+      ],
+      "bsc": [],
+      "br": [],
+      "scope": "Private load board then optional public freight marketplace, country-specific authoritative rules and typed standards only with licensing/expert signoff; no unverified eCMR/customs guarantees.",
+      "code": [
+        "verified listing and trust contracts",
+        "versioned regulatory rules and provenance"
+      ],
+      "tests": [
+        "fraud/disclosure negative cases, no booking ownership leakage",
+        "rule version rollback, unknown jurisdiction fail closed"
+      ],
+      "gate": "Separate business/legal/regulatory acceptance and R0 regression.",
+      "next": "Feature release only.",
+      "status": "PLANNED_NOT_QUALIFIED"
+    }
+  ],
+  "traceabilityFields": [
+    "storyIds",
+    "bscIds",
+    "brIds",
+    "requirementIds",
+    "actorAndScope",
+    "aggregateOwner",
+    "acceptanceIds",
+    "codePaths",
+    "migrationRefs",
+    "testClassNames",
+    "ciRunUrl",
+    "exactCommitSha",
+    "businessApprovalEvidence",
+    "status"
+  ],
+  "testingLayers": [
+    "UNIT_DOMAIN",
+    "MODULE_MODULITH",
+    "HTTP_SECURITY",
+    "PG_POSTGIS_RLS_INTEGRATION",
+    "DB_CONCURRENCY",
+    "API_EVENT_CONTRACT",
+    "E2E_MULTI_ACTOR",
+    "FAULT_RECOVERY",
+    "PERF_EXPLAIN"
+  ],
+  "prChecklist": [
+    "all impacted BR review status known",
+    "RED test committed or test evidence justified",
+    "domain invariant owner clear",
+    "tenant and resource scoped APIs",
+    "DB migrations reversible or expand/contract safe",
+    "no unauthorized SQL writes",
+    "no deleted evidence hidden by soft delete",
+    "error code catalog mapping",
+    "query sort/paging and index plan",
+    "real integration/security negative tests",
+    "exact SHA CI green",
+    "docs/readme/release notes"
+  ],
+  "blockedUntilSignoff": [
+    "BR-01",
+    "BR-02",
+    "BR-03",
+    "BR-04",
+    "BR-05",
+    "BR-06",
+    "BR-07",
+    "BR-08",
+    "BR-09",
+    "BR-10",
+    "BR-11",
+    "BR-12"
+  ],
+  "noAutoActivationOfExtensionModules": true
+}
