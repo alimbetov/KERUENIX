@@ -81,17 +81,6 @@
       "public": true
     },
     {
-      "enumName": "RESOURCE_HIDDEN",
-      "code": "KX-AUTH-404-001",
-      "httpStatus": 404,
-      "title": "Resource not found",
-      "publicDetail": "The requested resource was not found.",
-      "retryable": false,
-      "owner": "tenancy",
-      "problemType": "urn:keruenix:problem:KX-AUTH-404-001",
-      "public": true
-    },
-    {
       "enumName": "RESOURCE_NOT_FOUND",
       "code": "KX-GEN-404-001",
       "httpStatus": 404,
@@ -272,7 +261,7 @@
     "Never expose exception class, stack trace, SQL, internal tenant identifiers, tokens, user emails, full request path, rejected field values or raw carrier/financial payload",
     "HTTP status must match body status",
     "The stable machine code and type are contract identity; user-visible detail is never parsed for branching",
-    "A forbidden foreign resource can return the same 404 public body as a nonexistent one; do not leak existence",
+    "Foreign protected and nonexistent resource must use exactly the same public 404 code, body template and status; distinguish only in restricted security audit",
     "Only classified rate-limit or dependency failures are retryable, and clients must use idempotency for commands",
     "OptimisticLockingFailure -> 409; raw DataIntegrityViolation and SQLSTATE may not be blindly converted to 409/403",
     "Spring Security AuthenticationEntryPoint/AccessDeniedHandler and REST ControllerAdvice must share the same factory",
