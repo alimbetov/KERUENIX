@@ -21,6 +21,11 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
+| 29 | [R0 Business Acceptance Workshop Kit](29-r0-business-acceptance-workshop-kit.md) | Five role/party workshop packets; signoff and evidence matrix for 12 blockers | Ready for review / no approvals |
+| 28 | [R0 TDD Acceptance Bank](28-r0-tdd-acceptance-bank.md) | 60 blocker checks + 14 safety checks + 10 cross-role E2E = 84 planned tests | Designed / no code or CI |
+| JSON | [R0 TDD Cases v1](contracts/r0-tdd-scenarios.v1.json) | Machine test cases + synthetic PostgreSQL RLS fixture | Planned |
+| 27 | [Twelve R0 Blocker Decisions](27-r0-blocker-policy-decisions.md) | Proposed fail-closed rules for all 12 blockers and real-business signoff requirements | Design specified / signoff pending |
+| JSON | [R0 Blocker Decisions v1](contracts/r0-blocker-decisions.v1.json) | Machine decisions with business, legal and technical acceptance status | Design / signoff pending |
 | 26 | [Role/Process Simulation & Gap Audit](26-role-process-simulation-and-gap-audit.md) | 42 desk simulations across 22 personas; 33 gaps; negative/race coverage and risk-based gates | Design / simulated on paper |
 | JSON | [Role Process Simulation v1](contracts/role-process-simulation.v1.json) | Machine-readable actor/process/test-candidate matrix for 42 scenarios | Draft / not executed |
 | 25 | [Business Scenario Book — cross-role workflows](25-business-scenario-book.md) | 11 multi-actor business scenarios, evidence, exception paths and 38 proposed acceptance cases | Pass 2 / business review |
