@@ -27,6 +27,10 @@
 
 **Упрощения допустимы:** ручная квалификация контрагента, ручной финансовый статус при наличии evidence, одна машина на первый Shipment, без публичного marketplace и без настоящего eCMR/KEDEN integration. Упрощение должно быть явно обозначено.
 
+## Negative/failure readiness gate (design only)
+
+[30 — Negative/Failure Scenario Bank](30-negative-and-failure-scenario-bank.md) supplements [28 — TDD Bank](28-r0-tdd-acceptance-bank.md): **84 + 48 = 132** planned cases (8 `MIX-*` compound sequences outside this count). No tests have yet run. First pilot must prove negative outcomes at **database state + Outbox/Inbox + UI projection**, not only deny HTTP requests; high-risk intersections include stale JWT/customer grants, capacity expiry/parallel holds, offline custody replay, 8/10 POD, bank callback/reversal, SaaS continuity and supplier withdrawal. Business/legal approvals remain gatekeepers before confirming irreversible transitions.
+
 ## R0 Blocker and TDD acceptance gate (design only)
 
 Before marking business logic `READY_FOR_IMPLEMENTATION`, review [27 — Twelve R0 Blockers](27-r0-blocker-policy-decisions.md) with real [29 — Stakeholder Workshop](29-r0-business-acceptance-workshop-kit.md). Every blocker has a technical fail-safe proposal, but **no real business/legal approval is recorded**. [28 — R0 TDD Bank](28-r0-tdd-acceptance-bank.md) supplies 84 designed, not executed tests: 60 blocker, 14 R0 safety, 10 cross-role. Any signature/payment/compliance ambiguity fails closed. Current repository state is documentation-only in this scope; no exact-SHA Java/PG/CI evidence is claimed. Deferral of R1/R2 features does not waive the 14 safety paths.
