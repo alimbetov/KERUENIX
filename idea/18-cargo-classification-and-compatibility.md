@@ -34,7 +34,7 @@
 - UNECE ADR 2025: https://unece.org/adr-2025-files ; mixed loading: ADR 7.5.2, precautions with food: 7.5.4.
 - Казахстан, правила опасных грузов автотранспортом: https://old.adilet.zan.kz/rus/docs/V1500011779 (в 2026 внесены изменения).
 - Казахстан, правила перевозки грузов: https://old.adilet.zan.kz/rus/docs/V1500012463 .
-- ТР ТС 021/2011, ст.17 (официальный ЕЭК): https://eec.eaeunion.org/comission/department/deptexreg/tr/TR_TS_021.php .
+- ТР ТС 021/2011, ст.17 (официальный ЕЭК): https://old.adilet.zan.kz/rus/docs/H11T0000880 .
 - Госорганы Казахстана, разъяснение товарного соседства: https://www.gov.kz/org/departament-kkbtu-karaganda/press/news/details/881261?lang=ru .
 - Казахстан, правила хранения и транспортировки лекарств: https://old.adilet.zan.kz/rus/docs/V2100022230 .
 - IMO IMDG: https://www.imo.org/en/ourwork/safety/pages/dangerousgoods-default.aspx .
