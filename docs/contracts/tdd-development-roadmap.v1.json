@@ -911,7 +911,7 @@
   "audit": {
     "version": "1.1",
     "source": "docs/34-tdd-roadmap-technical-audit.md",
-    "findingsTotal": 12,
+    "findingsTotal": 13,
     "releaseBlockers": [
       "business signoff for irreversible contracts",
       "real RLS and Booking/Fleet/Custody/Finance consistency",
@@ -925,7 +925,9 @@
       "modules means participants, not allowed direct imports",
       "source-of-truth and no illegal deletion/retention",
       "no accepted business policy inferred from future passing tests"
-    ]
+    ],
+    "prDag": "Explicit dependencies of 21 independent PR cuts; CI fails cycles or orphan refs",
+    "findingAdded": "AUD-RD-13: PR-level DAG absent in original v1.1 first cut, now enforced"
   },
   "executionGovernance": {
     "statusTruth": "Do not mark stage QUALIFIED from plan or a previous commit; require exact SHA + job logs + migration and fixtures",
@@ -951,7 +953,8 @@
       "QUALIFIED",
       "DEFERRED_WITH_APPROVED_RATIONALE",
       "BLOCKED"
-    ]
+    ],
+    "prDependency": "Only merge after prerequisite PRs have been code-qualified on current target baseline, not merely approved documentation"
   },
   "trackOwnership": {
     "concept": "A stage may involve multiple modules, but only the owning module can write its canonical tables; each PR declares exactly one primary write owner or a platform technical owner.",
@@ -975,147 +978,220 @@
       "phase": "RD-00",
       "owner": "architecture",
       "outcome": "traceability validator, signoff ledger and phase-by-phase test selection",
-      "testGate": "catalog IDs and BR status truthful"
+      "testGate": "catalog IDs and BR status truthful",
+      "dependsOnPrs": []
     },
     {
       "id": "PR-01",
       "phase": "RD-01",
       "owner": "platform",
       "outcome": "Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox",
-      "testGate": "verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic"
+      "testGate": "verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic",
+      "dependsOnPrs": []
     },
     {
       "id": "PR-02",
       "phase": "RD-02",
       "owner": "tenancy",
       "outcome": "tenant/legal entity and verified identity/invitation/grants",
-      "testGate": "real JWT or verified auth adapter + multi-grant denial + SoD"
+      "testGate": "real JWT or verified auth adapter + multi-grant denial + SoD",
+      "dependsOnPrs": [
+        "PR-00",
+        "PR-01"
+      ]
     },
     {
       "id": "PR-03",
       "phase": "RD-02",
       "owner": "tenancy",
       "outcome": "provider-customer organization grants and revoke",
-      "testGate": "Customer-X/Y negative list/detail, warm cache, RLS context reset"
+      "testGate": "Customer-X/Y negative list/detail, warm cache, RLS context reset",
+      "dependsOnPrs": [
+        "PR-02"
+      ]
     },
     {
       "id": "PR-04",
       "phase": "RD-03",
       "owner": "commercial",
       "outcome": "RFQ creation+submit+customer My RFQs",
-      "testGate": "idempotency conflict + scoped list/pagination + first real outbox"
+      "testGate": "idempotency conflict + scoped list/pagination + first real outbox",
+      "dependsOnPrs": [
+        "PR-03"
+      ]
     },
     {
       "id": "PR-05",
       "phase": "RD-03",
       "owner": "commercial",
       "outcome": "provider Inbox assignment, clarification/qualify",
-      "testGate": "branch restriction, CAS assignment, no unapproved quote"
+      "testGate": "branch restriction, CAS assignment, no unapproved quote",
+      "dependsOnPrs": [
+        "PR-04"
+      ]
     },
     {
       "id": "PR-06",
       "phase": "RD-04",
       "owner": "commercial",
       "outcome": "immutable QuoteVersion issue/supersede, independent price approval",
-      "testGate": "version race + SoD; no binding acceptance without BR-01"
+      "testGate": "version race + SoD; no binding acceptance without BR-01",
+      "dependsOnPrs": [
+        "PR-05"
+      ]
     },
     {
       "id": "PR-07",
       "phase": "RD-04",
       "owner": "commercial",
       "outcome": "authorized customer Quote accept/decline with evidence",
-      "testGate": "BR-01/02/05 acceptance, exact signer, termsHash and expiry"
+      "testGate": "BR-01/02/05 acceptance, exact signer, termsHash and expiry",
+      "dependsOnPrs": [
+        "PR-06"
+      ]
     },
     {
       "id": "PR-08",
       "phase": "RD-05",
       "owner": "cargo",
       "outcome": "CargoProfile/identified units and physical compatibility inputs",
-      "testGate": "mass/quantity/identity/value invariants"
+      "testGate": "mass/quantity/identity/value invariants",
+      "dependsOnPrs": [
+        "PR-02"
+      ]
     },
     {
       "id": "PR-09",
       "phase": "RD-05",
       "owner": "compliance",
       "outcome": "versioned compliance decision and critical UNKNOWN safety gate",
-      "testGate": "qualified source / correct HOLD, BR-08 signoff where binding"
+      "testGate": "qualified source / correct HOLD, BR-08 signoff where binding",
+      "dependsOnPrs": [
+        "PR-08"
+      ]
     },
     {
       "id": "PR-10",
       "phase": "RD-05",
       "owner": "fleet",
       "outcome": "vehicle/driver/trailer registry and atomic capacity holding",
-      "testGate": "PostgreSQL exclusion/locked-slot race, hold expiry fencing BR-07"
+      "testGate": "PostgreSQL exclusion/locked-slot race, hold expiry fencing BR-07",
+      "dependsOnPrs": [
+        "PR-08",
+        "PR-09"
+      ]
     },
     {
       "id": "PR-11",
       "phase": "RD-06",
       "owner": "commercial",
       "outcome": "carrier sourced offer+withdrawal/ack and own-fleet alternative",
-      "testGate": "partner grants, no margin disclosure, no false capacity, BR-06"
+      "testGate": "partner grants, no margin disclosure, no false capacity, BR-06",
+      "dependsOnPrs": [
+        "PR-03",
+        "PR-06"
+      ]
     },
     {
       "id": "PR-12",
       "phase": "RD-06",
       "owner": "booking",
       "outcome": "Booking pending→confirmed via accepted quote and confirmed exclusive capacity",
-      "testGate": "process crash/replay, stale quote/carrier, no phantom Booking"
+      "testGate": "process crash/replay, stale quote/carrier, no phantom Booking",
+      "dependsOnPrs": [
+        "PR-07",
+        "PR-10",
+        "PR-11"
+      ]
     },
     {
       "id": "PR-13",
       "phase": "RD-07",
       "owner": "execution",
       "outcome": "Trip+pickup offline custody and signed evidence references",
-      "testGate": "historical authority, late replay, one custodian, BR-09"
+      "testGate": "historical authority, late replay, one custodian, BR-09",
+      "dependsOnPrs": [
+        "PR-12"
+      ]
     },
     {
       "id": "PR-14",
       "phase": "RD-07",
       "owner": "execution",
       "outcome": "delivery attempts, partial/refused POD and compensating disposition",
-      "testGate": "8/10 conservation, receiver evidence and proof immutability, BR-10"
+      "testGate": "8/10 conservation, receiver evidence and proof immutability, BR-10",
+      "dependsOnPrs": [
+        "PR-13"
+      ]
     },
     {
       "id": "PR-15",
       "phase": "RD-08",
       "owner": "tracking",
       "outcome": "customer-scoped timeline and ETA freshness",
-      "testGate": "stale cache, wrong-customer cursor, no GPS-derived POD"
+      "testGate": "stale cache, wrong-customer cursor, no GPS-derived POD",
+      "dependsOnPrs": [
+        "PR-13"
+      ]
     },
     {
       "id": "PR-16",
       "phase": "RD-08",
       "owner": "documents",
       "outcome": "verified POD/document package and bounded download",
-      "testGate": "verified version, revoked grant, legal hold, no generic soft delete"
+      "testGate": "verified version, revoked grant, legal hold, no generic soft delete",
+      "dependsOnPrs": [
+        "PR-14"
+      ]
     },
     {
       "id": "PR-17",
       "phase": "RD-09",
       "owner": "finance",
       "outcome": "distinct AR/AP/Invoice and verified payment reconciliation",
-      "testGate": "money/SoD, allocation uniqueness, reversal, BR-11/12"
+      "testGate": "money/SoD, allocation uniqueness, reversal, BR-11/12",
+      "dependsOnPrs": [
+        "PR-07",
+        "PR-14",
+        "PR-16"
+      ]
     },
     {
       "id": "PR-18",
       "phase": "RD-10",
       "owner": "platform",
       "outcome": "advanced job fencing, timeout, crash and safe SaaS continuity",
-      "testGate": "replay/failover + BR-04 in-flight evidence after suspension"
+      "testGate": "replay/failover + BR-04 in-flight evidence after suspension",
+      "dependsOnPrs": [
+        "PR-13",
+        "PR-17"
+      ]
     },
     {
       "id": "PR-19",
       "phase": "RD-11",
       "owner": "cross-functional",
       "outcome": "full customer→forwarder→carrier→driver→receiver→finance real E2E",
-      "testGate": "accepted P0 negative, RLS, outage recovery, UI states and artifact evidence"
+      "testGate": "accepted P0 negative, RLS, outage recovery, UI states and artifact evidence",
+      "dependsOnPrs": [
+        "PR-12",
+        "PR-14",
+        "PR-15",
+        "PR-16",
+        "PR-17",
+        "PR-18"
+      ]
     },
     {
       "id": "PR-20",
       "phase": "RD-12",
       "owner": "release",
       "outcome": "pilot signoff, container, SBOM, restore drill and release artifact",
-      "testGate": "same SHA/digest, no open P0, signed applicable BR"
+      "testGate": "same SHA/digest, no open P0, signed applicable BR",
+      "dependsOnPrs": [
+        "PR-00",
+        "PR-19"
+      ]
     }
   ],
   "testSelection": {
