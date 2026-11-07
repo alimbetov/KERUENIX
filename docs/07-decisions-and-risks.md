@@ -4,6 +4,12 @@
 
 **Свежая оценка архитектурных и продуктовых рисков:** [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md). Он фиксирует блокеры и не означает их устранения.
 
+## Архитектурные приоритеты — согласовано для проектирования
+
+**Решение владельца проекта (07.11.2026):** сохранить 17 бизнес-модулей, не создавать новые bounded contexts ради платформенных механизмов. В первую очередь: **Correctness First** (транзакции, идемпотентность, tenant isolation, state machines, outbox), **Operational Reliability** (jobs, восстановление, observability, тесты, ограниченная конкурентность), **Intelligence Ready** (правильная история фактов, provenance, data quality и подготовка к ML без преждевременного запуска AI-платформы).
+
+Содержание, требования `KX-ARC-*`, acceptance и roadmap: [19 — Architecture Hardening Priorities](19-architecture-hardening-priorities.md). Это согласованное направление, **не** готовый код, юридическое утверждение бизнес-правил или пройденные CI-тесты.
+
 ## Новое архитектурное решение — модульная стратегия
 
 **Рекомендуемый выбор (ещё не ACCEPTED):** один Spring Boot backend + Spring Modulith business modules для R0, впоследствии isolated background workers для GPS, routing, notifications. Сравнение альтернатив и критерии экстракции: [13 — Architecture Options](13-modular-architecture-options-v1.md). Декомпозиция и gate implementation: [14 — Delivery Blueprint](14-modular-delivery-blueprint.md).
