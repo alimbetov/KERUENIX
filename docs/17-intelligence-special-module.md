@@ -142,3 +142,7 @@ Qualification needs exact-SHA CI and linked evidence: unit, module boundaries, r
 7. Platform stack compatibility: chosen Spring Boot, Timefold, Tribuo, ONNX runtime and worker image security.
 
 **Architectural recommendation:** accept module specification only after owner sign-off; implement a minimal vertical slice of `INT-R1.0` after tenancy/RLS qualified, not an all-in-one AI platform ahead of the first verified freight lifecycle.
+
+## 10. Intelligence Ready priority and dependency on canonical truth
+
+The accepted project priority is to capture **source-owned trustworthy facts first**, then implement point-in-time datasets and only subsequently deploy ML training/inference. See [19 — Architecture Hardening Priorities](19-architecture-hardening-priorities.md), specifically `KX-ARC-INT-001..005`. R0 requires data contracts and quality semantics, **not** a deployed training stack, a feature store service or a GPU. ETA model qualification is downstream of the proven tenant-isolated freight lifecycle and deterministic baseline.
