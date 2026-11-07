@@ -35,6 +35,8 @@ Customer users are not automatically tenant administrators. A platform operator 
 
 See [User Story Book](../docs/21-user-story-book.md) and [requirements](../docs/04-requirements-traceability.md).
 
+**Detailed access policy contract:** [Tenancy & Commercial Role-Permission Matrix](../docs/22-role-permission-scope-approval-matrix.md). It distinguishes role templates, delegated abilities, legal entity/branch/resource scopes, owner transfer, platform bootstrap and planned TDD criteria. The 24 policies are **draft rules pending business/security review**, not executed authorization code.
+
 ## Recommended tenancy model
 
 **Start:** PostgreSQL shared database / shared schema with a mandatory tenant_id on tenant-owned rows, composite tenant-aware keys and PostgreSQL Row Level Security (RLS) as defense in depth. Application authorization remains required. System dictionaries may be global read-only tables.
