@@ -1,0 +1,45 @@
+name: TDD Roadmap Contract
+
+on:
+  pull_request:
+    paths:
+      - 'docs/33-tdd-development-roadmap-v1.md'
+      - 'docs/34-tdd-roadmap-technical-audit.md'
+      - 'docs/25-business-scenario-book.md'
+      - 'docs/contracts/tdd-development-roadmap.v1.json'
+      - 'docs/contracts/module-boundaries.v1.json'
+      - 'docs/contracts/r0-blocker-decisions.v1.json'
+      - 'docs/contracts/r0-tdd-scenarios.v1.json'
+      - 'docs/contracts/r0-negative-scenarios.v1.json'
+      - 'docs/contracts/backend-query-soft-delete.v1.json'
+      - 'docs/contracts/access-policy-matrix.v2.json'
+      - 'scripts/validate_tdd_roadmap.py'
+      - '.github/workflows/tdd-roadmap-contract.yml'
+  push:
+    branches: [main, docs/idea-multitenant-foundation]
+    paths:
+      - 'docs/33-tdd-development-roadmap-v1.md'
+      - 'docs/34-tdd-roadmap-technical-audit.md'
+      - 'docs/25-business-scenario-book.md'
+      - 'docs/contracts/tdd-development-roadmap.v1.json'
+      - 'docs/contracts/module-boundaries.v1.json'
+      - 'docs/contracts/r0-blocker-decisions.v1.json'
+      - 'docs/contracts/r0-tdd-scenarios.v1.json'
+      - 'docs/contracts/r0-negative-scenarios.v1.json'
+      - 'docs/contracts/backend-query-soft-delete.v1.json'
+      - 'docs/contracts/access-policy-matrix.v2.json'
+      - 'scripts/validate_tdd_roadmap.py'
+      - '.github/workflows/tdd-roadmap-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-roadmap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate roadmap graph, ownership, BR and test references
+        run: python3 scripts/validate_tdd_roadmap.py
