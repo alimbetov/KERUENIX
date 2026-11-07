@@ -26,7 +26,7 @@ KERUENIX/
 │   │   ├── execution/
 │   │   ├── tracking/
 │   │   ├── documents/
-│   │   └── finance/
+│   │   ├── finance/\n│   │   ├── intelligence/             # ML history, datasets, training/model lifecycle (R0 design)\n│   │   └── optimization/             # constraint solving and Timefold (R1)
 │   ├── src/main/resources/db/migration/
 │   └── src/test/java/kz/keruenix/
 ├── apps/
@@ -167,3 +167,7 @@ P0–P5 — **порядок задач**, не длительности. Не �
 Есть исполняемый Spring Boot backend, бизнес-модули с `ApplicationModules.verify()` green, real PostgreSQL migrations и RLS, DTO/API contracts, docker compose, двухтенантный отрицательный тест, README запуска, CI green exact SHA и один вертикальный workflow. Наличие документов `docs/13`–`docs/14` **не означает выполнения этих критериев**.
 
 **Решение на утверждение:** выбрать B (Spring Modulith logical modules) для R0 и E (modular core + workers) для развития; отложить C/D до реальных эксплуатационных сигналов.
+
+## Intelligence — special module extension (proposed)
+
+`intelligence` is a separate Spring Modulith module for tenant-safe historical ML projections, immutable datasets, training lifecycle, registry and inference. `optimization` remains owner of Timefold jobs and hard constraints. Training workers are separately deployable and cannot write another module's tables. The exact contracts, state machines, RLS boundaries and acceptance cases are in [17 — Intelligence Special Module](17-intelligence-special-module.md). The design is R0; execution starts after qualified tenancy and a usable first business vertical slice. Do not treat this section as implemented code.
