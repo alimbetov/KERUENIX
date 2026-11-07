@@ -30,8 +30,10 @@ public final class SecurityProblemHandler implements AuthenticationEntryPoint, A
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException exception) throws IOException {
         // The Bearer challenge becomes meaningful once a verified JWT resource server is installed.
+        if (!response.isCommitted()) {
+            response.setHeader("WWW-Authenticate", "Bearer");
+        }
         write(ErrorCode.AUTHENTICATION_REQUIRED, request, response);
-        response.setHeader("WWW-Authenticate", "Bearer");
     }
 
     @Override
