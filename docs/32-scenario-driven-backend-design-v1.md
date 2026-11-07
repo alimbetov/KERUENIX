@@ -142,7 +142,7 @@ R0 sample (DESIGN, not implemented):
 | GET /api/v1/provider/rfqs/{id} | internal detail | assigned provider staff |
 | POST /api/v1/customer/rfqs/{id}/discard-draft | Optional logical delete | PENDING permission/business approval; draft only |
 
-Permission names and state guards come from the canonical Access Governance and lifecycle contracts; do not infer that existing generic customer:create allows discard, approvals or restoration. No DELETE/restore endpoints activated until explicit authorization policy exists.
+Permission names and state guards come from the canonical Access Governance and lifecycle contracts. In the current v2 policy, customer RFQ list and detail already have separate explicit permissions customer:rfq:list (EXT-14) and customer:rfq:read (EXT-15), which must be enforced (customer:orders:list/read are **not** substitutes). The separate POST submit endpoint is a **candidate only**, pending confirmation whether the accepted customer:rfq:create contract already includes submission or an explicit new submit permission is required. Do not infer that customer:rfq:create permits discard, approval or restoration. No DELETE/restore/submit endpoints activated without confirmed action-level policy.
 
 **DTO taxonomy:** CreateRfqRequest, SubmitRfqRequest(expectedVersion), RfqListItemResponse, RfqDetailsResponse, ProviderRfqItemResponse, RfqSearchFilter; customer DTO must not contain provider purchase prices, margin, other account details, raw driver GPS, internal approval flags, audit-only metadata.
 
