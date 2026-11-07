@@ -206,6 +206,37 @@ The **18 new DISCOVERED stories** below extend the original 40 and remain candid
 
 **Open for business review:** binding quote before carrier confirmation; owner of definitive booking state; precise obligations for TENANT-C; cancellation charges; hold time and tenant-visible state names. Until answered, the story remains `DRAFT`.
 
+## 5A. Full story cards — first two product interactions
+
+These are **draft business story cards** for interview and TDD elaboration. They intentionally do not define new code or legal effect. The complete multi-actor scenarios are in [25 — Business Scenario Book](25-business-scenario-book.md).
+
+### USB-EXC-002 — External Customer creates a request (R0 proposal)
+
+**As** an authorized `CUSTOMER_REQUESTER` working for CustomerOrg-X through provider Tenant-A, **I want** to send a complete freight request and find it later in *My RFQs*, **so that** I can obtain an accountable commercial offer without phone/email ambiguity.
+
+- **Trigger / entry:** verified customerAccount grant; chosen provider and customer organization; no provider employee role.
+- **Required input:** pickup/delivery locations and time windows, cargo type and physical units, constraints/handling, legal/contact evidence as required by the pilot's cargo profile.
+- **Positive flow:** enter details → client-side validation (UX only) → server validates grant + cargo constraints → `RFQ.SUBMITTED` with stable idempotencyKey → visible in customer's My RFQs and provider's Incoming RFQs → provider assignee handles qualification.
+- **Exceptions:** incomplete critical attributes → `NEEDS_INFO` or validation response under agreed rules; duplicate request key → same logical RFQ; same key with different payload → conflict; revoked customer relationship → DENY; CustomerOrg-Y cannot list or read the request.
+- **Source facts:** provider Commercial owns RFQ, Tenancy verifies account/grant, CustomerPortal composes filtered lists. A submission does not create `Booking.CONFIRMED`.
+- **Evidence:** `rfqId`, actor and customer organization, server-resolved provider tenant, cargo snapshot, idempotency digest, createdAt, correlationId, status version.
+- **Business acceptance:** `USB-EXC-002-AC-01` valid RFQ appears in both authorized workspaces; `-AC-02` same-key retry is idempotent; `-AC-03` missing critical cargo fields prohibit binding quote; `-AC-04` foreign customer cannot enumerate/list RFQ. Related: `BSC-002`, `AUTH-EXT-002/014/015`, `LFC-002/036`.
+- **TDD design after business signoff:** `CommercialRFQPolicyTest` (unit), `RfqSubmissionIdempotencyIT` (PostgreSQL), `CustomerScopeRlsIT`, `ProviderInboxHttpIT`. These names represent **future tests**, not code.
+
+### USB-RCV-002 — Consignee accepts only a portion (R0 safety proposal)
+
+**As** a verified receiver bound to one `DeliveryAttempt`, **I want** to acknowledge accepted, damaged and refused cargo units separately, **so that** the remaining cargo and responsibility cannot disappear from the system.
+
+- **Trigger / entry:** assigned delivery attempt for Shipment with 10 identified units and sender/driver custody.
+- **Positive flow:** verify recipient authority → count and inspect units → accept 8, refuse/damage 2 → capture signatures/photos/remarks → `DeliveryAttempt.PARTIAL` → `Shipment.PARTIALLY_DELIVERED` → remaining 2 continue in named custody with a return/retry/disposition action.
+- **Exceptions:** wrong recipient → DENY; driver GPS at consignee without POD → not DELIVERED; duplicate offline signature → no additional handover; out-of-order event → no status regression; refusal creates issue without silently changing original accepted evidence.
+- **Domain boundary:** Execution owns custody/POD source facts; Documents stores verified proofs; Tracking projects customer status but does not set delivery truth.
+- **Evidence:** deliveryAttemptId, CargoUnit identifiers/counts, actual accept/refuse quantities, authorized receiver and handover identities, observedAt/receivedAt, signature/photo hash, proof version, remaining custodian.
+- **Business acceptance:** `USB-RCV-002-AC-01` 8/10 does not mark all delivered; `-AC-02` remaining 2 explicitly accounted for; `-AC-03` unauthorized signer is denied; `-AC-04` replay does not double-credit cargo; `-AC-05` claim correction appends evidence rather than rewriting signed POD. Related: `BSC-007`, `AUTH-EXE-003`, `LFC-013..015/035`.
+- **TDD design after business signoff:** `CargoQuantityConservationPropertyTest`, `DeliveryAttemptGuardTest`, `DeliveryPODRlsIT`, `DuplicateEvidenceReplayIT`.
+
+**Definition of Ready for any story in this book:** named actor and verified account/tenant scope; precise source-of-truth owner; business trigger, outcome and failure; legally relevant approval/evidence; main and alternative journeys; linked `AUTH-*`, `LFC-*`, `BSC-*`; agreed status transitions and measurable acceptance. `PENDING_POLICY` means **not yet ready**. A documentation approval is not test execution.
+
 ## 6. Scenario-to-TDD traceability standard
 
 ```text
