@@ -1546,6 +1546,53 @@
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
       "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "TEN-12",
+      "module": "Tenancy",
+      "roleTemplate": "TEN",
+      "permission": "tenant:customeraccount:invite",
+      "resourceScope": "AUTHORIZED_PROVIDER_TENANT_CUSTOMER_ORGANIZATION_AND_VERIFIED_INVITEE",
+      "approvalPolicy": "DELEGATED_CUSTOMER_RELATIONSHIP_ONLY_NO_PROVIDER_EMPLOYEE_ROLE",
+      "storyId": "USB-TEN-005",
+      "acceptanceId": "AUTH-TEN-012",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "customerOrgId",
+        "customerAccountId",
+        "verifiedInvitedIdentity"
+      ],
+      "approvalPolicyId": "AP-CUSTOMER-RELATION",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
+    },
+    {
+      "id": "COM-17",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "review:provider:read",
+      "resourceScope": "AUTHORIZED_PROVIDER_TENANT_CUSTOMER_SERVICE_REVIEW",
+      "approvalPolicy": "PRIVATE_FEEDBACK_ONLY_ASSIGNED_PROVIDER_STAFF_NO_FOREIGN_REVIEW_ACCESS",
+      "storyId": "USB-SAL-004",
+      "acceptanceId": "AUTH-COM-017",
+      "priority": "R0",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "approvalPolicyId": "AP-SCOPED-READ",
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED"
     }
   ],
   "adversarialAcceptance": [
@@ -1644,6 +1691,18 @@
       "target": "quote acceptance / booking / review confuse lifecycle projections",
       "expected": "no accepted quote implies booking; GPS not POD; delivery not payment",
       "testLevel": "Module integration+E2E"
+    },
+    {
+      "id": "AUTH-X-017",
+      "target": "provider admin invites external buyer by shared email domain without verifying customer organization",
+      "expected": "deny unverified relationship, no provider employee membership or cross-customer access",
+      "testLevel": "HTTP+PostgreSQL"
+    },
+    {
+      "id": "AUTH-X-018",
+      "target": "Sales staff in provider Tenant-A tries to inspect private reviews belonging to provider Tenant-B",
+      "expected": "deny across provider tenant and customer service scope",
+      "testLevel": "HTTP+RLS"
     }
   ],
   "implementationMilestones": [
