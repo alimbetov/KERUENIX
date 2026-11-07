@@ -80,3 +80,7 @@ Pilot reference dataset: 2 tenants, 10 trucks in total, 20 orders, at least 3 pa
 6. Expand only after measurable quality and tenant isolation gates.
 
 **Success criterion:** at least one evidence-backed improvement (quote time, ETA accuracy, cost or empty km) without regression in feasibility and security; set numeric business threshold with pilot participants before experiment.
+
+## Warehouse Hub optional vertical slice and gates
+
+To prove a 3PL transit warehouse, add a deliberately bounded pilot: 2 cargo owners at the same facility, 1 dock, 20 labeled pallets, ASN receipt, one discrepancy, putaway/cross-dock, concurrent pick attempt, outbound loading and custody handover. The Warehouse Hub is a modular extension of road-freight MVP, not a mandatory full WMS implementation before first logistics acceptance. Never ship regulated SVH functions without dedicated legal and operational qualification. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).

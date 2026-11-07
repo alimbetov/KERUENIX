@@ -68,3 +68,7 @@ Optimistic locking for edited plans and assignments; unique idempotency key per 
 ## Emergency re-assignment and subcontracts
 
 A breakdown may interrupt a Trip without canceling the commercial Order or physical Shipment. A RecoveryCase links the incident to the affected CargoUnits, approved alternative TransportLegs and a SubcontractAgreement. Reassignment requires verified CargoHandover and must preserve immutable custody history. See [14 — Rescue Network](14-emergency-recovery-subcontracting.md).
+
+## Warehouse inventory and hub domain
+
+WarehouseFacility, FacilityZone, BinLocation, HandlingUnit, StockMovement/Line, StockBalance, InventoryReservation, WarehouseTask, DockAppointment and CustodyHandover are separate from Trip, Shipment and CargoOwner. Ownership, actual custody and inventory visibility are independent. Stock changes through append-only correction movements with transactional balance/reservation checks; customs and quality holds block dispatch. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).

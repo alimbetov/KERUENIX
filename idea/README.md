@@ -25,6 +25,7 @@ KERUENIX — многоклиентская платформа управлен�
 | [12 — Benchmark](12-competitive-benchmark.md) | Идеи SAP, Oracle, Wialon, PTV и других систем |
 | [13 — Deployment Models](13-deployment-models.md) | Cloud SaaS, Dedicated и Enterprise/On-Prem из одного кода |
 | [14 — Rescue Network](14-emergency-recovery-subcontracting.md) | Аварийный перехват груза, поиск замены и субподряд между компаниями |
+| [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md) | Автоматизация въезда, складского учёта, перегрузки, СВХ, ворот и отгрузки |
 
 ## Неизменные правила дизайна
 

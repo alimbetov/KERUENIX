@@ -72,3 +72,7 @@ Per order, trip, vehicle, route corridor, customer, partner and tenant: planned 
 ## Recovery and subcontract cost allocation
 
 A rescue event produces a distinct cost estimate and subsequent actuals: replacement vehicle positioning, safe transloading, storage, partner purchase, extra tolls, waiting and potential claims. Preserve the original customer quote; contractually approved amendments create new quote versions. Original carrier liability and compensation are not automatically passed to the shipper. See [14 — Rescue Network](14-emergency-recovery-subcontracting.md).
+
+## Warehouse handling and storage charges
+
+Add warehouse service events with owner, warehouse operator, contract/rate version, unit, occurrence time and idempotency key. Storage may be billed per pallet-day/cubic-meter-day; handling, weighing, labeling, cross-dock, delayed truck, equipment and customs support have separate charge policies. One physical warehouse movement must not duplicate charges on retry. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).

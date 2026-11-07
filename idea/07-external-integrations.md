@@ -66,3 +66,7 @@ Kazakhstan truck restriction coverage; future traffic prediction; API license/re
 ## First provider acceptance
 
 Take the same 20–50 road-corridor and last-mile cases, including known height/weight restrictions, warehouses and tolls. Record route legality flags, ETA variance, costs, latency, error behavior, licensing and operational response. Pick providers from evidence, not feature marketing.
+
+## Warehouse automation adapters
+
+Adapters for ASN/EDI, barcode/SSCC, scales, gate ANPR, access control, RFID, temperature telemetry, dock appointment and local WMS/WCS must be permission-scoped, idempotent, timestamped and have manual recovery paths. Equipment measurements are evidence inputs, not automatically authoritative legal/customs events. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).

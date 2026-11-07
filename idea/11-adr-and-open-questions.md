@@ -21,6 +21,8 @@ All items are **proposed**, not ratified. Record decision owner, date, alternati
 | ADR-015 | Deployment | Containerized pilot with backup/observability | Verified demand for Kubernetes |
 | ADR-016 | SaaS + Enterprise parity | One versioned logistics core supports pooled SaaS and dedicated/on-prem through configuration | Deployment pilot and enterprise requirements |
 | ADR-017 | Emergency recovery and subcontract | Preserve the original order; create incident, approved replacement leg, scoped partner offer and cargo handover evidence | Carrier/insurer contract and operational pilot |
+| ADR-018 | Warehouse stock truth | Transactional stock ledger + balance/reservation constraints, independent cargo owner and custody | Multi-owner transit warehouse pilot |
+| ADR-019 | Yard/WMS/SVH boundaries | WMS+YMS interfaces in modular core, customs hold with verified release, hardware adapters | Warehouse operations and legal qualification |
 
 ## Questions to settle before code
 

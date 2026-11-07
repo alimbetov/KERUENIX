@@ -76,3 +76,7 @@ Two tenants use the same vehicle nickname and same customer reference: no leak. 
 ## Journey G — vehicle breakdown and rescue subcontract
 
 Driver or telemetry reports a verified issue; dispatcher checks safety and whether transfer is permitted. Planner selects safe handover facilities and searches replacement capacity first internally, then via consented partner offers. After approvals, reserve the selected partner, confirm cargo handover with evidence, create a replacement route leg and recalculate ETA and cost. Do not replace the commercial order or treat a accepted offer as completed physical transfer. For state machine, privacy and financial controls, see [14 — Rescue Network](14-emergency-recovery-subcontracting.md).
+
+## Journey H — multi-owner logistics hub operations
+
+Pre-advised inbound shipment -> dock slot -> gate/yard check-in -> actual SSCC/LPN scan -> discrepancy/quality checks -> putaway OR cross-dock -> stock ledger -> reserve/pick -> outbound loading manifest -> custody transfer -> gate-out -> charge reconciliation. Rescheduled vehicle ETA may change dock appointment but not actual stock/custody until confirmed scans. Holds, concurrent picks, offline duplicate events and mixed tenant-owned goods are mandatory adversarial cases. See [15 — Logistics Hub / WMS](15-logistics-hub-wms-automation.md).

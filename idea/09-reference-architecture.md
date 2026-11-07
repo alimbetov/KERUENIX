@@ -50,7 +50,10 @@ Broker selection (Kafka, RabbitMQ or Postgres-backed jobs) must follow measured 
         prediction/        # baseline, Tribuo and model registry
         cost/              # rates, costs, price, reconciliation
         fuel/              # norms, refuels, stations, depots
-        warehouses/        # appointment and custody integration
+        warehouses/        # logistics hub / WMS entry point
+        warehouse_inventory/ # stock ledger, reservations, counting
+        yard_dock/         # gate, yard slots, docks and appointments
+        warehouse_tasks/   # receiving, putaway, pick, cross-dock, ship
         integrations/      # supplier adapters and webhooks
         audit/             # sensitive actions and compliance
       clients/web/
