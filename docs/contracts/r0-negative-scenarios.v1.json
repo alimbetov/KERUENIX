@@ -971,13 +971,14 @@
       "then": "At-least-once transport, exactly one logical domain effect via inbox uniqueness",
       "persistentAssertions": "No duplicate Booking, invoice, custody or review row",
       "sideEffectAssertions": "Duplicate delivery acknowledged/dedup; not repeated notification side effect",
-      "userVisibleOutcome": "Modulith+PostgreSQL Inbox",
+      "userVisibleOutcome": "Only one completed operation is visible; no duplicate notifications or ledger entries",
       "priority": "P0_RELIABILITY",
       "expectedDecision": "DENY_OR_CONFLICT_OR_SAFE_CONTINUATION_AS_SPECIFIED",
       "invariantStatus": "BUSINESS_REVIEW_REQUIRED",
       "testStatus": "DESIGNED_NOT_EXECUTED",
       "stateChangeAllowed": "ONLY_AS_EXPLICITLY_STATED_IN_ASSERTIONS",
-      "executionStatus": "NOT_IMPLEMENTED"
+      "executionStatus": "NOT_IMPLEMENTED",
+      "testLayer": "Modulith + PostgreSQL Outbox/Inbox concurrency"
     },
     {
       "id": "NEG-R0-042",
