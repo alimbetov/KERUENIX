@@ -27,6 +27,10 @@
 
 **Упрощения допустимы:** ручная квалификация контрагента, ручной финансовый статус при наличии evidence, одна машина на первый Shipment, без публичного marketplace и без настоящего eCMR/KEDEN integration. Упрощение должно быть явно обозначено.
 
+## Business Scenario Book Gate (draft)
+
+Prior to R0 code and release qualification, select and review the critical vertical slice from [25 — Business Scenario Book](25-business-scenario-book.md): customer onboarding/RFQ → quote approval/accept → capacity hold/Booking → offline pickup → verified POD → document/finance evidence, with cancellation and authorization-negative coverage. Keep 18 additional stories in [User Story Book](21-user-story-book.md) as **DISCOVERED**, not new unconditional R0 scope. Missing policies require security review and approval before implementation. Later R1 warehouse/notifications/executive reporting must not block first reproducible transport.
+
 ## Commercial & Execution v1: обязательный Gate R0
 
 Новый проектный стандарт [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) разделяет 12 агрегатных state machines и ресурсную/договорную/финансовую ответственность. В Release 0 должны быть реализованы основные happy path и безопасные error branches **RFQ → QuoteVersion → CarrierOffer/own capacity → Reservation → Booking → Trip → Shipment/POD → DocumentPackage → Invoice/AR/AP reconciliation**. Отдельные предложения подрядчика допускается заменить own-fleet сценарием, но при этом тест **CarrierOffer vs Booking** всё равно должен быть проверен на pilot fixture.
