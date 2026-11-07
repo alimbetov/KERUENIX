@@ -1,6 +1,6 @@
-# 33 — KERUENIX TDD Development Roadmap v1.1
+# 33 — KERUENIX TDD Development Roadmap v1.2
 
-**Дата:** 2026-11-07 · **Версия:** 1.1.0 · **Статус:** PROPOSED DELIVERY ROADMAP / BUSINESS SIGNOFF PENDING / ROADMAP NOT EXECUTED.
+**Дата:** 2026-11-07 · **Версия:** 1.2.0 · **Статус:** PROPOSED DELIVERY ROADMAP / BUSINESS SIGNOFF PENDING / ROADMAP NOT EXECUTED.
 
 **Цель:** поэтапно реализовать KERUENIX как один надёжный Spring Modulith modular monolith в Java 21, от имеющегося error bootstrap до полной, безопасной и воспроизводимой автомобильной перевозки между независимыми компаниями. Технические решения и бизнес-требования должны квалифицироваться через TDD, реальные PostgreSQL/PostGIS транзакции, RLS, API и cross-role E2E. Не заявлять готовность по наличию документации, mock-тестов или единичного happy path.
 
@@ -681,8 +681,8 @@ A phase is an **epic with exit criteria**, not a requirement to implement all pa
 | `PR-01` | `RD-01` | `platform` | Parallel foundation start | Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox. **Gate:** verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic |
 | `PR-02` | `RD-02` | `tenancy` | `PR-00`, `PR-01` | tenant/legal entity and verified identity/invitation/grants. **Gate:** real JWT or verified auth adapter + multi-grant denial + SoD |
 | `PR-03` | `RD-02` | `tenancy` | `PR-02` | provider-customer organization grants and revoke. **Gate:** Customer-X/Y negative list/detail, warm cache, RLS context reset |
-| `PR-04` | `RD-03` | `commercial` | `PR-03` | RFQ creation+submit+customer My RFQs. **Gate:** idempotency conflict + scoped list/pagination + first real outbox |
-| `PR-05` | `RD-03` | `commercial` | `PR-04` | provider Inbox assignment, clarification/qualify. **Gate:** branch restriction, CAS assignment, no unapproved quote |
+| `PR-04` | `RD-03` | `commercial` | `PR-03` | RFQ **DRAFT only** + scoped Customer My RFQs; Submit DENY until owner permission approval. **Gate:** negative submit/no outbox + tenant/account paging and idempotency |
+| `PR-05` | `RD-03` | `commercial` | `PR-04` | RFQ Submit **only after approved permission** + Provider Inbox/assignment/clarification. **Gate:** actor+resource scope, branch CAS, deny without signoff |
 | `PR-06` | `RD-04` | `commercial` | `PR-05` | immutable QuoteVersion issue/supersede, independent price approval. **Gate:** version race + SoD; no binding acceptance without BR-01 |
 | `PR-07` | `RD-04` | `commercial` | `PR-06` | authorized customer Quote accept/decline with evidence. **Gate:** BR-01/02/05 acceptance, exact signer, termsHash and expiry |
 | `PR-08` | `RD-05` | `cargo` | `PR-02` | CargoProfile/identified units and physical compatibility inputs. **Gate:** mass/quantity/identity/value invariants |
@@ -690,11 +690,11 @@ A phase is an **epic with exit criteria**, not a requirement to implement all pa
 | `PR-10` | `RD-05` | `fleet` | `PR-08`, `PR-09` | vehicle/driver/trailer registry and atomic capacity holding. **Gate:** PostgreSQL exclusion/locked-slot race, hold expiry fencing BR-07 |
 | `PR-11` | `RD-06` | `commercial` | `PR-03`, `PR-06` | carrier sourced offer+withdrawal/ack and own-fleet alternative. **Gate:** partner grants, no margin disclosure, no false capacity, BR-06 |
 | `PR-12` | `RD-06` | `booking` | `PR-07`, `PR-10`, `PR-11` | Booking pending→confirmed via accepted quote and confirmed exclusive capacity. **Gate:** process crash/replay, stale quote/carrier, no phantom Booking |
-| `PR-13` | `RD-07` | `execution` | `PR-12` | Trip+pickup offline custody and signed evidence references. **Gate:** historical authority, late replay, one custodian, BR-09 |
+| `PR-13` | `RD-07` | `execution` | `PR-12` | Trip/pickup offline custody + **original verified evidence receipt**. **Gate:** hash/bytes/actor/assignment, object exists, orphan/replay recovery, BR-09 |
 | `PR-14` | `RD-07` | `execution` | `PR-13` | delivery attempts, partial/refused POD and compensating disposition. **Gate:** 8/10 conservation, receiver evidence and proof immutability, BR-10 |
 | `PR-15` | `RD-08` | `tracking` | `PR-13` | customer-scoped timeline and ETA freshness. **Gate:** stale cache, wrong-customer cursor, no GPS-derived POD |
 | `PR-16` | `RD-08` | `documents` | `PR-14` | verified POD/document package and bounded download. **Gate:** verified version, revoked grant, legal hold, no generic soft delete |
-| `PR-17` | `RD-09` | `finance` | `PR-07`, `PR-14`, `PR-16` | distinct AR/AP/Invoice and verified payment reconciliation. **Gate:** money/SoD, allocation uniqueness, reversal, BR-11/12 |
+| `PR-17` | `RD-09` | `finance` | `PR-07`, `PR-14`, `PR-16` | AR/AP/Invoice + verified financial settlement. **Gate:** SoD, FX/allocation, source evidence; mock != production PAID, BR-11/12 |
 | `PR-18` | `RD-10` | `platform` | `PR-13`, `PR-17` | advanced job fencing, timeout, crash and safe SaaS continuity. **Gate:** replay/failover + BR-04 in-flight evidence after suspension |
 | `PR-19` | `RD-11` | `cross-functional` | `PR-12`, `PR-14`, `PR-15`, `PR-16`, `PR-17`, `PR-18` | full customer→forwarder→carrier→driver→receiver→finance real E2E. **Gate:** accepted P0 negative, RLS, outage recovery, UI states and artifact evidence |
 | `PR-20` | `RD-12` | `release` | `PR-00`, `PR-19` | pilot signoff, container, SBOM, restore drill and release artifact. **Gate:** same SHA/digest, no open P0, signed applicable BR |
@@ -769,3 +769,42 @@ uiJourneyStatus: NOT_STARTED
 - **RD-11/12 release:** real cross-role screens + API, backup/restore, data retention, security scanning and signed applicable business/legal/finance policy; zero open P0 leakage, double booking, false delivery or settlement, no skipped mandatory checks.
 
 **Scope:** no general BPM engine, Kafka/Kubernetes cluster, universal JPA soft delete, 17 microservices, public marketplace, ML runtime or unverified regulated-cargo automation required for initial R0. Audit improvements add clear gates and small slices, not artificial new platform features.
+
+## 20. Second-pass technical audit v1.2 — AUD-RD-14..21
+
+Design-only corrections: not implemented behavior, real stakeholder approval, or new passing Java/PostgreSQL tests. Previous findings AUD-RD-01..13 remain in [34 — Audit](34-tdd-roadmap-technical-audit.md).
+
+| ID | Severity | New risk in v1.1 | Mandatory correction |
+|---|---|---|---|
+| AUD-RD-14 | P0 | RFQ create and submit combined despite PENDING submit permission | PR-04 draft-safe only; PR-05 submit disabled until approved; denial must have no RFQ/Outbox mutation |
+| AUD-RD-15 | P0 | CustomerAccount writer conflicts with Tenancy grants | Proposed Commercial relationship owner, Tenancy identity/grant owner; approve ADR before migration |
+| AUD-RD-16 | P0 | Execution records custody before verified original proof/storage adapter | Evidence bytes/hash/size/authority, immutable receipt, object existence and orphan/replay handling in PR-13/14 |
+| AUD-RD-17 | P0 | UI described but no exact per-PR acceptance obligation | Required screens/error/offline checks in machine PR-level uiAcceptance |
+| AUD-RD-18 | P0 | Validator checks 132 test count but not PR-specific test risks | PR criticalCaseIds must resolve to canonical test bank, with applicability manifest |
+| AUD-RD-19 | P0 | Tenant RLS alone not enough for multiple CustomerAccounts in same provider | Verified CustomerAccount scopes in SQL/COUNT/export/cursor/docs + revoke tests |
+| AUD-RD-20 | P0 | Mock/sandbox settlement can produce false production PAID | Verified bank/ERP/manual independently approved evidence required |
+| AUD-RD-21 | P1 | Docs PR table can drift from JSON undetected, validator untested | Compare Markdown PR owner/phase/prerequisite DAG and run mutation unit tests in CI |
+
+## 21. RFQ activation, identity, and tenant isolation
+
+**PR-04**: create *DRAFT only*, under actual granted customer:rfq:create (EXT-02) with verified provider/CustomerAccount scope. List/detail must use distinct customer:rfq:list (EXT-14) and customer:rfq:read (EXT-15), not customer:orders:*. DRAFT editor, My Requests pagination and deny/error/empty states are required. An attempted submit is denied by RFC9457; no RFQ status change, approval or submitted Outbox.
+
+**PR-05**: submit plus Provider Inbox only after Commercial owner and Security approve a new submit permission or a documented expansion of existing create permission. Existing permission catalog does **not** automatically permit submit. Denied operation has no success event. The PR may be designed or fail-closed pending approval, but cannot be activated. RD-03 QUALIFIED requires a tested authorized end-to-end submit; PR-04 alone can only be CODE_VERIFIED_DENY_ONLY.
+
+**CustomerAccount owner**: proposed authoritative business relationship in Commercial; Tenancy owns validated identities/LegalEntity/PartnerGrant and revocation. This roadmap does not change the unresolved canonical module ownership ADR. Order aggregate vs composed view and Finance Invoice ownership likewise require alignment before creating tables. Exports, counts and read projections must enforce account grant in addition to Tenant RLS. Same-provider CustomerOrg-X/Y isolation is proven with direct PostgreSQL scoped queries and HTTP, including guessed IDs, COUNT, cursor and doc download, and pool reuse after revoke.
+
+## 22. Custody originals, settlement evidence, and role UI
+
+**Before Documents PR-16**, Execution PR-13/14 must have an exported proof storage adapter contract, not arbitrary URI-as-evidence. Flow: authenticate signer and assigned sender -> stage original bytes in protected temporary object area -> verify SHA-256, size, claimed time, object availability, content safety -> persist immutable evidence receipt + guarded custody state/audit/outbox in one PostgreSQL transaction -> allow Documents later to package the verified proof without rewriting. Database commit cannot atomically commit an external blob: orphan cleanup/reconciliation and duplicate/late-event quarantine mandatory. Tests: changed hash/same eventId, object missing after staged upload, revoked driver, forged capturedAt, double POD and per-unit conservation.
+
+**Finance PR-17** separates invoice issued/outstanding/partial from actual settled. Production PAID requires independently authenticated bank/ERP transaction evidence, or expressly authorized and independently verified manual proof with source ID, amount, currency/time, audit and reversal. Mock callback -> SIMULATED, never a production paid fact. If no real evidence source, release may report outstanding; do not invent financial success.
+
+**Frontend per PR**: machine uiAcceptance lists role screens, denial, loading/empty/version-conflict states and a UI test requirement. A linked frontend PR may implement the feature separately, but it must have an exact code SHA/artifact and pass before the business PR claims USER_JOURNEY_VERIFIED. Particularly driver offline evidence must have decided local-first/PWA/native durable queue and device authorization policy before PR-13. A backend-only green HTTP test cannot substitute for multi-actor UI or offline replay acceptance.
+
+**Tests per PR**: criticalCaseIds are minimum anchors from the existing 132 proposed cases, not a release pass-count target. Each business PR also needs a full applicability manifest (story, BR, case ID, APPROVED/FAIL_CLOSED/BLOCKED/DEFERRED, owner, real test class, DB/RLS/UI result, exact SHA and any approved omission). Passing fail-closed tests does not grant unsigned irreversible behavior.
+
+## 23. Revised implementation order
+
+Start PR-00 and PR-01 in parallel (traceability/validator plus Boot, Modulith, Flyway, real Postgres/PostGIS/RLS/Outbox). Then PR-02/03 Tenancy and CustomerAccount ownership ADR, PR-04 **Draft**, PR-05 **approved submit**/Inbox, PR-06/07 Quote, PR-08/09/10 Cargo/Compliance/Fleet, PR-11/12 Carrier/Booking, PR-13/14 verified custody/POD, PR-15/16 Tracking/Documents, PR-17 true Finance evidence, PR-18 recovery, PR-19 real multi-role API/UI E2E, PR-20 signed pilot.
+
+All 17 existing business modules remain in the architecture map. This version is a **proposal and CI-verifiable documentary plan**, not a completed business backend.
