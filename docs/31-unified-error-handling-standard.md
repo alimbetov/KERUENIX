@@ -1,6 +1,6 @@
 # 31 — Unified API Error Contract & Central Handler (Spring MVC / Security / Jobs)
 
-**Version:** 1.0 (proposed) · **Date:** 2026-11-07 · **Target:** Java 21, Spring Boot 4.1.2 (Spring MVC) · **Status:** DESIGN + IMPLEMENTED ERROR-ONLY BOOTSTRAP. Initial 13-contract-test Maven run passed on SHA `0117f8dc`; subsequent commits require their own exact-SHA CI. Domain/RLS/E2E qualification remains outstanding.
+**Version:** 1.0 (proposed) · **Date:** 2026-11-07 · **Target:** Java 21, Spring Boot 4.1.2 (Spring MVC) · **Status:** DESIGN + IMPLEMENTED ERROR-ONLY BOOTSTRAP. Verified GitHub Actions run #22 passed **15 JUnit tests** and the **21-code Java/JSON parity gate** on commit `ac459923`; subsequent changes require requalification. Domain/RLS/E2E qualification remains outstanding.
 **Machine catalog:** [api-error-catalog.v1.json](contracts/api-error-catalog.v1.json). **Baseline:** [28 — TDD Acceptance](28-r0-tdd-acceptance-bank.md), [30 — Negative Scenarios](30-negative-and-failure-scenario-bank.md), [20 — Engineering Standard](20-mapstruct-tdd-engineering-standard.md).
 
 ## 1. Decision
