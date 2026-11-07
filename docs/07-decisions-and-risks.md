@@ -10,6 +10,10 @@
 
 Содержание, требования `KX-ARC-*`, acceptance и roadmap: [19 — Architecture Hardening Priorities](19-architecture-hardening-priorities.md). Это согласованное направление, **не** готовый код, юридическое утверждение бизнес-правил или пройденные CI-тесты.
 
+## Access Governance v2 — текущий проектный стандарт
+
+Первый role/permission security review выявил недоопределённость внешних заказчиков, доступа к `My Orders`, входящих заявок Tenant, отзывов, роли независимого Finance Approver, прав POD и реальных scopes/approval. Обновлённый [Access Governance v2](24-access-control-tdd-matrix-v2.md) с [machine contract](contracts/access-policy-matrix.v2.json) теперь является базой для дальнейшего TDD-проектирования. В нём 57 проектных policy entries и 18 adversarial scenarios; требуется согласование полномочий подписанта, лимитов, и юридического статуса отзывов до реализации. v1 сохранён исторически; тесты не выполнялись.
+
 ## Новое архитектурное решение — модульная стратегия
 
 **Рекомендуемый выбор (ещё не ACCEPTED):** один Spring Boot backend + Spring Modulith business modules для R0, впоследствии isolated background workers для GPS, routing, notifications. Сравнение альтернатив и критерии экстракции: [13 — Architecture Options](13-modular-architecture-options-v1.md). Декомпозиция и gate implementation: [14 — Delivery Blueprint](14-modular-delivery-blueprint.md).
