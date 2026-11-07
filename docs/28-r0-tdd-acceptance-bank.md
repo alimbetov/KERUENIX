@@ -308,3 +308,7 @@ The [30 — Negative & Failure Scenario Bank](30-negative-and-failure-scenario-b
 The second bank also defines eight targeted `MIX-01..08` multi-fault combinations (not counted in the 132), including grant revoke+warm cache, Quote expiry+signer, carrier withdraw+hold-expiry, driver reassign+offline replay, partial POD+immutable documents, bank callback+FX reversal, suspended subscription+redacted support and Outbox replay+revoked job context.
 
 **Gates:** deny/invalid operations must produce no forbidden domain writes or success events, and UI must not imply successful Booking, Delivered or Settled. Continue to use real PostgreSQL/PostGIS with RLS/Testcontainers, application-role privileges, clock/transaction races and Outbox/Inbox. New cases are technical design candidates pending the applicable business/legal review; no CI results are claimed.
+
+## 11. Standardized HTTP problem contract for the negative TDD bank
+
+See [31 — Unified API Errors](31-unified-error-handling-standard.md) and [api error catalog](contracts/api-error-catalog.v1.json). Every rejected `TDD-SIM` and `TDD-R0-E2E` HTTP operation must assert both **domain invariants** and a stable RFC 9457 machine error code, status, safe message and requestId. The 401/403 security filter, MVC handler and `/error` fallback have shared Java21 bootstrap code in [backend](../backend/README.md); **none of the 84 domain acceptance cases or handler Maven tests have been qualified here**. No claim is made about actual tenant/booking/finance DB behavior until Testcontainers and real code exist.
