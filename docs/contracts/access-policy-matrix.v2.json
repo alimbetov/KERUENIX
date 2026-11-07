@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "2.0.0",
-  "status": "DRAFT_SECURITY_AND_BUSINESS_REVIEW_NOT_IMPLEMENTED",
+  "schemaVersion": "2.1.0",
+  "status": "DRAFT_BUSINESS_SECURITY_REVIEW_V2_1_NOT_IMPLEMENTED",
   "supersedes": "docs/contracts/role-permission-scope-approval.v1.json",
   "specification": "docs/24-access-control-tdd-matrix-v2.md",
   "securityModel": "RBAC_ROLE_TEMPLATES_PLUS_ABAC_RESOURCE_SCOPE_AND_TRANSACTIONAL_APPROVAL_SOD",
@@ -239,6 +239,54 @@
       "owner": "Commercial + Finance",
       "required": "Explicit margin-read financial permission and own legal entity",
       "separation": "Not included in customer/carrier projection"
+    },
+    "AP-QUOTE-DECLINE": {
+      "kind": "GUARD_ONLY",
+      "owner": "Commercial",
+      "required": "Customer authorization on exact current QuoteVersion and declinable state; idempotent command and reason audit",
+      "separation": "Read permission alone never permits quote decline"
+    },
+    "AP-RFQ-ASSIGN": {
+      "kind": "GUARD_ONLY",
+      "owner": "Commercial",
+      "required": "Provider team/branch scope for unassigned RFQ, atomic assignee change with expectedVersion, audit",
+      "separation": "Read-only inbox roles cannot assign; no foreign branch takeover"
+    },
+    "AP-BOOKING-CANCEL-REQUEST": {
+      "kind": "GUARD_ONLY",
+      "owner": "Booking",
+      "required": "Customer Account scope, exact booking and open cancellation-request eligibility; persisted request with reason; no automatic cancel",
+      "separation": "Dispatcher/contract authority must decide cancellation and costs independently"
+    },
+    "AP-CUSTOMER-ISSUE": {
+      "kind": "GUARD_ONLY",
+      "owner": "Commercial intake -> owning Execution/Booking issue handling",
+      "required": "Requester has exact customer order/Booking, issue type and evidence; clear escalation owner; not a review or POD rewrite",
+      "separation": "Issue submission does not automatically approve refunds or change shipment state"
+    },
+    "AP-FINANCE-RECONCILE": {
+      "kind": "GUARD_ONLY",
+      "owner": "Finance",
+      "required": "Approved Finance permission, source-verified bank/ERP transaction reference, unique allocation, amounts/currency and immutable audit",
+      "separation": "Human approval is not bank settlement and does not automatically set Paid"
+    },
+    "AP-CUSTOMER-SELF-REVOKE": {
+      "kind": "GUARD_ONLY",
+      "owner": "Tenancy",
+      "required": "Verified EXC user and exact own provider CustomerAccount membership; revoke own sessions/tokens",
+      "separation": "No deletion or global suspension of customer organization and other members"
+    },
+    "AP-CUSTOMER-RELATION-SUSPEND": {
+      "kind": "CONDITIONAL_HUMAN_APPROVAL",
+      "owner": "Tenancy + Commercial",
+      "required": "Authorized provider manager/Owner, verified business basis, notice and safe retention",
+      "separation": "Independent commercial/owner review if dispute or contractual consequences; no silent deletion"
+    },
+    "AP-PLATFORM-JOB": {
+      "kind": "GUARD_ONLY",
+      "owner": "Platform Jobs (technical)",
+      "required": "Scoped platform operator job metadata or specifically approved replay, tenant and job-type allowlists, audit",
+      "separation": "No global customer business-data access; replay cannot bypass domain authorization"
     }
   },
   "separationOfDuties": [
@@ -301,7 +349,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-02",
@@ -322,7 +373,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-03",
@@ -343,7 +397,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-04",
@@ -364,7 +421,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-05",
@@ -387,7 +447,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-06",
@@ -410,7 +473,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-07",
@@ -433,7 +499,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-08",
@@ -456,7 +525,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-09",
@@ -479,7 +551,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-10",
@@ -502,7 +577,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-11",
@@ -525,7 +603,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-01",
@@ -548,7 +629,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-02",
@@ -571,7 +655,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-03",
@@ -594,7 +681,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-04",
@@ -617,7 +707,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-05",
@@ -640,7 +733,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-06",
@@ -663,7 +759,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "APPROVAL",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-07",
@@ -686,7 +785,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "ATTESTATION",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-08",
@@ -705,11 +807,14 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-SCOPED-READ",
+      "approvalPolicyId": "AP-QUOTE-DECLINE",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-09",
@@ -732,7 +837,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-10",
@@ -755,7 +863,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-11",
@@ -778,7 +889,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-12",
@@ -801,7 +915,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-13",
@@ -824,7 +941,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-01",
@@ -848,7 +968,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-02",
@@ -872,15 +995,18 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-03",
-      "module": "Commercial",
+      "module": "CustomerPortalApi",
       "roleTemplate": "EXC",
       "permission": "customer:orders:list",
       "resourceScope": "CUSTOMER_ACCOUNT_PROVIDER_TENANT_ALLOWED_ORDER_SET",
-      "approvalPolicy": "ONLY_OWN_OR_CUSTOMER_ORGANIZATION_AUTHORIZED_ORDERS",
+      "approvalPolicy": "PER_CUSTOMER_ACCOUNT_AND_PROVIDER_SCOPED_COMPOSED_READS_ONLY",
       "storyId": "USB-EXC-003",
       "acceptanceId": "AUTH-EXT-003",
       "priority": "R0",
@@ -896,15 +1022,26 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "implementationOwner": "Web/application composition facade using exported domain APIs",
+      "sourceOwners": [
+        "Commercial",
+        "Booking",
+        "Execution",
+        "Tracking",
+        "Documents"
+      ],
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-04",
-      "module": "Commercial",
+      "module": "CustomerPortalApi",
       "roleTemplate": "EXC",
       "permission": "customer:orders:read",
       "resourceScope": "EXACT_CUSTOMER_ORDER_ID_AND_PROVIDER_TENANT",
-      "approvalPolicy": "NO_SUPPLIER_RATES_INTERNAL_MARGIN_OR_OTHER_CUSTOMERS",
+      "approvalPolicy": "PER_CUSTOMER_ACCOUNT_AND_PROVIDER_SCOPED_COMPOSED_READS_ONLY",
       "storyId": "USB-EXC-003",
       "acceptanceId": "AUTH-EXT-004",
       "priority": "R0",
@@ -920,7 +1057,18 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "implementationOwner": "Web/application composition facade using exported domain APIs",
+      "sourceOwners": [
+        "Commercial",
+        "Booking",
+        "Execution",
+        "Tracking",
+        "Documents"
+      ],
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-05",
@@ -944,7 +1092,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-06",
@@ -952,7 +1103,7 @@
       "roleTemplate": "EXC",
       "permission": "customer:quote:accept",
       "resourceScope": "EXACT_UNEXPIRED_QUOTE_VERSION_AND_CUSTOMER_SIGNATORY_SCOPE",
-      "approvalPolicy": "EXPLICIT_CUSTOMER_ACCEPTANCE_AUTHORITY_AND_IDEMPOTENCY_NOT_BOOKING",
+      "approvalPolicy": "CUSTOMER_SIGNATORY_CAPABILITY_EXACT_CURRENT_VERSION_EVIDENCE",
       "storyId": "USB-EXC-004",
       "acceptanceId": "AUTH-EXT-006",
       "priority": "R0",
@@ -968,7 +1119,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "ATTESTATION",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-07",
@@ -992,7 +1146,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-08",
@@ -1016,7 +1173,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-09",
@@ -1024,7 +1184,7 @@
       "roleTemplate": "EXC",
       "permission": "customer:review:submit",
       "resourceScope": "COMPLETED_ELIGIBLE_SERVICE_FOR_CUSTOMER_ORDER",
-      "approvalPolicy": "VERIFIED_DELIVERY_EVIDENCE_SINGLE_REVIEW_PER_SERVICE_NO_SELF_REVIEW",
+      "approvalPolicy": "CUSTOMER_FEEDBACK_AUTHOR_CAPABILITY_ELIGIBLE_SERVICE_PRIVATE_REVIEW",
       "storyId": "USB-EXC-006",
       "acceptanceId": "AUTH-EXT-009",
       "priority": "R0",
@@ -1040,7 +1200,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-10",
@@ -1064,14 +1227,17 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-14",
       "module": "Commercial",
       "roleTemplate": "SAL",
       "permission": "rfq:inbox:read",
-      "resourceScope": "PROVIDER_TENANT_AND_ASSIGNED_INBOUND_RFQS",
+      "resourceScope": "PROVIDER_TENANT_ALLOWED_BRANCH_TEAM_INBOX_INCLUDING_UNASSIGNED_RFQ",
       "approvalPolicy": "SCOPED_CUSTOMER_QUEUE_NO_OTHER_TENANT_DATA",
       "storyId": "USB-SAL-003",
       "acceptanceId": "AUTH-COM-014",
@@ -1087,7 +1253,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-15",
@@ -1110,7 +1279,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-11",
@@ -1134,15 +1306,18 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-12",
       "module": "Tenancy",
       "roleTemplate": "EXC",
-      "permission": "customer:access:revoke",
-      "resourceScope": "OWN_CUSTOMER_ACCOUNT_GRANT",
-      "approvalPolicy": "CUSTOMER_USER_CAN_TERMINATE_OWN_RELATIONSHIP_NO_CROSS_ACCOUNT_DELETION",
+      "permission": "customer:access:revoke_self",
+      "resourceScope": "EXACT_OWN_CUSTOMER_ACCOUNT_MEMBERSHIP_ONLY",
+      "approvalPolicy": "NO_GLOBAL_CUSTOMER_ACCOUNT_OR_PROVIDER_RELATIONSHIP_REVOCATION",
       "storyId": "USB-EXC-008",
       "acceptanceId": "AUTH-EXT-012",
       "priority": "R0",
@@ -1154,19 +1329,22 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-CUSTOMER-RELATION",
+      "approvalPolicyId": "AP-CUSTOMER-SELF-REVOKE",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXT-13",
-      "module": "Commercial",
+      "module": "Booking",
       "roleTemplate": "EXC",
       "permission": "customer:order:cancel_request",
       "resourceScope": "OWN_CONFIRMED_BOOKING_CUSTOMER_PROJECTION",
-      "approvalPolicy": "REQUEST_ONLY_BOOKING_OWNER_APPROVES_CONTRACTUAL_CANCELLATION",
+      "approvalPolicy": "CUSTOMER_REQUEST_ONLY_BOOKING_OWNER_DECIDES_ACCEPT_REJECT_AND_CHARGES",
       "storyId": "USB-EXC-009",
       "acceptanceId": "AUTH-EXT-013",
       "priority": "R0",
@@ -1178,11 +1356,14 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-BOOKING",
+      "approvalPolicyId": "AP-BOOKING-CANCEL-REQUEST",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-16",
@@ -1205,7 +1386,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "FLT-01",
@@ -1228,7 +1412,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "FLT-02",
@@ -1251,7 +1438,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "BKG-01",
@@ -1274,7 +1464,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "BKG-02",
@@ -1297,7 +1490,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXE-01",
@@ -1320,7 +1516,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXE-02",
@@ -1343,7 +1542,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "EXE-03",
@@ -1364,7 +1566,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TRK-01",
@@ -1387,7 +1592,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "DOC-01",
@@ -1410,7 +1618,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "DOC-02",
@@ -1434,7 +1645,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "FIN-01",
@@ -1457,7 +1671,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "FIN-02",
@@ -1480,7 +1697,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "FIN-03",
@@ -1503,11 +1723,14 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "APPROVAL",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "SUP-01",
-      "module": "Tenancy",
+      "module": "PlatformJobs",
       "roleTemplate": "SUP",
       "permission": "platform:job:inspect",
       "resourceScope": "PLATFORM_JOB_METADATA_WITH_REDACTED_FIELDS",
@@ -1524,11 +1747,15 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "implementationOwner": "platform/jobs technical capability",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "SUP-02",
-      "module": "Tenancy",
+      "module": "PlatformJobs",
       "roleTemplate": "SUP",
       "permission": "platform:job:retry",
       "resourceScope": "FAILED_JOB_AND_APPROVED_REPLAY_REQUEST",
@@ -1541,11 +1768,15 @@
         "platformPrincipalId",
         "ticketOrProvisioningCaseId"
       ],
-      "approvalPolicyId": "AP-JOB-REPLAY",
+      "approvalPolicyId": "AP-PLATFORM-JOB",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "implementationOwner": "platform/jobs technical capability",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "TEN-12",
@@ -1569,7 +1800,10 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     },
     {
       "id": "COM-17",
@@ -1592,7 +1826,274 @@
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED"
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "EXT-14",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:rfq:list",
+      "resourceScope": "AUTHORIZED_PROVIDER_AND_EXACT_CUSTOMER_ACCOUNT_RFQ_SET",
+      "approvalPolicy": "OWN_REQUESTS_NO_FOREIGN_CUSTOMER_OR_PROVIDER",
+      "storyId": "USB-EXC-003",
+      "acceptanceId": "AUTH-EXT-014",
+      "priority": "R0",
+      "approvalPolicyId": "AP-SCOPED-READ",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "EXT-15",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:rfq:read",
+      "resourceScope": "AUTHORIZED_EXACT_RFQ_AND_CUSTOMER_ACCOUNT",
+      "approvalPolicy": "SCOPE_FIELD_FILTER_AND_VERSION_HISTORY",
+      "storyId": "USB-EXC-003",
+      "acceptanceId": "AUTH-EXT-015",
+      "priority": "R0",
+      "approvalPolicyId": "AP-SCOPED-READ",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "COM-18",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "rfq:inbox:assign",
+      "resourceScope": "PROVIDER_TENANT_ALLOWED_BRANCH_TEAM_RFQ",
+      "approvalPolicy": "ATOMIC_ASSIGNMENT_EXPECTED_VERSION_AND_AUDIT",
+      "storyId": "USB-SAL-003",
+      "acceptanceId": "AUTH-COM-018",
+      "priority": "R0",
+      "approvalPolicyId": "AP-RFQ-ASSIGN",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "COM-19",
+      "module": "Commercial",
+      "roleTemplate": "SAL",
+      "permission": "rfq:request_clarification",
+      "resourceScope": "AUTHORIZED_ASSIGNED_RFQ_PROVIDER",
+      "approvalPolicy": "NEEDS_INFO_TRANSITION_AUDIT_NO_QUOTE_ISSUE",
+      "storyId": "USB-SAL-001",
+      "acceptanceId": "AUTH-COM-019",
+      "priority": "R0",
+      "approvalPolicyId": "AP-RFQ",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "EXT-16",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:issue:report",
+      "resourceScope": "OWN_ACTIVE_CUSTOMER_ORDER_AND_SERVICE_REF",
+      "approvalPolicy": "AUTHORIZED_PRE_POST_DELIVERY_ISSUE_WITH_EVIDENCE_AND_FOLLOW_UP",
+      "storyId": "USB-EXC-010",
+      "acceptanceId": "AUTH-EXT-016",
+      "priority": "R0",
+      "approvalPolicyId": "AP-CUSTOMER-ISSUE",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "EXT-17",
+      "module": "Commercial",
+      "roleTemplate": "EXC",
+      "permission": "customer:issue:read",
+      "resourceScope": "EXACT_OWN_CUSTOMER_ISSUE_REF",
+      "approvalPolicy": "SCOPED_STATUS_NO_INTERNAL_INVESTIGATION_DETAILS",
+      "storyId": "USB-EXC-010",
+      "acceptanceId": "AUTH-EXT-017",
+      "priority": "R0",
+      "approvalPolicyId": "AP-SCOPED-READ",
+      "subjectType": "EXTERNAL_CUSTOMER_ACCOUNT_MEMBER",
+      "subjectConstraints": [
+        "providerTenantId",
+        "customerAccountId",
+        "customerOrgId",
+        "grantId",
+        "resourceId"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "READ",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "TEN-13",
+      "module": "Tenancy",
+      "roleTemplate": "TEN",
+      "permission": "tenant:customeraccount:member:revoke",
+      "resourceScope": "PROVIDER_TENANT_CUSTOMER_ACCOUNT_EXACT_MEMBER_SCOPE",
+      "approvalPolicy": "REVOKE_SPECIFIC_EXTERNAL_MEMBER_NOT_CUSTOMER_ORG",
+      "storyId": "USB-TEN-005",
+      "acceptanceId": "AUTH-TEN-013",
+      "priority": "R0",
+      "approvalPolicyId": "AP-CUSTOMER-RELATION",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "TEN-14",
+      "module": "Tenancy",
+      "roleTemplate": "TNO",
+      "permission": "tenant:customerrelationship:suspend",
+      "resourceScope": "PROVIDER_TENANT_VERIFIED_CUSTOMER_ORGANIZATION",
+      "approvalPolicy": "AUTHORIZED_CONTRACTUAL_SUSPENSION_AUDITED_NO_DELETION",
+      "storyId": "USB-TNO-003",
+      "acceptanceId": "AUTH-TEN-014",
+      "priority": "R1",
+      "approvalPolicyId": "AP-CUSTOMER-RELATION-SUSPEND",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "BKG-03",
+      "module": "Booking",
+      "roleTemplate": "DSP",
+      "permission": "booking:cancel_request:review",
+      "resourceScope": "OWN_PROVIDER_TENANT_BOOKING_AND_AUTHORIZED_ASSIGNEE",
+      "approvalPolicy": "BOOKING_POLICY_CUSTOMER_TERMS_CHARGES_COMPENSATIONS_VERSIONED",
+      "storyId": "USB-DSP-003",
+      "acceptanceId": "AUTH-BKG-003",
+      "priority": "R0",
+      "approvalPolicyId": "AP-BOOKING-CANCEL-REQUEST",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+    },
+    {
+      "id": "FIN-04",
+      "module": "Finance",
+      "roleTemplate": "FIN",
+      "permission": "finance:payment:reconcile",
+      "resourceScope": "OWN_PROVIDER_LEGAL_ENTITY_AND_VERIFIED_BANK_ERP_PAYMENT",
+      "approvalPolicy": "APPROVAL_NOT_EQUAL_SETTLEMENT_AMOUNT_CURRENCY_ALLOCATION_DEDUP",
+      "storyId": "USB-FIN-001",
+      "acceptanceId": "AUTH-FIN-004",
+      "priority": "R0",
+      "approvalPolicyId": "AP-FINANCE-RECONCILE",
+      "subjectType": "TENANT_MEMBER",
+      "subjectConstraints": [
+        "activeTenantId",
+        "legalEntityId",
+        "resourceId",
+        "verifiedMembershipOrPartnerGrant"
+      ],
+      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "boundary": "EXPORTED_MODULE_API_ONLY",
+      "testStatus": "PLANNED_NOT_EXECUTED",
+      "accessAction": "COMMAND",
+      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
     }
   ],
   "adversarialAcceptance": [
@@ -1703,6 +2204,60 @@
       "target": "Sales staff in provider Tenant-A tries to inspect private reviews belonging to provider Tenant-B",
       "expected": "deny across provider tenant and customer service scope",
       "testLevel": "HTTP+RLS"
+    },
+    {
+      "id": "AUTH-X-019",
+      "target": "Quote viewer invokes decline command via read-only permission",
+      "expected": "DENY; read does not authorize state mutation",
+      "testLevel": "HTTP+JUnit+PostgreSQL"
+    },
+    {
+      "id": "AUTH-X-020",
+      "target": "External customer requests cancellation of confirmed Booking",
+      "expected": "request stored, Booking remains unchanged until owner policy decision and contract effects",
+      "testLevel": "Module+PostgreSQL"
+    },
+    {
+      "id": "AUTH-X-021",
+      "target": "EXC revokes own access while coworkers share customer organization",
+      "expected": "only actor membership/sessions disabled; others retain correct scope",
+      "testLevel": "HTTP+RLS"
+    },
+    {
+      "id": "AUTH-X-022",
+      "target": "Unassigned incoming RFQ is assigned concurrently by two branch Sales actors",
+      "expected": "one committed assignee/version, other conflict; wrong-branch DENY",
+      "testLevel": "PostgreSQL concurrency+HTTP"
+    },
+    {
+      "id": "AUTH-X-023",
+      "target": "Customer reads provider-composed My Orders from multiple source modules",
+      "expected": "no direct cross-module DB writes; exact CustomerAccount-scoped list and field allowlist",
+      "testLevel": "Modulith+HTTP+PostgreSQL RLS"
+    },
+    {
+      "id": "AUTH-X-024",
+      "target": "Finance approver approves outgoing payable without bank settlement evidence",
+      "expected": "approval recorded but Paid/Settled unchanged until independently reconciled verified cash fact",
+      "testLevel": "Finance unit+PostgreSQL"
+    },
+    {
+      "id": "AUTH-X-025",
+      "target": "Customer read-only capability tries to create RFQ, sign quote and post review",
+      "expected": "each action requires separate explicit CustomerAccount capability",
+      "testLevel": "HTTP+security"
+    },
+    {
+      "id": "AUTH-X-026",
+      "target": "External client submits damage issue before service completed",
+      "expected": "valid issue accepted/triaged if order scoped; standard review eligibility remains independent",
+      "testLevel": "HTTP+Commercial integration"
+    },
+    {
+      "id": "AUTH-X-027",
+      "target": "Job monitoring role sees tenant finance payload via diagnostics",
+      "expected": "redacted operational metadata only; no Tenancy SQL side door",
+      "testLevel": "Jobs+RLS+HTTP"
     }
   ],
   "implementationMilestones": [
@@ -1711,5 +2266,88 @@
     "A2 customer RFQ/Quote and provider inbox with role-specific projections",
     "A3 Booking/Execution/Tracking/POD/Finance guards and review eligibility",
     "A4 recovery, token/grant revoke, job replay, performance and exact-SHA CI"
+  ],
+  "revisionNotes": [
+    "Authorization guard vs human approval clarified; quote decline no longer uses read policy",
+    "Customer RFQ list/detail, provider inbound assignment, clarification, and customer issue/report paths",
+    "Customer cancellation request owned by Booking; no automatic Booking cancellation",
+    "Customer self-revoke is personal account membership only; provider cannot silently revoke whole customer organization",
+    "External My Orders read composition is a delivery/API facade; not Commercial-owned writes or a new bounded context",
+    "Platform job inspect/retry governed by technical PlatformJobs; no forced ownership by Tenancy",
+    "Finance approval distinct from bank settlement/reconciliation",
+    "External customer organization capability separation: request, view, sign, review; no membership in provider tenant"
+  ],
+  "versionCompatibility": {
+    "prior": "2.0.0",
+    "sourceFile": "same path",
+    "breakingDraftChanges": [
+      "EXT-12 permission renamed; EXT-13 module owner changed",
+      "EXT-03/04 and SUP-01/02 enforcementOwner corrected"
+    ],
+    "runtimeMigrationRequired": false,
+    "reason": "documentation contracts only; no implementation exists"
+  },
+  "controlPlaneVsDataPlane": {
+    "externalCustomer": "EXC authenticated in customerAccount relationship, never set provider tenant as caller-asserted membership; server resolves verified scoped provider context",
+    "portalFacade": "CustomerPortalApi is a composition/transport surface consuming public module contracts; it is not a business module and must not write source aggregates",
+    "rls": "DB queries execute under verified scoped server-issued tenant/customer context, enforce customerAccount filtering + tenant ownership; no unscoped SECURITY DEFINER or JDBC pool context leakage; Testcontainers RLS tests required",
+    "platformJobs": "SUP policy metadata and replay control belong to platform/jobs technical capability, not Tenancy business tables",
+    "sourceOwnership": {
+      "rfq": "Commercial",
+      "quote": "Commercial",
+      "booking": "Booking",
+      "reservation": "Fleet",
+      "shipmentDelivery": "Execution",
+      "shipmentTimeline": "Tracking",
+      "document": "Documents",
+      "invoicePayment": "Finance",
+      "identityAndGrant": "Tenancy",
+      "feedback": "Commercial"
+    }
+  },
+  "externalCustomerCapabilities": [
+    {
+      "id": "CUSTOMER_VIEWER",
+      "grant": "customer:orders:list customer:orders:read customer:rfq:list customer:rfq:read customer:quote:read customer:tracking:read customer:pod:read customer:document:list customer:review:read",
+      "authority": "CustomerAccount membership + provider relationship + individual resource scope"
+    },
+    {
+      "id": "CUSTOMER_REQUESTER",
+      "grant": "customer:rfq:create customer:rfq:withdraw customer:issue:report",
+      "authority": "Verified customer organization request delegation; not quote signatory"
+    },
+    {
+      "id": "CUSTOMER_SIGNATORY",
+      "grant": "customer:quote:accept customer:order:cancel_request",
+      "authority": "Specific externally verified legal/delegated authority, exact quote/booking version; cancel is request-only"
+    },
+    {
+      "id": "CUSTOMER_FEEDBACK_AUTHOR",
+      "grant": "customer:review:submit",
+      "authority": "Verified service eligibility and assigned customer organization, duplicate constraint"
+    }
+  ],
+  "invariants": [
+    "Access granted by a role template is never automatic; a scoped role assignment or customer capability grant must be active",
+    "An external customer can read, submit RFQ, accept quote or review only with separately delegated account capabilities",
+    "Declining a quote is a state-changing command and cannot use a read guard as its only authorization",
+    "Customer cancellation request does not itself change Booking status; Booking owner processes contractual effects",
+    "External customer self-revoke affects the actor's account membership only, never colleagues or provider-wide relationship",
+    "Financial approval, payment execution and settlement reconciliation are distinct evidenced operations",
+    "Provider inbound RFQ assignment is guarded by branch/team and expectedVersion concurrency",
+    "Customer My Orders uses exported module APIs and a composed provider/customer-scoped projection; no Commercial -> Booking internal direct dependency",
+    "Service issue/claim intake is possible before final delivery, separate from post-service private review eligibility"
+  ],
+  "authorizedSubjectIdentityModes": {
+    "externalCustomer": "provider/customer org + scoped CustomerAccount membership; capabilities distinct from provider employee membership"
+  },
+  "businessOpenDecisions": [
+    "Authorized signer evidence for EXC without own tenant; no implicit signatory from portal registration",
+    "Relationship setup for customer organization and external company representation",
+    "Customer cancellation charge policy and approval workflow",
+    "Financial bank/ERP evidence vs payment initiation vs internal approval",
+    "Complaint handling SLA/status and ownership vs public reviews",
+    "Data minimization for composed My Orders projection across Commercial/Booking/Execution/Tracking/Documents",
+    "Refresh-token/session revocation consistency and already issued object-storage signed URLs"
   ]
 }
