@@ -1,10 +1,12 @@
 # 21 — KERUENIX User Story Book: Role-Based Scenario Bank
 
-**Version:** 0.5 — BUSINESS PASS 2 / CROSS-ROLE SCENARIOS & EXCEPTION REFINEMENT. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
+**Version:** 0.6 — ROLE SIMULATION PASS / SECURITY AND BUSINESS EXCEPTION REVIEW. **Date:** 2026-11-07. **Status:** PROPOSED / business workshop required. **No implemented features or executed TDD tests are implied.**
 
 **Purpose:** Maintain a single versioned, traceable bank of actor-centered scenarios; build it incrementally in several iterations, *then* derive acceptance tests, TDD unit tests and integration/E2E cases. Do not confuse role catalog with a list of software privileges or tenant membership.
 
 **Canonical authorization matrix (v2.1):** [24 — Access Governance & TDD](24-access-control-tdd-matrix-v2.md) and [machine contract](contracts/access-policy-matrix.v2.json). **External customer journey:** [23 — External Customer Portal](23-external-customer-portal.md). The [v1 matrix](22-role-permission-scope-approval-matrix.md) is retained as historical draft.
+
+**Role simulation (pass 3):** [26 — Role/Process Simulation](26-role-process-simulation-and-gap-audit.md), [scenario coverage JSON](contracts/role-process-simulation.v1.json).
 
 **Business Scenario Book (pass 2):** [25 — Business Scenario Book](25-business-scenario-book.md). Eleven cross-role scenario narratives with proposed acceptance; no additional normative status enums.
 
@@ -187,6 +189,39 @@ The **18 new DISCOVERED stories** below extend the original 40 and remain candid
 
 **Scenario-to-TDD:** `BSC-001..011` are multi-role narratives, `BSC-...-AC-nn` are proposed acceptance outcomes, existing `AUTH-*` assert access rules and `LFC-*` assert domain invariants. All are draft; no test executed.
 
+## 4F. Role-based walkthrough simulation — discovery of missing permissions and exception paths
+
+[26 — Role/Process Simulation & Gap Audit](26-role-process-simulation-and-gap-audit.md) models **40 paper simulations** across all **22 role personas** and three collaborating companies with an external CustomerAccount. The cases are **not real UI runs, code, production traffic or executed tests**. Role representation alone does not establish exhaustive scenario coverage.
+
+These **20 newly discovered** stories are candidates. Existing IDs are never renamed/reused. R0 safety stories mean *a dangerous action must not falsely succeed*; they do not mean a complex automated recovery UI must be delivered in the pilot.
+
+| Story ID | Primary actor | User outcome | Phase | Module owner | Simulation | Authorization linkage or gap |
+|---|---|---|---|---|---|---|
+| `USB-EXC-014` | EXC | Отклонить выпущенную QuoteVersion с причиной без полномочия её акцептовать | R0 safety | Commercial | `SIM-13` | PENDING: scoped customer:quote:decline; read is not write |
+| `USB-EXC-015` | EXC | Переключаться между явно разрешёнными поставщиками и CustomerOrg без смешения данных | R1 | Tenancy/CustomerPortal | `SIM-38` | PENDING: multi-provider switch, not implicit join |
+| `USB-SAL-007` | SAL | Переназначить входящий RFQ другому менеджеру после увольнения/отсутствия | R0 | Commercial | `SIM-08` | COM-18 with expectedVersion + branch policy |
+| `USB-SAL-008` | SAL | Оформить изменение согласованных условий после акцепта как новое коммерческое соглашение | R0 safety | Commercial/Booking | `SIM-10` | PENDING: agreement amendment, no silent mutation of ACCEPTED quote |
+| `USB-PRC-003` | PRC | Перевыбрать перевозчика после отзыва/истечения CarrierOffer | R0 safety | Commercial | `SIM-16` | PENDING: carrier_offer:replacement and authority |
+| `USB-CAR-003` | CAR | Отозвать/отклонить CarrierOffer до подтверждения, объяснить отсутствие транспорта | R0 safety | Commercial | `SIM-16` | PENDING: carrier_offer:withdraw or decline |
+| `USB-PLN-003` | PLN | Зарезервировать собственный автомобиль без фиктивного предложения внешнего перевозчика | R0 | Fleet | `SIM-17` | FLT-01 + owner/driver/trailer capacity guards |
+| `USB-DSP-006` | DSP | Передать груз и полномочия новому водителю/машине при сбое рейса без разрыва custody | R0 safety | Execution/Booking/Recovery | `SIM-25` | PENDING: recover/reassign with handover evidence; no direct rewrite |
+| `USB-DSP-007` | DSP | Организовать повторную доставку после неуспешной попытки | R0 safety | Execution | `SIM-27` | PENDING: failed delivery + reattempt authorization |
+| `USB-DRV-003` | DRV | Отклонить погрузку с расхождением по единицам/массе/пломбе и запросить проверку | R0 safety | Execution/Cargo | `SIM-23` | PENDING: pickup refusal/incident; not confirm custody |
+| `USB-DRV-004` | DRV | Сообщить о поломке в пути и сохранить доказательство текущего custodian | R0 safety | Execution/Recovery | `SIM-25` | PENDING: interruption evidence, advanced rescue after R0 |
+| `USB-RCV-003` | RCV | Зафиксировать отсутствие получателя/отказ от подписи как неуспешную попытку | R0 safety | Execution | `SIM-27` | PENDING: failed delivery reason; no delivered |
+| `USB-DOC-003` | DOC | Выдать клиенту только проверенную версию POD/документа по актуальному гранту | R0 | Documents | `SIM-30` | DOC-01 + download authorization and short URL TTL |
+| `USB-FIN-004` | FIN | Исправить выпущенный счет через корректирующий документ/credit note | R1 | Finance | `SIM-31` | PENDING: finance adjustment not edit issued Invoice |
+| `USB-FAP-002` | FAP | Отклонить неподтвержденную выплату и зафиксировать отказ/основание | R0 safety | Finance | `SIM-32` | PENDING: payment:reject and SoD scope |
+| `USB-COM-002` | COM | Независимо рассмотреть документальное основание снятия compliance HOLD | R1 | Compliance | `SIM-19` | PENDING: independent compliance hold release; default DENY in R0 |
+| `USB-TEN-006` | TEN | При увольнении внешнего контактного лица отозвать точечный CustomerAccount grant | R0 | Tenancy | `SIM-34` | TEN-13: revoke one member, preserve coworker access |
+| `USB-WHS-002` | WHS | Оформить межскладскую/кросс-док передачу частей груза | R1 | Warehouse/Execution | `SIM-36` | PENDING: ledger and cargo-unit custody |
+| `USB-MKT-001` | MKT | Опубликовать и модерировать предложение перевозки с проверкой поставщика | R2 | Marketplace | `SIM-39` | PENDING: listing author/moderator and fraud controls |
+| `USB-MLS-001` | MLS | Подготовить проверенный tenant-scoped dataset с provenance и разрешениями | R2 | Intelligence | `SIM-40` | PENDING: consent, data lineage, controlled feature export |
+
+**Story maturity:** 58 existing stories plus 20 new candidates = **78 unique stories** in catalog; 20 are `DISCOVERED` and are not permission grants. The canonical [Access Governance v2.1](contracts/access-policy-matrix.v2.json) remains 67 policies until business/security review accepts new or changed actions.
+
+**Convergence rule:**  `USB` records a user outcome; `BSC` records a multi-role transaction; `SIM` exercises one path or fault variant, `AUTH` validates scope, and `LFC` verifies domain truth. No duplicate competing lifecycle states may be introduced by a simulation.
+
 ## 5. Detailed seed example — USB-DSP-001 (ready for business elaboration, NOT ready for TDD)
 
 **Primary:** TENANT-A Dispatcher. **Collaborators:** Commercial (valid customer quote), Fleet (owner of CapacityReservation), Booking (orchestrator), optional TENANT-C carrier. **Trigger:** authorized actor requests assignment of an eligible vehicle for a customer-accepted quote.
@@ -261,4 +296,4 @@ Iteration 1 is accepted for **documentation review**, not business sign-off, whe
 
 **Questions for role interviews:** who legally commits expeditor and carrier, who may approve price deviations, who signs pickup/POD and when, how independent carrier gets a grant, when customer sees GPS, who verifies bank/ERP payment reference, what support may view without impersonation.
 
-**Next planned pass:** run a cross-functional business workshop on [25 — BSC-001..011](25-business-scenario-book.md), resolve the open decision log and permission gaps for the chosen R0 slice. Only business-reviewed stories may be used as authoritative TDD input; no test/CI results are claimed.
+**Next planned pass:** Review [26 — 40 role/process walkthroughs](26-role-process-simulation-and-gap-audit.md) and [25 — BSC-001..011](25-business-scenario-book.md) with actual customer, forwarder, carrier, finance/legal/security and driver/consignee representatives. Resolve P0 blockers, then derive only approved `TDD-*` cases. Neither paper simulation nor approval documents are green CI evidence.
