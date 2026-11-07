@@ -105,62 +105,140 @@
     "AP-PLAT-ONBOARD": {
       "owner": "Platform/Tenancy",
       "required": "Verified business onboarding request, MFA; first owner invitation and recipient acceptance",
-      "separation": "Provisioning operator cannot self-assign to tenant"
+      "separation": "Provisioning operator cannot self-assign to tenant",
+      "kind": "GUARD_ONLY"
     },
     "AP-PLAT-RECOVERY": {
       "owner": "Platform/Tenancy",
       "required": "Independently verified company evidence, two distinct approvers and audited recovery",
-      "separation": "Initiator cannot be sole approver"
+      "separation": "Initiator cannot be sole approver",
+      "kind": "HUMAN_APPROVAL_REQUIRED"
     },
     "AP-TEN-DELEGATION": {
       "owner": "Tenancy",
       "required": "Owner/delegated admin within grantable scope; verified invitation and accepted membership",
-      "separation": "No self elevation or last-owner removal"
+      "separation": "No self elevation or last-owner removal",
+      "kind": "GUARD_ONLY"
     },
     "AP-COM-ISSUE": {
       "owner": "Commercial",
       "required": "Valid exact quote version, allowed amount/terms; exceptional cases require prior approval",
-      "separation": "Author cannot approve own exception"
+      "separation": "Author cannot approve own exception",
+      "kind": "CONDITIONAL_HUMAN_APPROVAL"
     },
     "AP-COM-EXCEPTION": {
       "owner": "Commercial",
       "required": "Independent authorized approver, limit/currency/legal entity, matching quote version",
-      "separation": "Requester != approver for the approval instance"
+      "separation": "Requester != approver for the approval instance",
+      "kind": "HUMAN_APPROVAL_REQUIRED"
     },
     "AP-COM-CUSTOMER-ACCEPT": {
       "owner": "Commercial",
       "required": "Verified customer signatory, accepted exact current version, explicit terms evidence",
-      "separation": "Provider's employee cannot accept for customer merely by role"
+      "separation": "Provider's employee cannot accept for customer merely by role",
+      "kind": "CUSTOMER_ATTESTATION_REQUIRED"
     },
     "AP-COM-PROCUREMENT": {
       "owner": "Commercial",
       "required": "Carrier offer verified, partner permission and allowed procurement scope",
-      "separation": "Carrier cannot select itself as buyer without delegated provider rights"
+      "separation": "Carrier cannot select itself as buyer without delegated provider rights",
+      "kind": "GUARD_ONLY"
     },
     "AP-BOOKING": {
       "owner": "Booking",
       "required": "Accepted customer terms + confirmed exclusive reservation + approved cargo/compliance state",
-      "separation": "CarrierOffer SELECTED is not confirmation"
+      "separation": "CarrierOffer SELECTED is not confirmation",
+      "kind": "GUARD_ONLY"
     },
     "AP-POD": {
       "owner": "Execution",
       "required": "Authorized receiver, cargo-unit evidence and signed/verified delivery outcome",
-      "separation": "Driver cannot assert receiver confirmation without evidence"
+      "separation": "Driver cannot assert receiver confirmation without evidence",
+      "kind": "GUARD_ONLY"
     },
     "AP-FINANCE": {
       "owner": "Finance",
       "required": "Independent payment approver, authority amount, legal entity, verified obligation/payment reference",
-      "separation": "Payment initiator != same payment approver"
+      "separation": "Payment initiator != same payment approver",
+      "kind": "HUMAN_APPROVAL_REQUIRED"
     },
     "AP-CUSTOMER-REVIEW": {
       "owner": "Commercial",
       "required": "Execution source verified completion, customer relationship, one eligible review per service",
-      "separation": "Provider staff cannot pose as customer or alter review"
+      "separation": "Provider staff cannot pose as customer or alter review",
+      "kind": "GUARD_ONLY"
     },
     "AP-JOB-REPLAY": {
       "owner": "Platform Jobs",
       "required": "Authorized replay request, redacted diagnostics, attempt audit and dedup",
-      "separation": "No tenant data browsing or silent impersonation"
+      "separation": "No tenant data browsing or silent impersonation",
+      "kind": "GUARD_ONLY"
+    },
+    "AP-SCOPED-READ": {
+      "kind": "GUARD_ONLY",
+      "owner": "Owning business module",
+      "required": "Active identity and exact resource scope, allowlisted fields, relevant grant",
+      "separation": "No human approval; must still authorize each read"
+    },
+    "AP-CUSTOMER-RELATION": {
+      "kind": "GUARD_ONLY",
+      "owner": "Tenancy + Commercial",
+      "required": "Verified customer organization and provider relationship, account membership/invitation",
+      "separation": "No provider employee role inferred"
+    },
+    "AP-RFQ": {
+      "kind": "GUARD_ONLY",
+      "owner": "Commercial",
+      "required": "Authorized submitter, correct customer/provider scope and RFQ lifecycle state",
+      "separation": "No quote or booking implied by RFQ"
+    },
+    "AP-COM-DRAFT": {
+      "kind": "GUARD_ONLY",
+      "owner": "Commercial",
+      "required": "Assigned Sales/Expeditor, legal entity, quote in draft state and policy",
+      "separation": "Cannot publish or approve automatically"
+    },
+    "AP-FLEET-RESERVATION": {
+      "kind": "GUARD_ONLY",
+      "owner": "Fleet",
+      "required": "Vehicle/time ownership, authoritative capacity state and carrier consent",
+      "separation": "No booking inferred until confirmed"
+    },
+    "AP-CUSTODY": {
+      "kind": "GUARD_ONLY",
+      "owner": "Execution",
+      "required": "Driver assignment and actual cargo unit handover evidence",
+      "separation": "Trip started or GPS alone never implies pickup"
+    },
+    "AP-TRIP": {
+      "kind": "GUARD_ONLY",
+      "owner": "Execution",
+      "required": "Authorized dispatcher, assigned booking/driver and valid resource state",
+      "separation": "No override of compliance"
+    },
+    "AP-DOCUMENT": {
+      "kind": "GUARD_ONLY",
+      "owner": "Documents",
+      "required": "Exact package/document, tenant/customer grants, evidence verification, time-limited access",
+      "separation": "No blanket document read via account role"
+    },
+    "AP-FINANCE-PREP": {
+      "kind": "GUARD_ONLY",
+      "owner": "Finance",
+      "required": "Own legal entity, verified obligation/accounting reference and correct state",
+      "separation": "Preparation never implies approval or verified payment"
+    },
+    "AP-PLATFORM-OBS": {
+      "kind": "GUARD_ONLY",
+      "owner": "Platform SRE",
+      "required": "Read-only redacted job metadata, incident/operational purpose and audit",
+      "separation": "No tenant cargo/finance/driver PII exposure"
+    },
+    "AP-COM-MARGIN": {
+      "kind": "GUARD_ONLY",
+      "owner": "Commercial + Finance",
+      "required": "Explicit margin-read financial permission and own legal entity",
+      "separation": "Not included in customer/carrier projection"
     }
   },
   "separationOfDuties": [
@@ -466,7 +544,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-RFQ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -489,7 +567,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-RFQ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -512,7 +590,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-RFQ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -535,7 +613,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-COM-DRAFT",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -627,7 +705,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-SCOPED-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -742,7 +820,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-COM-MARGIN",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -766,7 +844,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-CUSTOMER-RELATION",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -790,7 +868,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-RFQ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -814,7 +892,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-SCOPED-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -838,7 +916,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-SCOPED-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -862,7 +940,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-SCOPED-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -910,7 +988,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-SCOPED-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -934,7 +1012,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-DOCUMENT",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -982,7 +1060,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-RFQ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1005,7 +1083,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-SCOPED-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1028,7 +1106,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-CUSTOMER-REVIEW",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1052,7 +1130,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-CUSTOMER-REVIEW",
+      "approvalPolicyId": "AP-SCOPED-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1076,7 +1154,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-COM-CUSTOMER-ACCEPT",
+      "approvalPolicyId": "AP-CUSTOMER-RELATION",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1146,7 +1224,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-BOOKING",
+      "approvalPolicyId": "AP-FLEET-RESERVATION",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1169,7 +1247,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-BOOKING",
+      "approvalPolicyId": "AP-FLEET-RESERVATION",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1238,7 +1316,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-POD",
+      "approvalPolicyId": "AP-TRIP",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1261,7 +1339,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-POD",
+      "approvalPolicyId": "AP-CUSTODY",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1305,7 +1383,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-COM-ISSUE",
+      "approvalPolicyId": "AP-SCOPED-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1328,7 +1406,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-POD",
+      "approvalPolicyId": "AP-DOCUMENT",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1352,7 +1430,7 @@
         "grantId",
         "resourceId"
       ],
-      "approvalPolicyId": "AP-POD",
+      "approvalPolicyId": "AP-DOCUMENT",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1375,7 +1453,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-FINANCE",
+      "approvalPolicyId": "AP-FINANCE-PREP",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1398,7 +1476,7 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-FINANCE",
+      "approvalPolicyId": "AP-FINANCE-PREP",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
@@ -1442,7 +1520,7 @@
         "platformPrincipalId",
         "ticketOrProvisioningCaseId"
       ],
-      "approvalPolicyId": "AP-JOB-REPLAY",
+      "approvalPolicyId": "AP-PLATFORM-OBS",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
