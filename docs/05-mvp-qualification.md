@@ -8,7 +8,7 @@
 
 ## Product slice R0 — минимальная доказуемая перевозка
 
-**Customer-facing access clarification:** Include a minimal authenticated **External Customer Portal** for customers without their own paid tenant (provider-scoped relationship), customer My Requests/My Orders, authorized QuoteVersion accept, shipment timeline/POD and private verified-service review; also provider Tenant `Incoming RFQs`. [23 — Portal](23-external-customer-portal.md), [24 — Access Matrix v2](24-access-control-tdd-matrix-v2.md). This is a frontend/API experience across existing 17 modules, not a new authoritative booking source. Reviews must not be public marketplace ratings in R0.
+**Customer-facing access clarification:** Include a minimal authenticated **External Customer Portal** for customers without their own paid tenant (provider-scoped relationship), customer My RFQs/My Orders, separately authorized QuoteVersion accept, shipment timeline/POD, pre/post-delivery issue reporting and private verified-service review; also provider Tenant `Incoming RFQs` with guarded assignment/clarification. [23 — Portal](23-external-customer-portal.md), [24 — Access Matrix v2](24-access-control-tdd-matrix-v2.md). This is a frontend/API experience across existing 17 modules, not a new authoritative booking source. Reviews must not be public marketplace ratings in R0.
 
 
 **Сначала только автомобильные перевозки по выбранному тестовому коридору Казахстана, типовые грузы с полностью описанным профилем**. Регулируемый опасный груз и международная декларация не входят в автоматический R0; отсутствие нормативных сведений должно блокировать соответствующую операцию.
