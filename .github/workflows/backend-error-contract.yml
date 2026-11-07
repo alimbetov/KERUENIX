@@ -31,5 +31,7 @@ jobs:
           java-version: '21'
           cache: maven
           cache-dependency-path: backend/pom.xml
+      - name: Enforce JSON catalog and Java enum parity
+        run: python3 backend/scripts/check_error_catalog.py
       - name: Compile and run MVC, Security and RFC9457 contract tests
         run: mvn -B -ntp -f backend/pom.xml verify
