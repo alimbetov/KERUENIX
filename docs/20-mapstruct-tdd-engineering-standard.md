@@ -1,6 +1,6 @@
 # 20 — Engineering Standard: MapStruct + TDD and Test Architecture
 
-**Status:** ACCEPTED engineering direction by project owner (2026-11-07), design specification; **implementation/CI tests:** NOT STARTED. Applies to the existing 17 KERUENIX business modules; creates no new service or bounded context.
+**Status:** ACCEPTED engineering direction by project owner (2026-11-07), design specification; **application-domain implementation/CI tests:** NOT STARTED; an error-handler-only bootstrap exists with unexecuted tests. Applies to the existing 17 KERUENIX business modules; creates no new service or bounded context.
 
 ## 1. Decisions
 
@@ -118,3 +118,7 @@ The [R0 TDD Bank](28-r0-tdd-acceptance-bank.md) and [machine cases](contracts/r0
 ## 15. Negative tests must assert DB/Outbox/UI, not just HTTP 403
 
 [30 — Negative & Failure Bank](30-negative-and-failure-scenario-bank.md) adds 48 high-risk fault cases to the existing 84 (132 planned), with 8 uncounted mixed-fault combinations. Every denied business command must verify absent forbidden DB writes, correct aggregate version/resource conservation, absence of false success Outbox/notifications, safe customer-carrier field projection, meaningful user-visible status and sanitized audit. Race/replay/revoke validation needs real PostgreSQL/Testcontainers, distinct JDBC connections, clock control and Outbox/Inbox; mocking exception responses or checking a 403 alone is not qualification. The prospective tests are **not implemented**; applicable business/legal decisions in [27](27-r0-blocker-policy-decisions.md) remain pending.
+
+## 16. Unified error code and handler contract (first code foundation)
+
+The [31 — Unified API Error Standard](31-unified-error-handling-standard.md) and [machine catalog](contracts/api-error-catalog.v1.json) are the **mandatory future API error boundary**, not a second domain module. The initial [backend source](../backend/README.md) uses Spring MVC `ResponseEntityExceptionHandler`, Security `AuthenticationEntryPoint/AccessDeniedHandler`, a shared RFC 9457 `ApiProblemFactory`, servlet fallback `/error`, server-generated request IDs and an append-only `ErrorCode` enum. Validation messages must not include rejected values, SQL, stack traces or foreign tenant existence; known DB constraint conflicts require owner adapter classification. Test IDs `ERR-001..012` are in doc 31. Some standalone/MockMvc test classes are committed, **not executed**. CI [workflow](../.github/workflows/backend-error-contract.yml) needs actual green exact-SHA evidence before use. Keep domain exceptions framework-agnostic as platform code evolves.
