@@ -35,7 +35,7 @@
         "legal counsel"
       ],
       "priority": "P0",
-      "recommendedFailSafeContract": "Customer quote acceptance requires verified identity, org representation/delegation evidence, exact immutable QuoteVersion digest, full terms, authority valid at event time; separate signatory grant; if verified signing method unavailable: status SIGNATURE_PENDING not ACCEPTED and no binding booking.",
+      "recommendedFailSafeContract": "Customer quote acceptance requires verified identity, org representation/delegation evidence, exact immutable QuoteVersion digest, full terms, authority valid at event time; separate signatory grant; if verified signing method unavailable: signing-evidence workflow remains pending while canonical QuoteVersion stays ISSUED, never ACCEPTED and no binding booking.",
       "requiredEvidence": "Signed/accepted record: signer identity, tenant/customerOrg, delegation proof ref, signature method, UTC timestamp, termsHash, version, policyVersion.",
       "scenarioVariants": [
         "Customer without tenant",
