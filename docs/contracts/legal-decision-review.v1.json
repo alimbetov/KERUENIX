@@ -9,7 +9,9 @@
     "reviewedDec": 8,
     "approvedNow": 0,
     "defaultPolicy": "LEGAL_HOLD_FOR_BINDING_ACTIONS_WHILE_STAKEHOLDER_SIGNOFF_PENDING",
-    "doesNotChangeOriginalDecisionStates": true
+    "doesNotChangeOriginalDecisionStates": true,
+    "productScopeUpdate": "No payment operations in KERUENIX R0; online NCA EDS proposed separately",
+    "edsApproval": "PENDING_EDS_PROVIDER_AND_COUNSEL"
   },
   "criticalNewRisks": [
     {
@@ -46,11 +48,11 @@
     },
     {
       "id": "LEG-X-05",
-      "title": "Invoice vs ESF vs settlement",
+      "title": "External accounting and ESF boundary",
       "owner": "Tax + Accounting + Finance",
       "gateBefore": "PR-17/PR-17S",
-      "finding": "Internal payment claim, legal tax ESF, cash receipt, and allocated banking settlement are different; 2026 Tax Code ESF and corrections need official-system process",
-      "default": "do not claim official ESF issued or amount PAID without source verification"
+      "finding": "KERUENIX is not a bank, payer, payment service provider or ESF issuer. Keep only contract sell/buy/margin and external document link; the external accounting provider owns tax ESF and payment evidence.",
+      "default": "No payment/paid/settled/refund state or APIs; no bank callback and no official ESF issuance"
     },
     {
       "id": "LEG-X-06",
@@ -537,20 +539,19 @@
     {
       "id": "BR-12",
       "legalReviewId": "LEG-R0-012",
-      "title": "Finance payment verification",
-      "scenario": "Approver sets PAID without bank proof, replay duplicate callback",
+      "title": "No payment processing in KERUENIX",
+      "scenario": "Accounting operator handles bank and official tax records externally; KERUENIX shows commercial cost/margin and external document reference only",
       "options": [
-        "APPROVED means PAID",
-        "Any finance user toggles PAID",
-        "Verified bank/ERP allocation with transaction authenticity, legal entity and correction records"
+        "Operate bank, AR/AP and settlement inside KERUENIX",
+        "Exclude all payments/ledger; external accounting only, with reference for commercial documents",
+        "Permit manual marking paid without evidence"
       ],
-      "recommendedOption": "C",
-      "preferredPolicy": "Separate pro forma invoice, tax ESF/IS ESF and bank settlement; 2026 ESF correction/revocation recipient confirmation; accounting evidence and reversals governed by finance",
+      "recommendedOption": "B",
+      "preferredPolicy": "No payments, refunds, accounts receivable/payable or bank callbacks in KERUENIX. Commercial price and external accounting document reference may be displayed. No PAID/SETTLED value, tax ESF issuing or bank integration.",
       "legalRiskArea": "TAX_ACCOUNTING_AND_PAYMENT",
-      "untilApproved": "No PAID on internal approval/mock callbacks; no second allocation",
+      "untilApproved": "No payment endpoint, data model, bank provider config or paid status",
       "affectedPrs": [
-        "PR-17",
-        "PR-17S"
+        "PR-17"
       ],
       "sourceIds": [
         "KZ-TAX-ESF-2026",
@@ -775,20 +776,19 @@
     {
       "id": "DEC-R0-07",
       "legalReviewId": "LEG-R0-019",
-      "title": "Advance invoice and ESF issue",
-      "scenario": "System generates tax invoice as soon as Booking quoted and falsely marks paid",
+      "title": "Commercial costing and external accountant, with EDS signing independently",
+      "scenario": "Commercial document signed through EDS but payment and official ESF handled by external accounting",
       "options": [
-        "All invoice only after POD",
-        "Separate commercial invoice, legal ESF and verified payment with contract/turnover-based trigger",
-        "Internal finance toggle"
+        "Full invoice and payment lifecycle inside KERUENIX",
+        "Commercial sell/buy/margin plus externally issued document reference; no payment or tax ESF generation",
+        "Internal paid toggle and export"
       ],
       "recommendedOption": "B",
-      "preferredPolicy": "Source-specific trigger: ADVANCE / POST_SERVICE / ADJUSTMENT; ESF obligations depend on taxpayer/operation and current tax law, integrate official IS ESF rather than homemade ESF status",
+      "preferredPolicy": "Contract commercial amount and independent EDS signing are not payment processing. External accounting/tax system is sole settlement and ESF owner.",
       "legalRiskArea": "TAX_ACCOUNTING_AND_PAYMENT",
-      "untilApproved": "Do not emit official fiscal ESF from internal draft; unknown tax mode BLOCKED",
+      "untilApproved": "No internal invoice/PAID/settlement behavior",
       "affectedPrs": [
-        "PR-17",
-        "PR-17S"
+        "PR-17"
       ],
       "sourceIds": [
         "KZ-TAX-ESF-2026",
