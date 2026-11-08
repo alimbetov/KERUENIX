@@ -9,6 +9,9 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.ResultSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -232,6 +235,53 @@ class PlatformDatabaseIntegrationTest {
                     Integer.class, event)).isZero();
             return null;
         });
+    }
+
+
+    /**
+     * FOUND-02 REFRACTOR: force both tenants through the same one-connection
+     * Hikari pool and assert the physical PostgreSQL backend PID is unchanged.
+     * An ordinary test with maximum-pool-size=4 is not enough to prove reuse.
+     */
+    @Test
+    void samePhysicalPooledConnectionResetsTenantBetweenTransactions() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(System.getenv("KERUENIX_DB_URL"));
+        config.setUsername(System.getenv("KERUENIX_DB_APP_USER"));
+        config.setPassword(System.getenv("KERUENIX_DB_APP_PASSWORD"));
+        config.setMaximumPoolSize(1);
+        config.setMinimumIdle(1);
+        config.setPoolName("found-02-single-physical-connection");
+
+        try (HikariDataSource pooled = new HikariDataSource(config)) {
+            PlatformTenantTransaction isolated = new PlatformTenantTransaction(pooled);
+            UUID event = UUID.randomUUID();
+
+            Integer physicalConnectionA = isolated.execute(TENANT_A, sql -> {
+                insertOutbox(sql, TENANT_A, event, DIGEST_A);
+                return sql.queryForObject("SELECT pg_backend_pid()", Integer.class);
+            });
+
+            assertThat(new JdbcTemplate(pooled).queryForObject(
+                    "SELECT NULLIF(current_setting('keruenix.tenant_id', true), '')",
+                    String.class)).isNull();
+
+            Integer physicalConnectionB = isolated.execute(TENANT_B, sql -> {
+                assertThat(sql.queryForObject(
+                        "SELECT count(*) FROM platform.outbox_event WHERE event_id = ?",
+                        Integer.class, event)).isZero();
+                return sql.queryForObject("SELECT pg_backend_pid()", Integer.class);
+            });
+            assertThat(physicalConnectionB).isEqualTo(physicalConnectionA);
+
+            Integer physicalConnectionAAgain = isolated.execute(TENANT_A, sql -> {
+                assertThat(sql.queryForObject(
+                        "SELECT count(*) FROM platform.outbox_event WHERE event_id = ?",
+                        Integer.class, event)).isEqualTo(1);
+                return sql.queryForObject("SELECT pg_backend_pid()", Integer.class);
+            });
+            assertThat(physicalConnectionAAgain).isEqualTo(physicalConnectionA);
+        }
     }
 
     @Test
