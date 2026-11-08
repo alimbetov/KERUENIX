@@ -2,7 +2,7 @@
 
 **Version:** 1.0 · **Date:** 2026-11-07 · **Status:** `READY_TO_REVIEW / NOT CONDUCTED / NO SIGNATURES`.
 
-**Objective:** convert the proposed business and security rules of [27 — 12 Blocker Decisions](27-r0-blocker-policy-decisions.md) into verified pilot-specific acceptance with actual customer, forwarder, carrier, driver/receiver, finance, legal and SaaS stakeholders. Review [26 — 42 role desk simulations](26-role-process-simulation-and-gap-audit.md) and [28 — 84 TDD cases](28-r0-tdd-acceptance-bank.md) while validating the actual workflow from each party's view.
+**Objective:** convert the proposed business and security rules of [27 — 12 Blocker Decisions](27-r0-blocker-policy-decisions.md) into verified pilot-specific acceptance with actual customer, forwarder, carrier, driver/receiver, commercial cost analyst, external accounting representative, legal, NCA EDS technical reviewer and SaaS stakeholders. Review [26 — 42 role desk simulations](26-role-process-simulation-and-gap-audit.md) and [28 — 84 TDD cases](28-r0-tdd-acceptance-bank.md) while validating the actual workflow from each party's view.
 
 **Rule:** a ChatGPT-generated workshop packet is not evidence of a held meeting, identity verification, legal advice or approvals. Until recorded signatures/decisions exist, all BR-01..12 remain `PENDING_REAL_STAKEHOLDER`.
 
@@ -116,22 +116,24 @@ For each action establish: authorized principal and delegation evidence, actual 
 | Mark `ACCEPTED_FOR_TDD`? | **NO** |
 
 
-## W4 — Коммерция / Диспетчер / Финансы / Утверждающий платежи / Бухгалтер
+## W4 — Отмена, коммерческая стоимость, юридическое подписание и внешняя бухгалтерия
 
-**Decisions:** `BR-11`, `BR-12`. **Expected participants:** Authorized Customer Representative; Forwarder Operations Manager; Carrier Representative; Finance Officer; Independent Finance Approver; Bank/ERP Integration Owner; Transport Legal.
+**Decisions:** `BR-11`, `BR-12`, `DEC-R0-07`; особый контур `PR-06S`. **Required:** заказчик и его подписант, перевозчик, экспедитор, коммерческий менеджер, внешний бухгалтер, юрист, Security/EDS интегратор. **Не требуются для этой встречи:** bank API provider или финансовый пользователь, утверждающий платёж в KERUENIX — таких функций нет.
 
-**Synthetic setup:** One Booking in RESOURCE_PENDING, one CONFIRMED and one Trip.STARTED; payable with approved amount, advance and duplicate bank callback.
+**Synthetic setup:** CONFIRMED Booking, уже начатый Trip, CancellationRequest до и после pickup; immutable signed Quote/Carrier Commitment; sell/buy cost snapshot, защищённый margin report; EDS сертификат подписанта другого юрлица; внешний документ без информации об оплате.
 
-**Tabletop role simulation, one actor at a time:**
-1. Заказчик просит отменить Booking до старта: определить применимые тарифные условия, кто утверждает и когда освобождается ресурс
-2. Заказчик просит отменить после pickup: показать safe custody/Return/Recovery, а не прямой CANCELLED
-3. FIN создаёт заявку на платёж, отдельный FAP утверждает; сценарий одного сотрудника с обеими ролями отказывает самосогласование
-4. Без банковского/ERP подтверждения оплата не считается SETTLED; при повторном callback уникальная allocation
-5. Спорная доплата/аванс и корректировка выпущенного Invoice не стирают первоначальное обязательство
+**Tabletop:**
+1. Подписант клиента видит **ровно** замороженные условия и подписывает допустимым видом ЭЦП после проверки полномочий юридического лица; подмена hash и другое юрлицо → DENY.
+2. Перевозчик подтверждает обязательство и ресурс независимо; выбранное предложение без подписанного договора не объявляется юридически подтверждённым.
+3. Клиент запрашивает отмену после старта перевозки; сохраняется custody, нет автоматических штрафов или возврата средств.
+4. Analyst сравнивает собственные sell/buy cost и margin; CustomerOrg-Y и Carrier не видят margin другого CustomerAccount без разрешения.
+5. Внешняя бухгалтерия ведёт **вне платформы** налоговые документы, платежи, сверку и возвраты; KERUENIX хранит лишь необязательную ограниченную ссылку на внешний документ.
+6. Попытка `/payments`, `/refunds`, банковский webhook, переключатель `PAID` — отсутствует функция, таблица и business Outbox.
+7. Проверка NCALayer/сертификата недоступна → `PENDING_VERIFICATION`/DENY, никаких ложных Quote.ACCEPTED, CarrierCommitted, POD.SIGNED.
 
-**Required policy decisions/evidence:** Cancellation cutoff/penalties, party liable, delegated limits, supported bank/ERP truth, correction and reversal procedure.
+**Necessary approvals:** BR-11 cancellation liability profile, BR-12 scope acknowledgement of external accounting ownership, NCA signature legal profile for binding Quote, Carrier Commitment and signed transport acts, retention and public verification process. Ни одна подпись к протоколу встречи не заменяет подписание коммерческого договора.
 
-**Fail-safe if no decision:** No cancellation charges or settled cash by guesses or UI override.
+**Fail-safe:** никакой внутренней оплаты/ESF/paid-state, ни binding cancellation/Quote без согласованных прав и документального доказательства.
 
 **Approval record (not signed):**
 
@@ -146,6 +148,7 @@ For each action establish: authorized principal and delegation evidence, actual 
 | Approval evidence artifact link | `PENDING` |
 | Date / participants / exceptions | `PENDING` |
 | Mark `ACCEPTED_FOR_TDD`? | **NO** |
+
 
 
 ## W5 — Tenant Owner / SaaS Operator / Support / Security / Legal
