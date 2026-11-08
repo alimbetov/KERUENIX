@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "1.1.0",
+  "schemaVersion": "1.2.0",
   "date": "2026-11-08",
-  "status": "V1_6_AUDITED_NO_PAYMENTS_ESIGN_WITH_ART50_61_62_REQUIREMENTS_LEGAL_PROVIDER_SIGNOFF_PENDING",
+  "status": "V1_7_CONTRACT_CONSISTENCY_NO_PAYMENTS_ESIGN_LEGAL_SIGNOFF_PENDING",
   "productBoundary": {
     "mode": "TRANSPORT_AND_CONTRACT_MANAGEMENT_NO_PAYMENTS",
     "allowed": [
@@ -190,7 +190,9 @@
       "NEG-R0-033",
       "NEG-R0-034",
       "NEG-R0-035",
-      "NEG-R0-036"
+      "NEG-R0-036",
+      "TDD-SIM-32-G22-02",
+      "TDD-SIM-31-S23-01"
     ],
     "historicTreatment": "Payment positive cases tagged OUT_OF_SCOPE_R0 in historical acceptance bank, kept for traceability but not pilot release gate. Security absence tests PAY-ABS-01..06 mandatory.",
     "qualificationBlockers": [

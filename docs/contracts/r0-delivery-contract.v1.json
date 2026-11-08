@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.1.0",
+  "schemaVersion": "1.2.0",
   "status": "USER_REQUESTED_NO_PAYMENTS_WITH_EXTERNAL_EDS_PROPOSAL_SIGNOFF_PENDING",
   "roadmap": "docs/33-tdd-development-roadmap-v1.md",
   "handbook": "docs/35-r0-developer-handbook.md",
@@ -126,7 +126,7 @@
         "request not CANCELLED",
         "race with Trip.STARTED one winner",
         "active custody never released",
-        "penalty and refund are authorized versioned ledger facts"
+        "Cancellation charge changes contractual commercial cost only; no refund or payment ledger in KERUENIX"
       ]
     },
     {
@@ -212,5 +212,12 @@
     "failure": "restart/crash/replay/permission revoke/tenant context reuse/partial delivery/finance reversal",
     "ops": "secrets, SBOM, container smoke, backup/restore, runbook and measurement profile; legal EDS qualified where binding contract needs it, no payment operations in runtime"
   },
-  "edsSigningContract": "docs/contracts/r0-scope-eds-signing.v1.json"
+  "edsSigningContract": "docs/contracts/r0-scope-eds-signing.v1.json",
+  "scopeConsistency": {
+    "version": "1.7.0",
+    "source": "docs/40-r0-contract-consistency-business-readiness-v1-7.md",
+    "noPayments": true,
+    "approvalStatus": "PENDING_REAL_STAKEHOLDER",
+    "noAutoApproval": true
+  }
 }

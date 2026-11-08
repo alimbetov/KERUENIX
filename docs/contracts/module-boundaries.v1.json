@@ -42,6 +42,10 @@
       "publicContracts": [
         "CommercialApi",
         "QuoteAccepted"
+      ],
+      "proposedOwnershipPendingADR": [
+        "CustomerAccount",
+        "ServiceReview"
       ]
     },
     {
@@ -172,14 +176,15 @@
       ],
       "owns": [
         "CostEstimate",
-        "Receivable",
-        "Payable",
-        "PaymentAllocation"
+        "CommercialCostReport",
+        "MarginReadModel",
+        "ExternalAccountingDocRef"
       ],
       "publicContracts": [
-        "FinanceApi",
-        "InvoiceIssued"
-      ]
+        "CommercialCostReportApi",
+        "ExternalAccountingReferenceApi"
+      ],
+      "scope": "R0 and future releases: commercial sell/buy costs, margin and opaque external accounting document references only; no bank, invoice issuer, payment ledger or settlement."
     },
     {
       "id": "intelligence",
@@ -307,5 +312,11 @@
         "SaasControlApi"
       ]
     }
-  ]
+  ],
+  "scopeOverlay": {
+    "version": "1.7.0",
+    "status": "PROPOSED_ADR_PENDING",
+    "source": "docs/contracts/r0-scope-eds-signing.v1.json",
+    "rule": "No in-product invoice/payable/receivable/payment allocation or settlement ownership. Proposed commercial account/review ownership needs ADR."
+  }
 }

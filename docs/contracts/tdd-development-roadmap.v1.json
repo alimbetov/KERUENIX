@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "1.6.0",
-  "documentStatus": "SECOND_REVIEW_V1_6_NO_PAYMENTS_CONTRACTS_AND_EDS_R0_PENDING_REAL_IMPLEMENTATION",
+  "schemaVersion": "1.7.0",
+  "documentStatus": "V1_7_CONTRACT_CONSISTENCY_BUSINESS_READINESS_NOT_IMPLEMENTED",
   "date": "2026-11-07",
   "roadmapRef": "docs/33-tdd-development-roadmap-v1.md",
   "baselineRef": "docs/32-scenario-driven-backend-design-v1.md",
@@ -1963,11 +1963,11 @@
     },
     {
       "resource": "Invoice",
-      "canonicalWriter": "finance",
+      "canonicalWriter": "EXTERNAL_ACCOUNTING_ONLY",
       "otherOwner": "commercial/booking",
-      "otherResponsibility": "Only snapshots/contracts, not foreign financial SQL writes",
-      "decision": "PROPOSED_AWAITING_MODULE_CATALOG_UPDATE",
-      "noGo": "No duplicate finance authoritative invoice"
+      "otherResponsibility": "KERUENIX may retain only an opaque external accounting document reference; no invoice/payment source of truth",
+      "decision": "RETIRED_OUT_OF_PRODUCT_SCOPE",
+      "noGo": "No internal Invoice aggregate, invoice issuer, AR/AP, PaymentAllocation, payment state or settlement events."
     },
     {
       "resource": "CustodyEvidence",
@@ -2126,5 +2126,27 @@
       "NEG-R0-047"
     ],
     "reportingRule": "Contract price, buy/sell cost and margin only; external document reference not tax invoice or cash proof"
+  },
+  "contractConsistencyV17": {
+    "source": "docs/40-r0-contract-consistency-business-readiness-v1-7.md",
+    "rd09DependsOn": [
+      "RD-04"
+    ],
+    "historicalCaseIds": [
+      "TDD-R0-E2E-06",
+      "TDD-SIM-32-G22-01",
+      "TDD-SIM-32-G22-03",
+      "TDD-SIM-32-G22-04",
+      "TDD-SIM-32-G22-05",
+      "NEG-R0-033",
+      "NEG-R0-034",
+      "NEG-R0-035",
+      "NEG-R0-036",
+      "TDD-SIM-32-G22-02",
+      "TDD-SIM-31-S23-01"
+    ],
+    "noPayments": true,
+    "signingLegalSignoffPending": true,
+    "businessApprovalStatus": "PENDING_REAL_STAKEHOLDER"
   }
 }
