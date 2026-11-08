@@ -86,6 +86,8 @@
 9. **11 RETIRED:** позитивные payment-тесты не оживлять, разработать `PAY-ABS-01…06` вместо них.
 10. **Фикстуры:** для каждого case ID назначить independent setup и failure injection, где необходимы concurrency/offline/revoke; запрещено ссылаться на неверифицированный общий success fixture вместо реальной проверки.
 
+**Дополнительные S0 GWT для PR без primary:** [50 — 40 проектов тестовых контрактов](50-s0-local-gap-test-contracts.md), [машинный перечень](contracts/r0-s0-extension-gwt.v1.json). Содержит 24 уже существовавших SIG/PAY-ABS candidate ID и 16 новых локальных PR-00/08/17/20 case ID. Наличие GWT **не означает согласования** и не меняет неизменный банк 132.
+
 ## 5. Definition of Done для Scenario Design
 
 S0 считается подготовленным к **Test-First** только если все 121 активных R0 case имеют подтверждённые ownership/BR applicability, полные Given/When/Then и oracle (HTTP + DB + Outbox/Inbox/Audit/UI где применимо). Для локальных PR-08/06S/17/20 дописаны отдельные test case contracts. Все 26 PR связаны с реальными (или явно out-of-scope) test goals.

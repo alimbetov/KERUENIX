@@ -40,6 +40,8 @@
 
 **Тестовые уровни:** Pure JUnit/Property на aggregate инварианты; Modulith.verify на импорт/границы; Spring HTTP на security/error/DTO; реальный PostgreSQL/PostGIS и Liquibase через Testcontainers или изолированную CI DB; consumer/Outbox crash+replay; NCA/EDS provider contract + real sandbox; браузерный E2E/driver offline; backup/restore, perf и release evidence.
 
+**Проект расширенных S0-контрактов:** [50 — gaps for PR-00/06S/08/17/20](50-s0-local-gap-test-contracts.md) / [GWT machine catalog](contracts/r0-s0-extension-gwt.v1.json). Этот набор закрывает отсутствие **проектных** позитивных/негативных сценариев, не утверждает их Test Review и не добавляет исполняемый код.
+
 ## Пакеты S0 → S1 по порядку рисков
 
 1. **FOUND + Tenancy:** RLS, JWT, CustomerAccount, revoke, module graph, Liquibase migration и recovery (PR-01..03).
