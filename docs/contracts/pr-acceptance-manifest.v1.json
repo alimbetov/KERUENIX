@@ -74,35 +74,53 @@
       "qualificationStatus": "NOT_QUALIFIED",
       "verification": {
         "level": "PLATFORM_PARTIAL_INTEGRATION_GREEN",
-        "verifiedSha": "1834d1f7337fcf91d3d065d3b80150cf0b7053f4",
+        "verifiedSha": "1613180b277bcf365a0790da9204bb4373b7fa58",
         "ciRuns": [
-          "https://github.com/alimbetov/KERUENIX/actions/runs/42462927942",
-          "https://github.com/alimbetov/KERUENIX/actions/runs/42462927930"
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42467668385",
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42467668374",
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42467668422"
         ],
         "testRefs": [
           "backend/src/test/java/kz/keruenix/platform/persistence/PlatformDatabaseIntegrationTest.java",
+          "backend/src/test/java/kz/keruenix/platform/persistence/PlatformOutboxClaimIntegrationTest.java",
+          "backend/src/test/java/kz/keruenix/platform/persistence/RuntimeDatabaseProfileTest.java",
+          "backend/src/test/java/kz/keruenix/platform/persistence/LiquibaseMigrationStateTest.java",
+          "backend/src/test/java/kz/keruenix/platform/persistence/LiquibaseFlywayHistoryGuardTest.java",
+          "backend/src/test/java/kz/keruenix/architecture/ApplicationModulesContractTest.java",
           "scripts/test_pr01_pg_foundation.sh"
         ],
         "partialProof": [
           {
             "requirementId": "FOUND-01",
-            "coverage": "Database runtime role not superuser and absent tenant context returns zero rows"
+            "coverage": "Real PostgreSQL non-BYPASSRLS runtime role, no-context reads zero rows. No complete authenticated HTTP principal yet."
           },
           {
             "requirementId": "FOUND-02",
-            "coverage": "Transaction-local RLS A/B isolation and context reset; explicit pool churn not tested"
+            "coverage": "TDD RED/GREEN: nested A→B REQUIRED transaction rejected before set_config and rolls back; A→A allowed; Hikari maximumPoolSize=1 confirms same pg_backend_pid A→B→A and transaction-local RLS reset. Auth→tenant still absent."
           },
           {
             "requirementId": "FOUND-04",
-            "coverage": "Atomic rollback of platform Outbox/Audit/Inbox, not a business aggregate"
+            "coverage": "Platform Outbox/Audit/Inbox write rollback in one DB transaction. Business aggregate not yet implemented."
           },
           {
             "requirementId": "FOUND-06",
-            "coverage": "Inbox duplicate/same event changed digest detection; no durable external consumer"
+            "coverage": "Inbox identical replay classified, changed digest rejected. Full consumer side-effect/quarantine integration remains pending."
+          },
+          {
+            "requirementId": "FOUND-07",
+            "coverage": "Concurrent PostgreSQL Outbox claim and stale-worker fencing tested; no production broker dispatcher or end-to-end job lease."
+          },
+          {
+            "requirementId": "FOUND-09",
+            "coverage": "Current Spring Modulith graph verified; negative forbidden inter-module dependency fixture not yet present."
+          },
+          {
+            "requirementId": "FOUND-10",
+            "coverage": "Liquibase clean install, idempotent rerun and V1→V2 upgrade on disposable PostgreSQL; no production snapshot restore qualification."
           },
           {
             "requirementId": "FOUND-12",
-            "coverage": "PostGIS geography meters smoke, no authorized production geo API"
+            "coverage": "PostGIS geography meter-unit smoke; no verified tenant-scoped GIS business API yet."
           }
         ]
       },
@@ -116,7 +134,7 @@
         "releaseArtifacts": "NOT_VERIFIED"
       },
       "businessApprovalEvidenceRefs": [],
-      "pendingScopeNotes": "SQL+Flyway+JDBC partial; not JWT/PR-02, dispatch fencing or all FOUND tests"
+      "pendingScopeNotes": "Liquibase/PostgreSQL and FOUND-02 nested-tenant fail-closed TDD proven at prior green SHA; full FOUND-01..12, verified JWT→tenant+CustomerAccount, business aggregate rollback, broker dispatcher+consumer, restore and real business E2E remain pending. PR-01 NOT_QUALIFIED."
     },
     {
       "id": "PR-02",
