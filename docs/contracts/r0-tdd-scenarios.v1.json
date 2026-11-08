@@ -1068,7 +1068,17 @@
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
       "implementationStatus": "NOT_IMPLEMENTED",
       "execution": "NOT_EXECUTED",
-      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE"
+      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "TDD-SIM-32-G22-02",
@@ -1102,7 +1112,17 @@
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
       "implementationStatus": "NOT_IMPLEMENTED",
       "execution": "NOT_EXECUTED",
-      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE"
+      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "TDD-SIM-32-G22-04",
@@ -1119,7 +1139,17 @@
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
       "implementationStatus": "NOT_IMPLEMENTED",
       "execution": "NOT_EXECUTED",
-      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE"
+      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "TDD-SIM-32-G22-05",
@@ -1136,7 +1166,17 @@
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
       "implementationStatus": "NOT_IMPLEMENTED",
       "execution": "NOT_EXECUTED",
-      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE"
+      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     }
   ],
   "crossRoleCases": [
@@ -1221,7 +1261,17 @@
         "SIM-32"
       ],
       "status": "PLANNED_NOT_IMPLEMENTED",
-      "realStakeholderApproval": "PENDING"
+      "realStakeholderApproval": "PENDING",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "TDD-R0-E2E-07",
