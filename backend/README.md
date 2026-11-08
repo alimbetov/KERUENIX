@@ -61,3 +61,13 @@ cross-tenant UUIDs, atomic rollback, Inbox changed-digest rejection and PostGIS.
 `PlatformTenantTransaction` remains package-private: there is **no trusted
 JWT → TenantAuthority bridge** yet and no REST business API. These tests cannot
 be used to claim PR-02 or the complete PR-01 FOUND-01..12 suite is ready.
+
+## Runtime privilege separation (PR-01 security gate)
+
+The long-running `platform-db` profile has `spring.flyway.enabled=false`
+and requires ONLY `KERUENIX_DB_APP_*` credentials. Flyway DDL runs in a **separate
+short-lived migration job** with `platform-db-migrate-test`, never in
+production application pods. CI verifies both a Spring/Flyway-admin migration
+process and an independent `RuntimeDatabaseProfileTest` that boots with the
+migrator environment variables absent. The ephemeral test migrator must not be
+taken as evidence of production bootstrap/rotation orchestration.

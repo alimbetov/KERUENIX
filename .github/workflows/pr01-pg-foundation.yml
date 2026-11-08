@@ -8,6 +8,7 @@ on:
       - 'backend/src/main/java/kz/keruenix/platform/persistence/**'
       - 'backend/src/test/java/kz/keruenix/platform/persistence/**'
       - 'backend/src/main/resources/application-platform-db.yml'
+      - 'backend/src/main/resources/application-platform-db-migrate-test.yml'
       - 'backend/src/main/resources/db/**'
       - 'scripts/test_pr01_pg_foundation.sh'
       - '.github/workflows/pr01-pg-foundation.yml'
@@ -77,3 +78,9 @@ jobs:
           KERUENIX_DB_MIGRATOR_USER: postgres
           KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
         run: mvn -B -ntp -f backend/pom.xml -Dtest=PlatformDatabaseIntegrationTest test
+      - name: Boot runtime without Flyway admin credentials (separate process)
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=RuntimeDatabaseProfileTest test

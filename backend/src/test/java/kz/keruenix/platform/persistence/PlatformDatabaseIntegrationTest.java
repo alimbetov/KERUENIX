@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @EnabledIfEnvironmentVariable(named = "KERUENIX_DB_URL", matches = "jdbc:postgresql:.*")
 @SpringBootTest
-@ActiveProfiles("platform-db")
+@ActiveProfiles({"platform-db", "platform-db-migrate-test"})
 class PlatformDatabaseIntegrationTest {
     private static final UUID TENANT_A =
             UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");

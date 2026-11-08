@@ -1,5 +1,6 @@
-# Explicit-only PR-01 database integration profile. No development credentials.
-# The application role must never be a Flyway/DDL superuser or have BYPASSRLS.
+# Restricted, long-lived application profile. Only the application principal is
+# available to the process. NO privileged Flyway/migrator secrets at runtime.
+# Schema changes run in a separate ephemeral deployment/CI migration process.
 spring:
   datasource:
     url: ${KERUENIX_DB_URL}
@@ -7,11 +8,5 @@ spring:
     password: ${KERUENIX_DB_APP_PASSWORD}
     hikari:
       maximum-pool-size: 4
-      auto-commit: true
   flyway:
-    enabled: true
-    url: ${KERUENIX_DB_URL}
-    user: ${KERUENIX_DB_MIGRATOR_USER}
-    password: ${KERUENIX_DB_MIGRATOR_PASSWORD}
-    baseline-on-migrate: false
-    validate-on-migrate: true
+    enabled: false
