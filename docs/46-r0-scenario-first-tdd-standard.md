@@ -44,6 +44,8 @@
 
 **Первый модульный S0 review checkpoint:** [51 — Platform/Tenancy](51-s0-platform-tenancy-test-design-review.md) / [case contracts](contracts/r0-s0-platform-tenancy-case-contracts.v1.json). 32 источниковых случая имеют три предложенных тестовых оракула, но ещё не прошли Test Review и не дают права на новый доменный код.
 
+**Второй модульный S0 checkpoint:** [52 — Commercial, 57 контрактов](52-s0-commercial-test-design-review.md) / [machine contracts](contracts/r0-s0-commercial-case-contracts.v1.json). Сюда включены 30 основных коммерческих, 9 зависимых cross-PR и 18 SIG-кандидатов. Quote/EDS/Booking binding transitions остаются DENY/HOLD до реального BR/legal согласования; это не запуск S1 или Test Review.
+
 ## Пакеты S0 → S1 по порядку рисков
 
 1. **FOUND + Tenancy:** RLS, JWT, CustomerAccount, revoke, module graph, Liquibase migration и recovery (PR-01..03).

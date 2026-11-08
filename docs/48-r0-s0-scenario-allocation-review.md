@@ -90,6 +90,8 @@
 
 **S0 пакет Platform/Tenancy:** [51 — разбор 32 тестовых контрактов](51-s0-platform-tenancy-test-design-review.md) и [машинные оракулы](contracts/r0-s0-platform-tenancy-case-contracts.v1.json) (12 FOUND + 20 active/impacted R0). Статус `PROPOSED_NOT_REVIEWED`; предложенные проверки RLS/ABAC, revocation, concurrent owner и Outbox не являются утверждёнными тестами или юридическим решением.
 
+**S0 Commercial:** [52 — 57 коммерческих case contracts](52-s0-commercial-test-design-review.md) + [machine oracle matrix](contracts/r0-s0-commercial-case-contracts.v1.json). Учитываются RFQ/Quote/EDS/CarrierOffer, 9 cross-owner зависимостей. Статус `PROPOSED_NOT_REVIEWED`, никаких новых обязательств или подписей от зелёного CI.
+
 ## 5. Definition of Done для Scenario Design
 
 S0 считается подготовленным к **Test-First** только если все 121 активных R0 case имеют подтверждённые ownership/BR applicability, полные Given/When/Then и oracle (HTTP + DB + Outbox/Inbox/Audit/UI где применимо). Для локальных PR-08/06S/17/20 дописаны отдельные test case contracts. Все 26 PR связаны с реальными (или явно out-of-scope) test goals.
