@@ -1,0 +1,53 @@
+name: PR-01 PostgreSQL Platform Foundation
+
+on:
+  pull_request:
+    paths:
+      - 'backend/db/**'
+      - 'backend/src/main/resources/db/**'
+      - 'scripts/test_pr01_pg_foundation.sh'
+      - '.github/workflows/pr01-pg-foundation.yml'
+  push:
+    branches: [main, docs/idea-multitenant-foundation]
+    paths:
+      - 'backend/db/**'
+      - 'backend/src/main/resources/db/**'
+      - 'scripts/test_pr01_pg_foundation.sh'
+      - '.github/workflows/pr01-pg-foundation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pg-foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgis/postgis:16-3.7
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-admin
+          POSTGRES_DB: keruenix_foundation_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d keruenix_foundation_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Verify real platform RLS and PostGIS (partial FOUND qualification)
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: keruenix_foundation_test
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+        run: bash scripts/test_pr01_pg_foundation.sh
