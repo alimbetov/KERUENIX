@@ -395,3 +395,10 @@ The [28 — TDD Acceptance Bank](28-r0-tdd-acceptance-bank.md) contains 84 plann
 The [30 — Negative and Failure Scenario Bank](30-negative-and-failure-scenario-bank.md), [JSON](contracts/r0-negative-scenarios.v1.json), adds 48 focused failure cases to the 84 originally planned (132 combined), plus eight uncounted MIX compositions. For each `BSC` actor path, the test oracle must assert: **correct denial or conflict**, **correct canonical DB state**, **no false Outbox/Inbox/finance/custody consequence**, and **truthful actor-facing state**. These are designed, not run.
 
 Trace from a business journey through `USB / SIM / GAP / NEG-R0`. Customer quote rejection, compliance HOLD resolution, carrier withdrawal, post-acceptance material changes and bank/ERP evidence are still subject to `BR` signoffs and missing permission policy approval; the negative test catalog does not itself authorize operations.
+
+## J. R0 implementation handoff: previously unassigned business actions
+
+The [35 — R0 Developer Handbook](35-r0-developer-handbook.md) assigns three missing test-first delivery slices:
+`PR-10V` (own-fleet asset registry only; no reservation), `PR-12C` (customer cancellation request and BR-11 governed provider decision), and `PR-16R` (one verified **private** customer review after eligible fulfillment; no reputation publication). These align `BSC-004`, `BSC-010` and `BSC-009` to actual owners, scoped UI and negative tests. They are additions to the roadmap, not new accepted business policy.
+
+`Order` read-only composition, Commercial `CustomerAccount`, evidence original/proof and Finance invoice trigger matrix require [DEC-R0-01..08](contracts/r0-delivery-contract.v1.json) owner review. Legal acceptance/penalties/settlement cannot be inferred from an implementation test. `PR-13` custody is independent of cancellation BR; `PR-17` may model approved advance invoice before POD but cannot mark real bank PAID without `PR-17S` verified source.
