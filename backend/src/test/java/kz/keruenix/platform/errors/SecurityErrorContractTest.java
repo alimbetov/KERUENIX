@@ -16,8 +16,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 /** Runs against the actual fail-closed servlet SecurityFilterChain. */
 @SpringBootTest(properties = {
     "spring.autoconfigure.exclude=" +
-    "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration," +
-    "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration"
+    "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration",
+    "spring.liquibase.enabled=false"
 })
 @AutoConfigureMockMvc
 class SecurityErrorContractTest {

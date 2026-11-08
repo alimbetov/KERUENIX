@@ -1,10 +1,9 @@
 # CI/migration-job ONLY. Compose with platform-db in a short-lived process.
 # Never use this profile in long-running application pods or ship its secrets.
 spring:
-  flyway:
+  liquibase:
     enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
     url: ${KERUENIX_DB_URL}
     user: ${KERUENIX_DB_MIGRATOR_USER}
     password: ${KERUENIX_DB_MIGRATOR_PASSWORD}
-    baseline-on-migrate: false
-    validate-on-migrate: true

@@ -1,5 +1,5 @@
 # Restricted, long-lived application profile. Only the application principal is
-# available to the process. NO privileged Flyway/migrator secrets at runtime.
+# available to the process. NO privileged Liquibase/migrator secrets at runtime.
 # Schema changes run in a separate ephemeral deployment/CI migration process.
 spring:
   datasource:
@@ -8,5 +8,5 @@ spring:
     password: ${KERUENIX_DB_APP_PASSWORD}
     hikari:
       maximum-pool-size: 4
-  flyway:
+  liquibase:
     enabled: false

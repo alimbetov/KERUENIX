@@ -1,4 +1,6 @@
--- V1: PR-01 platform persistence only. Admin/Flyway migrator role required.
+--liquibase formatted sql
+--changeset keruenix:platform-baseline-v1 dbms:postgresql splitStatements:false runInTransaction:true
+-- V1: PR-01 platform persistence only. Admin/Liquibase migrator role required.
 -- Composite tenant-first PKs avoid cross-tenant ID-collision oracle via UNIQUE checks
 -- (unique/foreign key checks bypass PostgreSQL RLS). V1 is not production-deployed.
 -- Not an enabled application datasource. No business tables or runtime auth are introduced.

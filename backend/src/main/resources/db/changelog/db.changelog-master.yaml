@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - preConditions:
+      - onFail: HALT
+      - onError: HALT
+      - sqlCheck:
+          expectedResult: "0"
+          sql: "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'flyway_schema_history'"
+  - include:
+      file: changes/001_platform_baseline.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/002_outbox_fencing.sql
+      relativeToChangelogFile: true

@@ -9,7 +9,7 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
-import org.flywaydb.core.Flyway;
+import java.sql.ResultSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -43,12 +43,11 @@ class PlatformDatabaseIntegrationTest {
     private static final String DIGEST_B = "b".repeat(64);
 
     @Autowired DataSource dataSource;
-    @Autowired Flyway flyway;
     @Autowired JdbcTemplate jdbc;
     PlatformTenantTransaction scope;
 
     @BeforeEach
-    void prepareRuntimeGrantsAfterFlywayStartup() throws Exception {
+    void prepareRuntimeGrantsAfterLiquibaseStartup() throws Exception {
         // The privileged DDL credential is never supplied to the business
         // DataSource; it is used only for migration/admin tasks in isolated CI.
         try (Connection admin = DriverManager.getConnection(
@@ -63,9 +62,21 @@ class PlatformDatabaseIntegrationTest {
     }
 
     @Test
-    void springBootFlywayMigratesWithSeparateAdminAndRuntimeAccounts() {
-        assertThat(flyway.info().current()).isNotNull();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("2");
+    void springBootLiquibaseMigratesWithSeparateAdminAndRuntimeAccounts() throws Exception {
+        try (Connection admin = DriverManager.getConnection(
+                System.getenv("KERUENIX_DB_URL"),
+                System.getenv("KERUENIX_DB_MIGRATOR_USER"),
+                System.getenv("KERUENIX_DB_MIGRATOR_PASSWORD"));
+             Statement statement = admin.createStatement();
+             ResultSet rows = statement.executeQuery(
+                     "SELECT id, author FROM public.databasechangelog ORDER BY orderexecuted")) {
+            assertThat(rows.next()).isTrue();
+            assertThat(rows.getString("id")).isEqualTo("platform-baseline-v1");
+            assertThat(rows.getString("author")).isEqualTo("keruenix");
+            assertThat(rows.next()).isTrue();
+            assertThat(rows.getString("id")).isEqualTo("outbox-fencing-v2");
+            assertThat(rows.next()).isFalse();
+        }
         assertThat(jdbc.queryForObject("SELECT current_user", String.class))
                 .isEqualTo("keruenix_ci_login");
         assertThat(jdbc.queryForObject("""

@@ -1,3 +1,5 @@
+--liquibase formatted sql
+--changeset keruenix:outbox-fencing-v2 dbms:postgresql splitStatements:false runInTransaction:true
 -- V2: durable per-tenant claim/fencing metadata for Outbox.
 -- V1 was never deployed to production; add an additive migration regardless.
 -- Claim and ack must be separate transactions; transport I/O NEVER inside a DB txn.
