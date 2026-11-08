@@ -123,3 +123,9 @@ The immediate technical next step is `PR-00 + PR-01`, alongside real stakeholder
 5. **Release qualification evidence**: exact SHA and artifact digest, production-like restore drill, security scans, partner data permissions, actual failed/partial proof correction, and real stakeholder acceptance.
 
 This is **audit/specification completion only**, not a green domain Testcontainers or production readiness declaration.
+
+## 10. Usability/completeness pass v1.4 — no new historical audit finding claimed
+
+The original **27** findings remain the v1.3 historical audit register. A later implementation-readiness review converted uncovered R0 actions into explicit roadmap work: `PR-10V` (Fleet registry without confirmed capacity), `PR-12C` (BR-11 governed cancellation request and post-start safe exception) and `PR-16R` (Commercial customer-granted private verified-service review). [35 — R0 Developer Handbook](35-r0-developer-handbook.md) is the concise normative developer entry point, [36 — PR-00/01 Start Pack](36-r0-tdd-start-pack.md) describes first tests, and [R0 contract](contracts/r0-delivery-contract.v1.json) records eight still-unapproved ADR/BR gates. Roadmap [33](33-tdd-development-roadmap-v1.md) is version 1.4 with 26 PR cuts. This is a **documentation/specification change**, not evidence that additional domain modules, permissions or BR approvals exist.
+
+**Sequencing correction:** `PR-13` execution/pickup can qualify without an unapproved cancellation policy `PR-12C`; Finance `PR-17` may build an approved advance-invoice engine before POD, but POST_SERVICE issuance remains blocked on verified fulfillment as required by contract. `PR-19` must qualify cancellation and private feedback as R0 journeys. No implicit cross-module repository dependency is permitted.
