@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# PR-01 isolated raw-DDL smoke against the same versioned Liquibase SQL changesets.
+# Does NOT replace Liquibase DATABASECHANGELOG integration/upgrade CI.
 # PR-01 partial qualification: PostgreSQL + PostGIS, transaction-local RLS,
 # audit/outbox rollback and Inbox duplicate uniqueness. Not FOUND-01..12 complete.
 set -Eeuo pipefail
@@ -9,8 +11,8 @@ set -Eeuo pipefail
 : "${PGPASSWORD:?admin PGPASSWORD must be configured}"
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-psql -X -v ON_ERROR_STOP=1 -f "$ROOT/backend/src/main/resources/db/migration/V1__platform_outbox_inbox_rls.sql"
-psql -X -v ON_ERROR_STOP=1 -f "$ROOT/backend/src/main/resources/db/migration/V2__outbox_claim_fencing.sql"
+psql -X -v ON_ERROR_STOP=1 -f "$ROOT/backend/src/main/resources/db/changelog/changes/001_platform_baseline.sql"
+psql -X -v ON_ERROR_STOP=1 -f "$ROOT/backend/src/main/resources/db/changelog/changes/002_outbox_fencing.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$ROOT/backend/db/admin/bootstrap_roles.sql"
 
 # CI-only principal. Never store real login credentials in a migration.
@@ -203,4 +205,4 @@ $assert$;
 SQL
 
 echo "PASS: real PostgreSQL/PostGIS, non-superuser RLS, tenant reset, rollback, Inbox uniqueness"
-echo "PARTIAL ONLY: no Spring datasource, tenant JWT binding, Modulith verify, dispatcher fencing or full FOUND-01..12 qualification."
+echo "PARTIAL ONLY: SQL test is not Liquibase history; separate Spring Boot/Liquibase job proves it. JWT and broker dispatch still pending."
