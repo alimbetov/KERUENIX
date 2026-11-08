@@ -158,11 +158,11 @@
       "modules": [],
       "bsc": [],
       "br": [],
-      "scope": "Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Flyway/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, минимальные audit/idempotency/outbox порты и fail-closed security. Docker Compose/local smoke. Platform baseline INCLUDES a minimal transactional Outbox+Inbox protocol and durable dispatcher needed from RD-03; RD-10 only adds operational hardening.",
+      "scope": "Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Liquibase/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, минимальные audit/idempotency/outbox порты и fail-closed security. Docker Compose/local smoke. Platform baseline INCLUDES a minimal transactional Outbox+Inbox protocol and durable dispatcher needed from RD-03; RD-10 only adds operational hardening.",
       "code": [
         "backend Maven BOM lock and reproducible build",
         "Modulith verify() and @ApplicationModuleTest harness",
-        "Flyway + real PG/PostGIS + RLS template",
+        "Liquibase + real PG/PostGIS + RLS template",
         "CI exact SHA; issue/artifact refs; readme"
       ],
       "tests": [
@@ -253,7 +253,7 @@
       "scope": "Разделить безопасное создание Draft RFQ (PR-04) и отдельный авторизованный submit/clarification/inbox (PR-05) по принятому lifecycle; Customer My Requests и Provider Incoming RFQs. CQRS-light query ports, URL/API contracts, typed filter/sort allowlists, offset pagination, SQL indexes, tenant/customer scoping. Opt-in draft soft delete только при отдельной принятой политике; иначе скрыть недоступное действие. Public submit/ discard MUST remain denied pending explicit owner permission from SDB contract; no implicit template grant.",
       "code": [
         "RFQ aggregate and transitions",
-        "command + query repositories, Flyway and RLS",
+        "command + query repositories, Liquibase and RLS",
         "Create/Submit/List/Detail DTO and MapStruct",
         "safe SQL indexed searches + page metadata",
         "audit/outbox and idempotency"
@@ -1091,7 +1091,7 @@
       "id": "PR-01",
       "phase": "RD-01",
       "owner": "platform",
-      "outcome": "Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox",
+      "outcome": "Spring Modulith+Liquibase+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox",
       "testGate": "verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic",
       "dependsOnPrs": [],
       "criticalCaseIds": [
@@ -2148,5 +2148,6 @@
     "noPayments": true,
     "signingLegalSignoffPending": true,
     "businessApprovalStatus": "PENDING_REAL_STAKEHOLDER"
-  }
+  },
+  "migrationEngine": "LIQUIBASE_ONLY"
 }

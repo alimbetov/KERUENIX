@@ -28,7 +28,7 @@ The repository now contains `src/main/resources/db/migration/V1__platform_outbox
 
 The GitHub Action runs `bash scripts/test_pr01_pg_foundation.sh` against PostgreSQL 16/PostGIS 3.7 with disposable credentials, checking absent tenant context, A→B connection reuse, forbidden foreign writes, same-UUID cross-tenant independence, audit/outbox/inbox rollback, Inbox uniqueness and geographic distances in meters. The runtime role has no superuser/DDL privileges; migration and role provisioning require a separate privileged step.
 
-**This is only an initial SQL/CI slice**, not qualified PR-01: no Spring datasource/Flyway auto-migration, JWT binding, customer-account ABAC, dispatcher lease/replay, Modulith verification, backup restore or all `FOUND-01..12` implemented. The custom session parameter is untrusted unless exclusively set by server code after authenticated authorization within a database transaction. Do not expose any business endpoint on the basis of this smoke.
+**This is only an initial SQL/CI slice**, not qualified PR-01: Spring JDBC and Liquibase migrations are tested, but JWT binding, customer-account ABAC, real broker delivery, backup restore and all `FOUND-01..12` remain unimplemented. The custom session parameter is untrusted unless exclusively set by server code after authenticated authorization within a database transaction. Do not expose any business endpoint on the basis of this smoke.
 
 ## Integration rules
 
@@ -51,10 +51,10 @@ The repo workflow also checks Java ErrorCode parity with the JSON catalog before
 ## Spring Boot database profile (PR-01 work in progress)
 
 Profile `platform-db` configures an application-only PostgreSQL JDBC connection
-and a distinct privileged Flyway migration connection; all secrets are supplied by
-`KERUENIX_DB_*` environment variables. The base error test excludes JDBC/Flyway
+and a distinct privileged Liquibase migration connection; all secrets are supplied by
+`KERUENIX_DB_*` environment variables. The base error test excludes JDBC/Liquibase
 startup and keeps `denyAll` security unchanged. A dedicated GitHub Action creates
-a disposable **second database**, applies V1 through Spring Boot/Flyway and checks
+a disposable **second database**, applies V1 through Spring Boot/Liquibase and checks
 the runtime user is not superuser, FORCE RLS, A/B tenant transaction reset, same
 cross-tenant UUIDs, atomic rollback, Inbox changed-digest rejection and PostGIS.
 
@@ -64,17 +64,17 @@ be used to claim PR-02 or the complete PR-01 FOUND-01..12 suite is ready.
 
 ## Runtime privilege separation (PR-01 security gate)
 
-The long-running `platform-db` profile has `spring.flyway.enabled=false`
-and requires ONLY `KERUENIX_DB_APP_*` credentials. Flyway DDL runs in a **separate
+The long-running `platform-db` profile has `spring.liquibase.enabled=false`
+and requires ONLY `KERUENIX_DB_APP_*` credentials. Liquibase DDL runs in a **separate
 short-lived migration job** with `platform-db-migrate-test`, never in
-production application pods. CI verifies both a Spring/Flyway-admin migration
+production application pods. CI verifies both a Spring/Liquibase-admin migration
 process and an independent `RuntimeDatabaseProfileTest` that boots with the
 migrator environment variables absent. The ephemeral test migrator must not be
 taken as evidence of production bootstrap/rotation orchestration.
 
 ## Durable dispatcher claim/fencing baseline (PR-01 partial)
 
-Flyway `V2__outbox_claim_fencing.sql` adds a per-tenant, monotonic
+Liquibase `V2__outbox_claim_fencing.sql` adds a per-tenant, monotonic
 `claim_token`, worker ownership, lease, retry timestamp, attempt count and
 published timestamp to the existing transactional Outbox. Internal
 `PlatformOutboxClaims` uses `FOR UPDATE SKIP LOCKED` to select one event,
@@ -88,3 +88,15 @@ control-plane, poison/DEAD_LETTER policy, attempt backoff algorithm, metrics,
 cross-system consumer integration or external delivery E2E has been delivered.
 At-least-once delivery remains expected; the Inbox must protect logical
 consumer side effects.
+
+## Liquibase-only migration management
+
+**Authoritative schema history:** `src/main/resources/db/changelog/db.changelog-master.yaml`, which includes two ordered PostgreSQL formatted-SQL changeSets in `db/changelog/changes/`. Spring Boot 4.1.2 uses `spring-boot-starter-liquibase`. Flyway migration files are removed from the runtime classpath.
+
+CI proves initial migration on empty PostgreSQL/PostGIS, repeated Liquibase startup with no duplicate application, and upgrade from a separate database containing only Liquibase V1 to V2. Liquibase stores history and locks in `DATABASECHANGELOG` and `DATABASECHANGELOGLOCK`. The independent SQL smoke executes the same versioned SQL content, but it does not replace Liquibase migration testing.
+
+Long-running profile `platform-db` explicitly has `spring.liquibase.enabled=false` and only application credentials. A separate `platform-db-migrate-test` profile lives under `src/test/resources` and is excluded from the production JAR; production requires a short-lived migration job with separate DBA-administered credentials.
+
+**Legacy Flyway databases:** do not auto-run Liquibase on an existing populated Flyway schema, drop `flyway_schema_history` or blindly call `changelogSync`. A separate approved cutover must inventory schema and grants, snapshot/restore, map historical versions and verify each new changeSet against actual catalog state before formally recording a baseline. No such production cutover is claimed here.
+
+RLS, tenant-first primary keys, deferred no-payments scope and separation of migration/runtime roles remain mandatory. All 26 PR acceptance entries remain `NOT_QUALIFIED`.

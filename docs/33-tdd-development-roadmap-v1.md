@@ -36,7 +36,7 @@ As of 2026-11-08, **no payment mechanisms are in the KERUENIX product**. Current
 
 ## 2. Delivery strategy and dependency map
 
-**Architecture:** single modular business runtime; Spring MVC with JDBC/typed SQL baseline for R0 pending dependency PoC; PostgreSQL + PostGIS, Flyway, Spring Security, explicit transaction-scoped RLS, bounded jobs, MapStruct only at mapping boundaries. SQL names and business flags must be authorized on the server; all write models have exactly one owner. CQRS-light separates query and command handlers, not databases.
+**Architecture:** single modular business runtime; Spring MVC with JDBC/typed SQL baseline for R0 pending dependency PoC; PostgreSQL + PostGIS, Liquibase, Spring Security, explicit transaction-scoped RLS, bounded jobs, MapStruct only at mapping boundaries. SQL names and business flags must be authorized on the server; all write models have exactly one owner. CQRS-light separates query and command handlers, not databases.
 
 **Execution logic (dependencies, not calendar duration):**
 
@@ -95,7 +95,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 2. Write structured Given / When / Then for happy path, forbidden operation, stale version, replay/idempotency, concurrency, tenant boundary, external outage and recovery. Record expected **DB state, outbox, customer/provider UI projection, sanitized API error**.
 3. Define aggregate owner, state machine guard, role/scope/SoD, transaction boundary, domain event, failure and compensating action. No implicit generic role permissions.
 4. **RED:** committed failing unit tests before business code; when SQL constraints/RLS are material, real PostgreSQL Testcontainers tests also start failing against missing capability. An unapproved BR may get a fail-closed test now, never a pretend positive legal test.
-5. **GREEN:** minimum code to satisfy **accepted** AC — aggregate/value objects, domain policy, owner repositories, SQL/Flyway/RLS, application command or query handler, explicit DTO/MapStruct, controller and event/outbox. Business policy never lives only in controller annotation or mapper.
+5. **GREEN:** minimum code to satisfy **accepted** AC — aggregate/value objects, domain policy, owner repositories, SQL/Liquibase/RLS, application command or query handler, explicit DTO/MapStruct, controller and event/outbox. Business policy never lives only in controller annotation or mapper.
 6. **REFACTOR:** remove duplication, keep published contracts stable, check indexes and resource bounds; run regression, security and failure tests again.
 7. **QUALIFY:** exact SHA CI, contract and architecture verification, reproducible database fixture, negative tests, cross-role demo and business signoff where applicable.
 
@@ -106,7 +106,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 | L1 Domain Unit | transition, Value Objects, money/cargo invariants, policy pure functions | JUnit 5, optional property tests |
 | L2 Modulith/Mapper | dependency direction, no internal imports, DTO allowlist/MapStruct | `ApplicationModules.verify()`, module tests, strict compiler |
 | L3 HTTP/Security | JWT, permission, customer/proxy, RFC 9457, DTO field leaks | Spring MVC/Security tests |
-| L4 PostgreSQL/PostGIS | RLS, partial/unique/exclusion constraints, Flyway, pool A→B | Testcontainers real PostgreSQL+PostGIS |
+| L4 PostgreSQL/PostGIS | RLS, partial/unique/exclusion constraints, Liquibase, pool A→B | Testcontainers real PostgreSQL+PostGIS |
 | L5 Concurrency/Replay | two transactions, expiration races, duplicate webhook, expectedVersion, outbox | concurrent real SQL + forced restart |
 | L6 Contract/Events | OpenAPI/event version + backward compatibility | schema tests, type snapshots |
 | L7 Multi-role E2E | entire journey across tenant/customer/provider/carrier/driver/receiver | HTTP + DB + document storage adapter |
@@ -139,12 +139,12 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** нет; разрешено начать сейчас. **Технический владелец:** `platform` (не бизнес-модуль). **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Flyway/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, fail-closed security. **RD-01 сразу реализует минимальный транзакционный Outbox + Inbox dedup + durable dispatcher, а не только интерфейсы: иначе RD-03/04 не смогут гарантировать события и повторы.** Docker Compose/local smoke.
+**Scope и результат:** Проверить существующий Spring Boot 4.1.2/Java 21 error bootstrap. PoC совместимости Spring Modulith/MapStruct/Liquibase/Testcontainers; добавить PostgreSQL/PostGIS test infra, Testcontainers, profiles, Secret/Connection/Application config, миграции, fail-closed security. **RD-01 сразу реализует минимальный транзакционный Outbox + Inbox dedup + durable dispatcher, а не только интерфейсы: иначе RD-03/04 не смогут гарантировать события и повторы.** Docker Compose/local smoke.
 
 **Изменения в коде/артефактах:**
 - backend Maven BOM lock and reproducible build
 - Modulith verify() and @ApplicationModuleTest harness
-- Flyway + real PG/PostGIS + RLS template
+- Liquibase + real PG/PostGIS + RLS template
 - atomic aggregate + audit + Outbox / Inbox replay, durable dispatch (минимально, без универсального workflow engine)
 - CI exact SHA; issue/artifact refs; readme
 
@@ -190,7 +190,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Изменения в коде/артефактах:**
 - RFQ aggregate and transitions
-- command + query repositories, Flyway and RLS
+- command + query repositories, Liquibase and RLS
 - Create/Submit/List/Detail DTO and MapStruct
 - safe SQL indexed searches + page metadata
 - audit/outbox and idempotency
@@ -507,7 +507,7 @@ For **every query endpoint** agree typed allowlisted `filter`, `sort`, paginatio
 
 ## 7. Data modeling, migrations, transactions and module boundaries
 
-**Migrations:** Flyway, named schema/table ownership, PostgreSQL RLS policies, not superuser runtime app; transaction `SET LOCAL` or equivalent from verified context, no pool leakage. Expand/contract migrations and executable migration smoke on an existing DB snapshot; if rollback is impossible, document forward-recovery and backup restore procedure.
+**Migrations:** Liquibase, named schema/table ownership, PostgreSQL RLS policies, not superuser runtime app; transaction `SET LOCAL` or equivalent from verified context, no pool leakage. Expand/contract migrations and executable migration smoke on an existing DB snapshot; if rollback is impossible, document forward-recovery and backup restore procedure.
 
 **Concurrency:** aggregate expectedVersion plus named unique/exclusion constraints; one Fleet authority for temporal capacity. Database constraint violation translated to a specific domain code **only for known owner-named constraints**; no blanket SQLSTATE 23505/23P01→409.
 
@@ -552,7 +552,7 @@ No PR containing a new legally binding command or financial effect can merge bas
 - `contracts`: JSON schema/IDs/links; no orphan story→BR→test→owner mapping; OpenAPI/error-code compatibility.
 - `compile-and-unit`: Maven, pinned compatible BOM, MapStruct annotation processor, JUnit tests and JaCoCo diagnostics.
 - `modulith`: `ApplicationModules.verify()`, named public interfaces only; no foreign SQL writes.
-- `pg-integration`: PostgreSQL+PostGIS Testcontainers, Flyway, tenant A/B isolation, CustomerOrg-X/Y counts, pool reuse, transaction/outbox/soft delete.
+- `pg-integration`: PostgreSQL+PostGIS Testcontainers, Liquibase, tenant A/B isolation, CustomerOrg-X/Y counts, pool reuse, transaction/outbox/soft delete.
 - `security-and-api`: JWT/permissions/SoD, ProblemDetail RFC9457 parity (Security filter vs MVC), request field overposting, field leakage.
 - `critical-races`: only impacted/accepted race suites (hold/expiry, quote acceptance, POD/offline, bank duplicate).
 - `supply-chain`: secrets scanning, dependency/license/SBOM checks; exact baseline before R0 release.
@@ -568,7 +568,7 @@ No PR containing a new legally binding command or financial effect can merge bas
   "ciRunUrl": "<actual-ci-url>",
   "businessDecisionVersions": ["BR-07:APPROVED", "BR-08:APPROVED"],
   "postgresVersion": "<actual-version>",
-  "migrationVersion": "<actual-flyway-version>",
+  "migrationVersion": "<actual-liquibase-version>",
   "tests": {"passed": "<actual>", "failed": "<actual>", "skipped": "<actual>"},
   "negativeAndRaceProofs": ["<actual-artifact-url>"],
   "qualification": "QUALIFIED"
@@ -647,7 +647,7 @@ Next action: finalize owner and consent/identity AC, then failing tests
 
 **Recommended immediate PR:** RD-01 `feat/r0-foundation`. Start from existing error-handler bootstrap and keep Security `anyRequest().denyAll()` until tested identity authentication is ready.
 
-Minimum contents: pinned supported Java/Boot/Modulith/MapStruct/Flyway/Testcontainers stack, `mvn verify` CI, `ApplicationModules.verify()`, PostgreSQL/PostGIS + Flyway smoke, two-tenant RLS tests using real transactions and connection pooling, runtime configuration samples without secrets, error-handler regression, and a README exact-SHA verification. Do not write a broad RFQ/Booking CRUD scaffold in that PR.
+Minimum contents: pinned supported Java/Boot/Modulith/MapStruct/Liquibase/Testcontainers stack, `mvn verify` CI, `ApplicationModules.verify()`, PostgreSQL/PostGIS + Liquibase smoke, two-tenant RLS tests using real transactions and connection pooling, runtime configuration samples without secrets, error-handler regression, and a README exact-SHA verification. Do not write a broad RFQ/Booking CRUD scaffold in that PR.
 
 **Then:** RD-02 Tenancy, RD-03 customer/provider RFQ with query+soft-delete rules, RD-04 and RD-05 after signoffs, converging at RD-06 Booking. The first material release proof is **one real fully scoped business vertical slice**, not the number of created packages.
 
@@ -688,7 +688,7 @@ A phase is an **epic with exit criteria**, not a requirement to implement all pa
 | PR | Phase | Canonical write owner | Requires code-qualified PRs | Runnable outcome / first critical gate |
 |---|---|---|---|---|
 | `PR-00` | `RD-00` | `architecture` | Parallel foundation start | traceability validator, signoff ledger and phase-by-phase test selection. **Gate:** catalog IDs and BR status truthful |
-| `PR-01` | `RD-01` | `platform` | Parallel foundation start | Spring Modulith+Flyway+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox. **Gate:** verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic |
+| `PR-01` | `RD-01` | `platform` | Parallel foundation start | Spring Modulith+Liquibase+PostgreSQL/PostGIS with real RLS, typed errors and basic Outbox/Inbox. **Gate:** verify() + migration + auth fail-closed + 2-tenant RLS + outbox atomic |
 | `PR-02` | `RD-02` | `tenancy` | `PR-00`, `PR-01` | tenant/legal entity and verified identity/invitation/grants and exported AccountRelationship grant interface. **Gate:** real JWT or verified auth adapter + multi-grant denial + SoD |
 | `PR-03C` | `RD-02` | `commercial` | `PR-02` | canonical CustomerAccount business relationship, provider legal entity binding and versioned AccountRegistered integration event. **Gate:** customer-org/provider uniqueness, no cross-tenant inference; public event to Tenancy projection with no reverse dependency; ADR approved |
 | `PR-03` | `RD-02` | `tenancy` | `PR-03C` | Tenancy CustomerAccount member grants/revoke referencing commercial account ID via neutral verified event, never a second CustomerAccount table. **Gate:** Customer-X/Y negative list/detail, warm cache, RLS context reset |
@@ -740,7 +740,7 @@ A phase is an **epic with exit criteria**, not a requirement to implement all pa
 | Invoice/AR/AP/Allocation | Finance | verified commercial/execution snapshots and reference IDs | direct Booking/Documents repository reads, approval used as bank settlement |
 | Jobs / policy errors | Platform (technical) | service principal, scope per owner, durable Outbox/Inbox | general global support superuser |
 
-**Verification:** `ApplicationModules.verify()`, package visibility/export tests, module-owned Flyway migrations, database write-path tests and no foreign repository injection. A read model can join safely only through an explicitly approved owner-published projection or scope-safe SQL owner boundary; business commands always use source-of-truth guards.
+**Verification:** `ApplicationModules.verify()`, package visibility/export tests, module-owned Liquibase migrations, database write-path tests and no foreign repository injection. A read model can join safely only through an explicitly approved owner-published projection or scope-safe SQL owner boundary; business commands always use source-of-truth guards.
 
 ## 18. Test applicability, signoff and evidence protocol
 
@@ -776,7 +776,7 @@ uiJourneyStatus: NOT_STARTED
 
 ## 19. Critical R0 no-go checks before implementation and release
 
-- **RD-01 foundation:** JDK21/Boot BOM/Modulith/Flyway/Testcontainers compatibility must run in CI, empty and upgrade migrations must pass, DB runtime principal has no `BYPASSRLS`, pooled tenant context must be reset, Outbox/Inbox uniqueness and crash-after-commit proven.
+- **RD-01 foundation:** JDK21/Boot BOM/Modulith/Liquibase/Testcontainers compatibility must run in CI, empty and upgrade migrations must pass, DB runtime principal has no `BYPASSRLS`, pooled tenant context must be reset, Outbox/Inbox uniqueness and crash-after-commit proven.
 - **RD-02 access:** CustomerOrg-X/Y and Tenant-A/B/Z must have isolated list/detail/count/exports; JWT authority server-derived; support and super admin cannot inspect arbitrary customer financial records.
 - **RD-03/04 commercial:** RFQ submitted only with explicit signed-off grant; exact immutable QuoteVersion and signer + termsHash; no staff impersonation, no expired acceptance, no false Booking.
 - **RD-05/06 physical commitment:** regulatory UNKNOWN = HOLD, real PostgreSQL single exclusive slot across branches and drivers/trailers; carrier selected != confirmed; Booking must re-read authoritative resource.
@@ -822,7 +822,7 @@ Design-only corrections: not implemented behavior, real stakeholder approval, or
 
 ## 23. Revised implementation order
 
-Start PR-00 and PR-01 in parallel (traceability/validator plus Boot, Modulith, Flyway, real Postgres/PostGIS/RLS/Outbox). Then PR-02/03 Tenancy and CustomerAccount ownership ADR, PR-04 **Draft**, PR-05 **approved submit**/Inbox, PR-06/07 Quote, PR-08/09/10 Cargo/Compliance/Fleet, PR-11/12 Carrier/Booking, PR-13/14 verified custody/POD, PR-15/16 Tracking/Documents, PR-17 commercial cost/margin report, PR-18 recovery, PR-19 real multi-role API/UI E2E, PR-20 signed pilot.
+Start PR-00 and PR-01 in parallel (traceability/validator plus Boot, Modulith, Liquibase, real Postgres/PostGIS/RLS/Outbox). Then PR-02/03 Tenancy and CustomerAccount ownership ADR, PR-04 **Draft**, PR-05 **approved submit**/Inbox, PR-06/07 Quote, PR-08/09/10 Cargo/Compliance/Fleet, PR-11/12 Carrier/Booking, PR-13/14 verified custody/POD, PR-15/16 Tracking/Documents, PR-17 commercial cost/margin report, PR-18 recovery, PR-19 real multi-role API/UI E2E, PR-20 signed pilot.
 
 All 17 existing business modules remain in the architecture map. This version is a **proposal and CI-verifiable documentary plan**, not a completed business backend.
 
