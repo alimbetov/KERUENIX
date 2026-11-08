@@ -2,6 +2,9 @@
 
 **Version:** 2.1.0 · **Date:** 2026-11-07 · **Status:** DESIGN REVIEW / NOT IMPLEMENTED. **Machine contract:** [access-policy-matrix.v2.json](contracts/access-policy-matrix.v2.json). **Supersedes:** [v1 matrix](22-role-permission-scope-approval-matrix.md) and [v1 JSON](contracts/role-permission-scope-approval.v1.json) for future design decisions; v1 remains available for historical traceability. No existing implemented code was migrated.
 
+
+**Binding scope correction (R0, 2026-11-08):** [No payments + NCA EDS signing](38-r0-eds-signing-no-payments.md) overrides historical Finance payment approval/reconciliation text in this document. FIN-02/03/04 are **RETIRED_OUT_OF_PRODUCT_SCOPE**, not implementation candidates. FIN-01 means read-only `commercial:cost:read`, scoped and field-masked. `AUTH-X-024` bank settlement is retained as archival negative history and replaced by `PAY-ABS-01..06`. Legal acceptance requires real verified signature evidence in `PR-06S`; mere role membership never authorizes a binding sign.
+
 ## 1. Executive re-audit
 
 v1 was directionally correct but **incomplete**. Important gaps and corrective decisions:
@@ -165,10 +168,10 @@ Data ownership: `Tenancy` secures identity and grants; `Commercial` owns custome
 
 | Policy | Role template | Permission | Scope key | Guard / approval | Planned acceptance |
 |---|---|---|---|---|---|
-| `FIN-01` | Finance Officer | `invoice:prepare` | `OWN_PROVIDER_LEGAL_ENTITY_AND_AUTHORIZED_ORDER` | `AP-FINANCE-PREP` | `AUTH-FIN-001` |
-| `FIN-02` | Finance Officer | `payment:prepare` | `OWN_PROVIDER_PAYABLE_AND_APPROVED_EVIDENCE` | `AP-FINANCE-PREP` | `AUTH-FIN-002` |
-| `FIN-03` | Finance Approver | `payment:approve` | `OWN_PROVIDER_LEGAL_ENTITY_AMOUNT_LIMIT_AND_PAYABLE` | `AP-FINANCE` | `AUTH-FIN-003` |
-| `FIN-04` | Finance Officer | `finance:payment:reconcile` | `OWN_PROVIDER_LEGAL_ENTITY_AND_VERIFIED_BANK_ERP_PAYMENT` | `AP-FINANCE-RECONCILE` | `AUTH-FIN-004` |
+| `FIN-01` | Commercial Cost Analyst | `commercial:cost:read` | `OWN_PROVIDER_LEGAL_ENTITY_AUTHORIZED_QUOTE_COMMERCIAL_COST` | `AP-COMMERCIAL-COST-READ` | `AUTH-FIN-001` |
+| `FIN-02` | RETIRED: no payment scope | `payment:prepare` — DENY ALWAYS | `OWN_PROVIDER_PAYABLE_AND_APPROVED_EVIDENCE` | `AP-FINANCE-PREP` | `AUTH-FIN-002` |
+| `FIN-03` | RETIRED: no payment scope | `payment:approve` — DENY ALWAYS | `OWN_PROVIDER_LEGAL_ENTITY_AMOUNT_LIMIT_AND_PAYABLE` | `AP-FINANCE` | `AUTH-FIN-003` |
+| `FIN-04` | RETIRED: no payment scope | `finance:payment:reconcile` — DENY ALWAYS | `OWN_PROVIDER_LEGAL_ENTITY_AND_VERIFIED_BANK_ERP_PAYMENT` | `AP-FINANCE-RECONCILE` | `AUTH-FIN-004` |
 
 ### Platform Jobs (technical capability) — 2 policies
 
