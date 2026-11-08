@@ -59,3 +59,7 @@ remain `PENDING` and W1–W5 are not recorded as conducted.
   independent 10/10 branch.
 
 The current NO PAYMENTS product boundary remains unchanged.
+
+## 4. Architecture layers: implementation scope
+
+The [Layered Development ТЗ](43-layer-by-layer-development-tz.md) and [machine matrix](contracts/layered-development-plan.v1.json) link all 26 PRs to required layers L0..L9, evidence and R0→R2 delivery waves. These are **obligations for future PRs**, not evidence that a layer is implemented. Run `scripts/validate_layered_development.py` before qualifying or changing any scope. The PR acceptance manifest and real signoff ledger still decide qualification.

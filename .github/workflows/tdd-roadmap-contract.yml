@@ -8,6 +8,8 @@ on:
       - 'scripts/test_validate_tdd_roadmap.py'
       - 'scripts/validate_pr_acceptance.py'
       - 'scripts/test_pr_acceptance.py'
+      - 'scripts/validate_layered_development.py'
+      - 'scripts/test_layered_development.py'
       - 'scripts/validate_decision_readiness.py'
       - 'scripts/test_decision_readiness.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
@@ -19,6 +21,8 @@ on:
       - 'scripts/test_validate_tdd_roadmap.py'
       - 'scripts/validate_pr_acceptance.py'
       - 'scripts/test_pr_acceptance.py'
+      - 'scripts/validate_layered_development.py'
+      - 'scripts/test_layered_development.py'
       - 'scripts/validate_decision_readiness.py'
       - 'scripts/test_decision_readiness.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
@@ -40,3 +44,4 @@ jobs:
           python3 scripts/validate_tdd_roadmap.py
           python3 scripts/validate_decision_readiness.py
           python3 scripts/validate_pr_acceptance.py
+          python3 scripts/validate_layered_development.py
