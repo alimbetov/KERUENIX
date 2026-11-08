@@ -8,11 +8,15 @@
 
 ## Audited R0 TDD Delivery Roadmap
 
-[33 — TDD Roadmap v1.3](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) define **13 R0 stage gates**, 23 independently testable PR outcomes and real RLS/Outbox/Modulith, cross-role API+UI and exact-SHA qualification. R0 events and retries begin at RD-01, **not** at late RD-10. Each irreversible operation is fail-closed until the applicable BR signoff. No stage is deemed complete from this planning document, and no migration, booking, custody or finance integration is qualified yet.
+[33 — TDD Roadmap v1.4](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) define **13 R0 stage gates**, 26 independently testable PR outcomes and real RLS/Outbox/Modulith, cross-role API+UI and exact-SHA qualification. R0 events and retries begin at RD-01, **not** at late RD-10. Each irreversible operation is fail-closed until the applicable BR signoff. No stage is deemed complete from this planning document, and no migration, booking, custody or finance integration is qualified yet.
 
-## Error-handling foundation qualification (code exists, tests not run)
+## Error-handling foundation qualification (handler CI passed; domain tests pending)
 
 The platform has an initial [Java21/Spring Boot4.1.2 unified error-handler scaffold](../backend/README.md) and a [GitHub Actions Maven verification workflow](../.github/workflows/backend-error-contract.yml). [31 — RFC 9457 standard](31-unified-error-handling-standard.md) defines the shared `ProblemDetail` contract for REST, Spring Security `401/403`, and servlet `/error` fallback. **Important:** the code is an error-only bootstrap with deny-all business security; it is NOT an authenticated Tenancy implementation or a complete application. 15 handler contract tests and Java/JSON parity passed on commit `ac459923` (GitHub Actions #22); future changes need requalification on exact SHA. Before merging to production: run exact-SHA Maven CI and 401/403/error fallback contract tests; then prove PostgreSQL RLS/Booking/Finance negative effects in their owning modules.
+
+## Clear R0 developer contract and product completeness
+
+The implementation entry point is [35 — R0 Developer Handbook](35-r0-developer-handbook.md), with [DEC-R0-01..08](contracts/r0-delivery-contract.v1.json) and [36 — PR-00/01 TDD Start Pack](36-r0-tdd-start-pack.md). R0 includes independently qualified Fleet registry (`PR-10V`), customer cancellation REQUEST and safe review (`PR-12C`), and **private verified-service feedback** (`PR-16R`); public ratings, fraudulent automatic delivery and unverified settlement remain excluded. All three new PRs are design only, so a successful document check cannot qualify the customer journey.
 
 ## Product slice R0 — минимальная доказуемая перевозка
 
