@@ -12,6 +12,8 @@ on:
       - 'scripts/test_layered_development.py'
       - 'scripts/validate_scenario_first.py'
       - 'scripts/test_scenario_first.py'
+      - 'scripts/validate_s0_scenario_allocation.py'
+      - 'scripts/test_s0_scenario_allocation.py'
       - 'scripts/validate_decision_readiness.py'
       - 'scripts/test_decision_readiness.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
@@ -27,6 +29,8 @@ on:
       - 'scripts/test_layered_development.py'
       - 'scripts/validate_scenario_first.py'
       - 'scripts/test_scenario_first.py'
+      - 'scripts/validate_s0_scenario_allocation.py'
+      - 'scripts/test_s0_scenario_allocation.py'
       - 'scripts/validate_decision_readiness.py'
       - 'scripts/test_decision_readiness.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
@@ -50,3 +54,4 @@ jobs:
           python3 scripts/validate_pr_acceptance.py
           python3 scripts/validate_layered_development.py
           python3 scripts/validate_scenario_first.py
+          python3 scripts/validate_s0_scenario_allocation.py

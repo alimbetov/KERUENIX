@@ -4,6 +4,10 @@
 
 Источники: [реестр 168 ID](contracts/r0-scenario-first-test-plan.v1.json), [84 базовых R0](contracts/r0-tdd-scenarios.v1.json), [48 негативных](contracts/r0-negative-scenarios.v1.json), [12 FOUNDATION](36-r0-tdd-start-pack.md), [дорожная карта](contracts/tdd-development-roadmap.v1.json), [acceptance manifest](contracts/pr-acceptance-manifest.v1.json).
 
+## S0 — результат инвентаризации и предложенное распределение
+
+[48 — Review матрицы 132 сценариев по всем 26 PR](48-r0-s0-scenario-allocation-review.md) и [машинная матрица ownership, BR/DEC и тестовых оракулов](contracts/r0-scenario-allocation.v1.json). Из 132 исторических R0 case ID активны 121, **11 payment-related retired**; у 5 PR нет собственного основного кейса из исходного банка. Ожидания DB/Outbox, указанные в матрице, являются **проектными**, не полученным бизнес-approval. Формальный Test Review ещё не проведён. Поэтому S0 не считается закрытым, а переход к реализации новых доменных модулей запрещён.
+
 ## Обязательный процесс
 
 | Этап | Содержание до следующего этапа | Review gate |
