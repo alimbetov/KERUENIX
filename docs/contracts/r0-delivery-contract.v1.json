@@ -34,7 +34,7 @@
       "partial delivery 8/10 with residual custodian",
       "Documents verified POD package",
       "Finance invoice then verified bank allocation",
-      "private eligible review if accepted"
+      "private eligible review ONLY on separate verified completed/uncontested service branch; 8/10 partial case remains INELIGIBLE unless explicit accepted policy says otherwise"
     ],
     "noGo": [
       "Quote ACCEPTED is not Booking CONFIRMED",
@@ -42,6 +42,27 @@
       "GPS arrival is not POD",
       "8/10 accepted is not all delivered",
       "Invoice approved is not PAID"
+    ],
+    "branches": [
+      {
+        "id": "PARTIAL_POD_DENIAL",
+        "description": "10 CargoUnits; 8 accepted, 2 refused/outstanding; preserves current custodian and partial state",
+        "expected": "no full DELIVERED, no automatic private review eligibility, no incorrect full-service invoice",
+        "caseAnchors": [
+          "NEG-R0-030",
+          "NEG-R0-047",
+          "NEG-R0-048"
+        ]
+      },
+      {
+        "id": "VERIFIED_COMPLETION",
+        "description": "same service fully reconciled with separately verified last-two-unit disposition OR a second completed all-accepted shipment fixture; follow approved eligibility rule",
+        "expected": "verified completed eligible service can receive one private CustomerAccount review only; no provider self-review",
+        "caseAnchors": [
+          "NEG-R0-048",
+          "TDD-R0-E2E-04"
+        ]
+      }
     ]
   },
   "decisions": [
@@ -185,7 +206,7 @@
   },
   "releaseMinimum": {
     "backend": "single runtime, no unapproved service split",
-    "realData": "two providers/tenants, two separate customer accounts on same provider, real carrier and guest receiver",
+    "realData": "two providers/tenants, two separate customer accounts on same provider, real carrier and guest receiver; plus a distinct completed/verified service fixture for private review (8/10 partial alone is not complete)",
     "failure": "restart/crash/replay/permission revoke/tenant context reuse/partial delivery/finance reversal",
     "ops": "secrets, SBOM, container smoke, backup/restore, runbook and measurement profile"
   }
