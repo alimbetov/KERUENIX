@@ -794,7 +794,17 @@
       "invariantStatus": "BUSINESS_REVIEW_REQUIRED",
       "testStatus": "DESIGNED_NOT_EXECUTED",
       "stateChangeAllowed": "ONLY_AS_EXPLICITLY_STATED_IN_ASSERTIONS",
-      "executionStatus": "NOT_IMPLEMENTED"
+      "executionStatus": "NOT_IMPLEMENTED",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "NEG-R0-034",
@@ -817,7 +827,17 @@
       "invariantStatus": "BUSINESS_REVIEW_REQUIRED",
       "testStatus": "DESIGNED_NOT_EXECUTED",
       "stateChangeAllowed": "ONLY_AS_EXPLICITLY_STATED_IN_ASSERTIONS",
-      "executionStatus": "NOT_IMPLEMENTED"
+      "executionStatus": "NOT_IMPLEMENTED",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "NEG-R0-035",
@@ -840,7 +860,17 @@
       "invariantStatus": "BUSINESS_REVIEW_REQUIRED",
       "testStatus": "DESIGNED_NOT_EXECUTED",
       "stateChangeAllowed": "ONLY_AS_EXPLICITLY_STATED_IN_ASSERTIONS",
-      "executionStatus": "NOT_IMPLEMENTED"
+      "executionStatus": "NOT_IMPLEMENTED",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "NEG-R0-036",
@@ -863,7 +893,17 @@
       "invariantStatus": "BUSINESS_REVIEW_REQUIRED",
       "testStatus": "DESIGNED_NOT_EXECUTED",
       "stateChangeAllowed": "ONLY_AS_EXPLICITLY_STATED_IN_ASSERTIONS",
-      "executionStatus": "NOT_IMPLEMENTED"
+      "executionStatus": "NOT_IMPLEMENTED",
+      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
+      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "NEG-R0-037",
