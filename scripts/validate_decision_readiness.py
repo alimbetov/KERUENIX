@@ -31,12 +31,12 @@ def is_reference(value: object) -> bool:
     if any(t in lowered for t in ("placeholder", "example", "todo", "pending",
                                     "fake", "test://", "sample")):
         return False
-    return bool(re.match(r"^(restricted|evidence|audit|artifact)://[^/\\s]+/[^\\s]+$", value))
+    return bool(re.match(r"^(restricted|evidence|audit|artifact)://[^/\s]+/[^\s]+$", value))
 
 
 def is_utc(value: object) -> bool:
     if not isinstance(value, str) or not re.fullmatch(
-            r"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z", value):
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", value):
         return False
     try:
         datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -139,7 +139,7 @@ def validate(ledger: dict, br: dict, dec: dict, roadmap: dict) -> list[str]:
             for field in APPROVAL_FIELDS:
                 value = record.get(field)
                 valid = is_utc(value) if field == "approvedAtUtc" else (
-                    isinstance(value, str) and bool(re.fullmatch(r"[0-9]+(?:\\.[0-9]+)*", value))
+                    isinstance(value, str) and bool(re.fullmatch(r"[0-9]+(?:\.[0-9]+)*", value))
                     if field == "approvedVersion" else is_reference(value))
                 if not valid:
                     errors.append(f"{rid}: approved without valid {field}")
