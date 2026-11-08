@@ -1743,5 +1743,21 @@
     "approvedBRDECCount": 0,
     "totalBRDECCount": 20,
     "firstSlice": "PR-01 partial Liquibase/PostgreSQL CI; no JWT→Tenant authority or business E2E"
+  },
+  "testFirstGovernance": {
+    "version": "1.0.0",
+    "document": "docs/46-r0-scenario-first-tdd-standard.md",
+    "registry": "docs/contracts/r0-scenario-first-test-plan.v1.json",
+    "mandatoryOrder": [
+      "SCENARIO_DESIGN",
+      "TEST_FIRST",
+      "TEST_REVIEW",
+      "IMPLEMENTATION",
+      "REFACTORING_AND_QUALIFICATION"
+    ],
+    "newDomainCodeRequiresTestReview": true,
+    "existingFoundationEvidenceDoesNotQualifyAllR0": true,
+    "unapprovedBindingBehavior": "DENY_OR_HOLD",
+    "noFakeTests": true
   }
 }

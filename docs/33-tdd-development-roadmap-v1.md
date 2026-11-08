@@ -6,6 +6,8 @@
 
 **Current product boundary:** [38 — NCA EDS signing without payment functions](38-r0-eds-signing-no-payments.md) / [machine contract](contracts/r0-scope-eds-signing.v1.json). **Implementation handbook:** [35 — R0 Developer Handbook](35-r0-developer-handbook.md) and [R0 Delivery Contract](contracts/r0-delivery-contract.v1.json). **Audit:** [34 — TDD Roadmap Technical Audit](34-tdd-roadmap-technical-audit.md) — 27 design audit findings documented (implementation pending), not business signoff. **Machine roadmap:** [tdd-development-roadmap.v1.json](contracts/tdd-development-roadmap.v1.json). Эта JSON-модель содержит единые ID этапов, связи, owners, scope, связанные BSC/BR и gates. Это план, не GitHub Actions/issue tracker и не CI evidence.
 
+**Scenario-First TDD mandatory stages:** [46 — Scenario-First TDD Standard](46-r0-scenario-first-tdd-standard.md) + [R0 canonical test registry](contracts/r0-scenario-first-test-plan.v1.json). New domain implementation starts after full applicable scenario design, executable RED test harness and dedicated Test Review; docs CI cannot auto-approve business rights.
+
 **Layer-by-layer implementation ТЗ:** [43 — Layered Development ТЗ](43-layer-by-layer-development-tz.md) + [machine contract](contracts/layered-development-plan.v1.json). This is an implementation plan, not a new approval, activation permission, or replacement for the Roadmap/PR manifest.
 
 **Опорные спецификации:**
