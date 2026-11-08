@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CI contract verification for KERUENIX TDD Roadmap v1.4.
+"""CI contract verification for KERUENIX TDD Roadmap v1.5.
 
 Standard library only; checks documentary consistency, NOT executable-domain
 qualification or real stakeholder signoff.
@@ -20,15 +20,15 @@ def load(rel: str) -> dict:
 
 
 
-def audit_v14_pr_contract(road: dict, known_cases: set[str],
+def audit_v15_pr_contract(road: dict, known_cases: set[str],
                           valid_permissions: dict[str, str],
                           known_br: set[str]) -> list[str]:
-    """Check v1.4 PR risk claims; these are planned contracts, not executed tests."""
+    """Check v1.5 PR risk claims; these are planned contracts, not executed tests."""
     issues: list[str] = []
     required_ui = {
         "PR-02", "PR-03C", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07",
         "PR-10V", "PR-10", "PR-11", "PR-12", "PR-12C", "PR-13", "PR-14", "PR-15",
-        "PR-16", "PR-16R", "PR-17", "PR-17S", "PR-18", "PR-19", "PR-20",
+        "PR-16", "PR-16R", "PR-17", "PR-18", "PR-19", "PR-20", "PR-06S",
     }
     valid_modes = {
         "DOCUMENTATION_ONLY", "FOUNDATION_FAIL_CLOSED", "POLICY_SCOPED",
@@ -90,9 +90,22 @@ def audit_v14_pr_contract(road: dict, known_cases: set[str],
     evidence = road.get("proofIntegrityProtocol") or {}
     if evidence.get("writeOwner") != "execution" or not evidence.get("storageTransactionRule") or len(evidence.get("required", [])) < 8:
         issues.append("Missing original POD/custody evidence and external object consistency protocol")
-    settlement = road.get("financeSettlementGate") or {}
-    if "SIMULATED" not in settlement.get("mockRule", "") or not settlement.get("withoutVerifiedProvider"):
-        issues.append("Finance settlement gate permits false production PAID")
+    boundary = road.get("financeBoundaryGate") or {}
+    if (boundary.get("paymentMechanismsEnabled") is not False
+            or "No payment features" not in boundary.get("withoutVerifiedProvider", "")):
+        issues.append("Payment mechanisms must remain EXCLUDED from KERUENIX")
+    if ("PR-17S" in cuts or
+            any("PR-17S" in p.get("dependsOnPrs", []) for p in cuts.values())):
+        issues.append("Removed PR-17S bank settlement cannot block R0")
+    report = cuts.get("PR-17", {})
+    if ("margin" not in report.get("outcome", "").lower()
+            or "PaymentAllocation" not in report.get("testGate", "")):
+        issues.append("PR-17 must be commercial margin report with no payment APIs")
+    signer = cuts.get("PR-06S", {})
+    if (signer.get("owner") != "platform" or
+            "NCALayer" not in signer.get("outcome", "") or
+            "PR-06S" not in cuts.get("PR-07", {}).get("dependsOnPrs", [])):
+        issues.append("Signed Quote must depend on platform NCA EDS verification PR-06S")
     if not road.get("tddExecutableSelection", {}).get("requiredManifestFields"):
         issues.append("Missing per-PR actual TDD applicability evidence schema")
     fleet = cuts.get("PR-10V", {})
@@ -113,14 +126,14 @@ def audit_v14_pr_contract(road: dict, known_cases: set[str],
     e2e_deps = cuts.get("PR-19", {}).get("dependsOnPrs", [])
     if not {"PR-12C", "PR-16R"}.issubset(set(e2e_deps)):
         issues.append("PR-19 R0 E2E missing cancellation/review dependency")
-    if cuts.get("PR-13", {}).get("dependsOnPrs") != ["PR-12"]:
-        issues.append("PR-13 must not wait for optional cancellation BR")
+    if cuts.get("PR-13", {}).get("dependsOnPrs") != ["PR-12", "PR-06S"]:
+        issues.append("PR-13 requires Booking and signed-proof adapter, not cancellation BR")
     if cuts.get("PR-17", {}).get("dependsOnPrs") != ["PR-07"]:
-        issues.append("PR-17 blanket-POD prerequisite blocks valid advance-invoice design")
+        issues.append("PR-17 must not depend on bank/payment/official invoice or POD stage")
     return issues
 
 
-def audit_v14_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
+def audit_v15_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
     """Compare rendered PR DAG table to the machine graph, not just ID presence."""
     issues: list[str] = []
     if "## 16. Executable delivery increments" not in main_doc or "## 17. Mandatory ownership" not in main_doc:
@@ -153,7 +166,7 @@ def audit_v14_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
     return issues
 
 
-def audit_v14_delivery_approvals(delivery: dict) -> list[str]:
+def audit_v15_delivery_approvals(delivery: dict) -> list[str]:
     """Allow legitimate future decisions only with verifiable reviewer evidence."""
     problems: list[str] = []
     allowed = {
@@ -197,8 +210,8 @@ def main() -> int:
         check(len(values) == len(set(values)), f"Duplicate {label} ID")
         return set(values)
 
-    check(road["schemaVersion"] == "1.4.0", "Roadmap schema version must be 1.4.0")
-    check("v1.4" in main_doc[:400], "Roadmap Markdown version and JSON must match")
+    check(road["schemaVersion"] == "1.5.0", "Roadmap schema version must be 1.5.0")
+    check("v1.5" in main_doc[:400], "Roadmap Markdown version and JSON must match")
     module_ids = unique(modules["modules"], "id", "business module")
     check(len(module_ids) == 17, f"Expected 17 business module IDs, got {len(module_ids)}")
     phase_ids = unique(road["phases"], "id", "phase")
@@ -306,13 +319,13 @@ def main() -> int:
     cuts = road["r0Prcuts"]
     pr_ids = unique(cuts, "id", "PR cut")
     check(len(cuts) == 26, f"Expected 26 slices, got {len(cuts)}")
-    check(pr_ids == ({f"PR-{i:02d}" for i in range(21)} | {"PR-03C", "PR-10V", "PR-12C", "PR-16R", "PR-17S"}), "PR IDs missing or reused")
+    check(pr_ids == ({f"PR-{i:02d}" for i in range(21)} | {"PR-03C", "PR-06S", "PR-10V", "PR-12C", "PR-16R"}), "PR IDs missing or reused")
     check(road["audit"]["findingsTotal"] == 27, "Expected 27 audited findings")
     pr_map = {pr["id"]: pr for pr in cuts}
     # New v1.4 R0 clarity contract: each decision must have a real owner, gate
     # and safe fallback. These are proposed decisions, NEVER approval evidence.
     delivery = load("docs/contracts/r0-delivery-contract.v1.json")
-    check(delivery["schemaVersion"] == "1.0.0", "Delivery contract schema mismatch")
+    check(delivery["schemaVersion"] == "1.1.0", "Delivery contract schema mismatch")
     decision_ids = unique(delivery["decisions"], "id", "R0 delivery decision")
     check(decision_ids == {f"DEC-R0-{i:02d}" for i in range(1, 9)},
           "Expected eight numbered and distinct R0 delivery decisions")
@@ -325,7 +338,7 @@ def main() -> int:
         check(d["mustDecideBy"] in pr_ids, f"{d['id']}: unknown before-PR gate")
         check(bool(d.get("owner")) and bool(d.get("failSafe")) and bool(d.get("checks")),
               f"{d['id']}: missing owner/failSafe/acceptance checks")
-    problems.extend(audit_v14_delivery_approvals(delivery))
+    problems.extend(audit_v15_delivery_approvals(delivery))
     check(all(new_id in pr_ids for new_id in ["PR-10V", "PR-12C", "PR-16R"]),
           "Three previously missing R0 PRs must have named gates")
     check("PR-10V" in pr_map["PR-10"]["dependsOnPrs"],
@@ -333,10 +346,10 @@ def main() -> int:
     check("PR-12C" in pr_map["PR-19"]["dependsOnPrs"] and
           "PR-16R" in pr_map["PR-19"]["dependsOnPrs"],
           "Full R0 E2E must cover cancellation and private review")
-    check(pr_map["PR-13"]["dependsOnPrs"] == ["PR-12"],
-          "Execution must not wait for unapproved cancellation BR")
+    check(pr_map["PR-13"]["dependsOnPrs"] == ["PR-12", "PR-06S"],
+          "Execution must wait for Booking and signature verification, not cancellation BR")
     check(pr_map["PR-17"]["dependsOnPrs"] == ["PR-07"],
-          "Invoice engine must not blanket-block permitted ADVANCE on POD")
+          "Commercial cost report must not depend on POD, bank or invoice processing")
     check(pr_map["PR-16R"]["owner"] == "commercial" and
           pr_map["PR-12C"]["owner"] == "booking" and
           pr_map["PR-10V"]["owner"] == "fleet",
@@ -452,9 +465,9 @@ def main() -> int:
         check(bool(pr.get("caseCoverageNote")) or pr["id"] in {"PR-00", "PR-01", "PR-08"},
               f"{pr['id']}: test case-selection rationale missing")
 
-    problems.extend(audit_v14_pr_contract(
+    problems.extend(audit_v15_pr_contract(
         road, full_case_ids, {e["id"]: e["permission"] for e in access["entries"]}, br_ids))
-    problems.extend(audit_v14_markdown_pr_table(road, main_doc))
+    problems.extend(audit_v15_markdown_pr_table(road, main_doc))
     for path in road["testBanks"]:
         check((ROOT / path).is_file(), f"Missing linked test source {path}")
     for item in road["r0Prcuts"]:
@@ -467,9 +480,25 @@ def main() -> int:
     check(pr_map["PR-03C"]["owner"] == "commercial" and
           "PR-03C" in pr_map["PR-03"]["dependsOnPrs"],
           "Tenancy grants must depend on canonical Commercial CustomerAccount")
-    check("PR-17S" in pr_map["PR-18"]["dependsOnPrs"] and
-          "PR-17S" in pr_map["PR-19"]["dependsOnPrs"],
-          "Recovery/E2E depend on qualified verified settlement path")
+    check("PR-17S" not in pr_map and
+          "PR-17S" not in pr_map["PR-18"]["dependsOnPrs"] and
+          "PR-17S" not in pr_map["PR-19"]["dependsOnPrs"],
+          "R0 must have no bank settlement PR or dependency")
+    check("PR-06S" in pr_map["PR-07"]["dependsOnPrs"] and
+          "PR-06S" in pr_map["PR-13"]["dependsOnPrs"],
+          "Binding legal actions must require EDS adapter and signature verification")
+    signing = load("docs/contracts/r0-scope-eds-signing.v1.json")
+    check(signing["schemaVersion"] == "1.0.0",
+          "No-payments/EDS signing scope schema mismatch")
+    check(signing["productBoundary"]["mode"] == "TRANSPORT_AND_CONTRACT_MANAGEMENT_NO_PAYMENTS",
+          "User-directed no-payment product scope must be preserved")
+    check(signing["signing"]["adapters"][0]["id"] == "NCALAYER",
+          "R0 EDS signing uses NCALayer as initial design adapter")
+    check(len(signing["signing"]["tests"]) == 13,
+          "Expected 13 EDS test specifications; implementation pending")
+    check("PR-06S" == signing["roadmap"]["addPr"]["id"] and
+          signing["roadmap"]["removePr"] == "PR-17S",
+          "Signing contract and roadmap replacement do not match")
     proof = road.get("proofIntegrityProtocol", {})
     check("EvidenceBlobGateway" in proof.get("immutableObjectOwner", ""),
           "Proof bytes must be verified through non-cyclic platform EvidenceBlobGateway")
