@@ -7,6 +7,7 @@ on:
       - 'backend/pom.xml'
       - 'backend/src/main/java/kz/keruenix/platform/persistence/**'
       - 'backend/src/test/java/kz/keruenix/platform/persistence/**'
+      - 'backend/src/main/java/kz/keruenix/platform/security/**'
       - 'backend/src/main/resources/application-platform-db.yml'
       - 'backend/src/test/resources/application-platform-db-migrate-test.yml'
       - 'backend/src/test/resources/db/**'
@@ -21,6 +22,7 @@ on:
       - 'backend/pom.xml'
       - 'backend/src/main/java/kz/keruenix/platform/persistence/**'
       - 'backend/src/test/java/kz/keruenix/platform/persistence/**'
+      - 'backend/src/main/java/kz/keruenix/platform/security/**'
       - 'backend/src/main/resources/application-platform-db.yml'
       - 'backend/src/test/resources/application-platform-db-migrate-test.yml'
       - 'backend/src/test/resources/db/**'
@@ -85,7 +87,7 @@ jobs:
           KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
           KERUENIX_DB_MIGRATOR_USER: postgres
           KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
-        run: mvn -B -ntp -f backend/pom.xml -Dtest=PlatformDatabaseIntegrationTest,PlatformOutboxClaimIntegrationTest test
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=PlatformDatabaseIntegrationTest,PlatformOutboxClaimIntegrationTest,TrustedTenantHttpIntegrationTest test
       - name: Confirm Liquibase idempotent replay on already-migrated schema
         env:
           KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
