@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "schemaVersion": "1.0",
-  "documentStatus": "PROPOSED_FOR_BUSINESS_APPROVAL_NOT_IMPLEMENTED",
+  "schemaVersion": "1.1.0",
+  "documentStatus": "V1_7_ACTIVE_TRANSPORT_LIFECYCLE_ONLY_PAYMENT_MACHINES_RETIRED",
   "owner": "KERUENIX product architecture (proposed)",
   "effectiveDraftDate": "2026-11-07",
   "semantics": "candidate state transitions; guard names denote business rules that must be implemented and proven separately",
@@ -614,135 +614,177 @@
           "guard": "NEW_DOCUMENT_REVISION"
         }
       ]
-    },
+    }
+  ],
+  "retiredMachines": [
     {
       "machine": "INVOICE",
-      "initial": "DRAFT",
-      "terminal": [
-        "ISSUED",
-        "VOIDED"
-      ],
-      "description": "Issued invoice is immutable; credit notes and correcting documents are separate objects.",
-      "transitions": [
-        {
-          "from": "DRAFT",
-          "to": "ISSUED",
-          "command": "issueInvoice",
-          "guard": "FINANCE_AUTH_AND_VALID_LINES"
-        },
-        {
-          "from": "DRAFT",
-          "to": "VOIDED",
-          "command": "voidDraftInvoice",
-          "guard": "FINANCE_AUTH"
-        }
-      ]
+      "retired": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "historicalDefinition": {
+        "machine": "INVOICE",
+        "initial": "DRAFT",
+        "terminal": [
+          "ISSUED",
+          "VOIDED"
+        ],
+        "description": "Issued invoice is immutable; credit notes and correcting documents are separate objects.",
+        "transitions": [
+          {
+            "from": "DRAFT",
+            "to": "ISSUED",
+            "command": "issueInvoice",
+            "guard": "FINANCE_AUTH_AND_VALID_LINES"
+          },
+          {
+            "from": "DRAFT",
+            "to": "VOIDED",
+            "command": "voidDraftInvoice",
+            "guard": "FINANCE_AUTH"
+          }
+        ]
+      },
+      "doNotImplement": true,
+      "reason": "No invoice, receivable, payable, bank settlement, payment allocation or PAID status anywhere in product"
     },
     {
       "machine": "RECEIVABLE",
-      "initial": "OPEN",
-      "terminal": [
-        "SETTLED",
-        "WRITTEN_OFF"
-      ],
-      "description": "Customer money is tracked as allocations/ledger; disputed and overdue are orthogonal flags.",
-      "transitions": [
-        {
-          "from": "OPEN",
-          "to": "PARTIALLY_SETTLED",
-          "command": "allocateCustomerPayment",
-          "guard": "MATCHED_PAYMENT_AND_BALANCE_POSITIVE"
-        },
-        {
-          "from": "OPEN",
-          "to": "SETTLED",
-          "command": "allocateCustomerPayment",
-          "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
-        },
-        {
-          "from": "PARTIALLY_SETTLED",
-          "to": "SETTLED",
-          "command": "allocateCustomerPayment",
-          "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
-        },
-        {
-          "from": "OPEN",
-          "to": "WRITTEN_OFF",
-          "command": "writeOffReceivable",
-          "guard": "FINANCE_APPROVAL_AND_EVIDENCE"
-        },
-        {
-          "from": "PARTIALLY_SETTLED",
-          "to": "WRITTEN_OFF",
-          "command": "writeOffRemaining",
-          "guard": "FINANCE_APPROVAL_AND_EVIDENCE"
-        }
-      ]
+      "retired": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "historicalDefinition": {
+        "machine": "RECEIVABLE",
+        "initial": "OPEN",
+        "terminal": [
+          "SETTLED",
+          "WRITTEN_OFF"
+        ],
+        "description": "Customer money is tracked as allocations/ledger; disputed and overdue are orthogonal flags.",
+        "transitions": [
+          {
+            "from": "OPEN",
+            "to": "PARTIALLY_SETTLED",
+            "command": "allocateCustomerPayment",
+            "guard": "MATCHED_PAYMENT_AND_BALANCE_POSITIVE"
+          },
+          {
+            "from": "OPEN",
+            "to": "SETTLED",
+            "command": "allocateCustomerPayment",
+            "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
+          },
+          {
+            "from": "PARTIALLY_SETTLED",
+            "to": "SETTLED",
+            "command": "allocateCustomerPayment",
+            "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
+          },
+          {
+            "from": "OPEN",
+            "to": "WRITTEN_OFF",
+            "command": "writeOffReceivable",
+            "guard": "FINANCE_APPROVAL_AND_EVIDENCE"
+          },
+          {
+            "from": "PARTIALLY_SETTLED",
+            "to": "WRITTEN_OFF",
+            "command": "writeOffRemaining",
+            "guard": "FINANCE_APPROVAL_AND_EVIDENCE"
+          }
+        ]
+      },
+      "doNotImplement": true,
+      "reason": "No invoice, receivable, payable, bank settlement, payment allocation or PAID status anywhere in product"
     },
     {
       "machine": "PAYABLE",
-      "initial": "PENDING_VERIFICATION",
-      "terminal": [
-        "REJECTED",
-        "SETTLED"
-      ],
-      "description": "Supplier expense, approved payable, cash transfer and bank reconciliation must be distinct.",
-      "transitions": [
-        {
-          "from": "PENDING_VERIFICATION",
-          "to": "APPROVAL_REQUIRED",
-          "command": "requestPayableApproval",
-          "guard": "INVOICE_MATCHED_WITH_VARIANCE"
-        },
-        {
-          "from": "PENDING_VERIFICATION",
-          "to": "APPROVED",
-          "command": "verifyPayable",
-          "guard": "INVOICE_MATCHED_AND_POLICY"
-        },
-        {
-          "from": "PENDING_VERIFICATION",
-          "to": "REJECTED",
-          "command": "rejectPayable",
-          "guard": "REJECTION_REASON"
-        },
-        {
-          "from": "APPROVAL_REQUIRED",
-          "to": "APPROVED",
-          "command": "approvePayable",
-          "guard": "AUTHORIZED_FINANCE_APPROVAL"
-        },
-        {
-          "from": "APPROVAL_REQUIRED",
-          "to": "REJECTED",
-          "command": "rejectPayable",
-          "guard": "AUTHORIZED_FINANCE_REJECTION"
-        },
-        {
-          "from": "APPROVED",
-          "to": "OPEN",
-          "command": "postPayable",
-          "guard": "POSTED_IN_FINANCIAL_LEDGER"
-        },
-        {
-          "from": "OPEN",
-          "to": "PARTIALLY_SETTLED",
-          "command": "allocateSupplierPayment",
-          "guard": "MATCHED_PAYMENT_AND_BALANCE_POSITIVE"
-        },
-        {
-          "from": "OPEN",
-          "to": "SETTLED",
-          "command": "allocateSupplierPayment",
-          "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
-        },
-        {
-          "from": "PARTIALLY_SETTLED",
-          "to": "SETTLED",
-          "command": "allocateSupplierPayment",
-          "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
-        }
-      ]
+      "retired": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "historicalDefinition": {
+        "machine": "PAYABLE",
+        "initial": "PENDING_VERIFICATION",
+        "terminal": [
+          "REJECTED",
+          "SETTLED"
+        ],
+        "description": "Supplier expense, approved payable, cash transfer and bank reconciliation must be distinct.",
+        "transitions": [
+          {
+            "from": "PENDING_VERIFICATION",
+            "to": "APPROVAL_REQUIRED",
+            "command": "requestPayableApproval",
+            "guard": "INVOICE_MATCHED_WITH_VARIANCE"
+          },
+          {
+            "from": "PENDING_VERIFICATION",
+            "to": "APPROVED",
+            "command": "verifyPayable",
+            "guard": "INVOICE_MATCHED_AND_POLICY"
+          },
+          {
+            "from": "PENDING_VERIFICATION",
+            "to": "REJECTED",
+            "command": "rejectPayable",
+            "guard": "REJECTION_REASON"
+          },
+          {
+            "from": "APPROVAL_REQUIRED",
+            "to": "APPROVED",
+            "command": "approvePayable",
+            "guard": "AUTHORIZED_FINANCE_APPROVAL"
+          },
+          {
+            "from": "APPROVAL_REQUIRED",
+            "to": "REJECTED",
+            "command": "rejectPayable",
+            "guard": "AUTHORIZED_FINANCE_REJECTION"
+          },
+          {
+            "from": "APPROVED",
+            "to": "OPEN",
+            "command": "postPayable",
+            "guard": "POSTED_IN_FINANCIAL_LEDGER"
+          },
+          {
+            "from": "OPEN",
+            "to": "PARTIALLY_SETTLED",
+            "command": "allocateSupplierPayment",
+            "guard": "MATCHED_PAYMENT_AND_BALANCE_POSITIVE"
+          },
+          {
+            "from": "OPEN",
+            "to": "SETTLED",
+            "command": "allocateSupplierPayment",
+            "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
+          },
+          {
+            "from": "PARTIALLY_SETTLED",
+            "to": "SETTLED",
+            "command": "allocateSupplierPayment",
+            "guard": "MATCHED_PAYMENT_AND_ZERO_BALANCE"
+          }
+        ]
+      },
+      "doNotImplement": true,
+      "reason": "No invoice, receivable, payable, bank settlement, payment allocation or PAID status anywhere in product"
     }
-  ]
+  ],
+  "scopeOverlay": {
+    "source": "docs/contracts/r0-scope-eds-signing.v1.json",
+    "version": "1.7.0",
+    "scope": "NO_PAYMENTS",
+    "activeMachines": [
+      "RFQ",
+      "CUSTOMER_QUOTE_VERSION",
+      "CARRIER_OFFER",
+      "CAPACITY_RESERVATION",
+      "BOOKING",
+      "TRIP",
+      "SHIPMENT",
+      "DELIVERY_ATTEMPT",
+      "DOCUMENT_PACKAGE_VERSION"
+    ],
+    "retiredMachines": [
+      "INVOICE",
+      "RECEIVABLE",
+      "PAYABLE"
+    ],
+    "invariant": "No code/state machine/API/migration may be generated from retiredMachines. Cost reports do not have invoice/payment lifecycle."
+  }
 }

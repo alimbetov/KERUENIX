@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "1.0",
-  "status": "PROPOSED_NOT_IMPLEMENTED",
+  "schemaVersion": "1.1.0",
+  "status": "V1_7_NO_PAYMENTS_DESIGN_NOT_IMPLEMENTED",
   "date": "2026-11-07",
   "authoritativeModules": "docs/contracts/module-boundaries.v1.json",
   "architectureRef": "docs/15-data-platform-partitioning-postgis.md",
@@ -123,11 +123,11 @@
     {
       "id": "finance",
       "phase": "R0",
-      "writeModel": "Invoice, receivables, payables, ledger/payment allocations",
-      "readModels": "AR/AP aging and profitability projections, reconciliation snapshots",
-      "partitioning": "none for financial source of truth",
+      "writeModel": "CostEstimate, CommercialCostReport, MarginReadModel, optional opaque ExternalAccountingDocRef only",
+      "readModels": "Versioned sell/buy/cost/margin projections with tenant/account field masks and freshness",
+      "partitioning": "No finance/payment table partitioning in KERUENIX; external accounting remains authoritative",
       "gis": "geo only as reference for pricing/route cost, no own spatial truth",
-      "requiredTests": "FIN-DATA-01 delayed read model cannot mark payment settled"
+      "requiredTests": "FIN-DATA-01 delayed margin read model never invents payments, invoice or PAID; PAY-ABS-01..06"
     },
     {
       "id": "optimization",

@@ -1,9 +1,9 @@
 # KERUENIX — единая система проектной документации
 
-**Documentation baseline:** v0.2 · **Дата:** 2026-11-07 · **Статус:** DRAFT / Discovery.  
+**Documentation baseline:** v1.7 (R0 contract-consistency) · **Дата:** 2026-11-07 · **Статус:** DRAFT / Discovery.  
 **Этот каталог — синтез требований**, `../idea/` — подробное описание гипотез, исходных предложений, сценариев и нормативных ссылок.
 
-**Текущий продуктовый scope, проверка 2026-11-08:** [39 — Повторное техническое и бизнес-ревью](39-r0-technical-business-review.md) и [38 — Online ЭЦП без платежей](38-r0-eds-signing-no-payments.md) имеют приоритет над прежними банковскими/AR/AP/PAID примерами. **Не генерировать оплату или банковские сервисы из старого ТЗ.** Приложение ещё не прошло бизнес-TDD/PG qualification.
+**Текущий продуктовый scope, проверка 2026-11-08:** [40 — Contract Consistency & Business Readiness v1.7](40-r0-contract-consistency-business-readiness-v1-7.md), [39 — Повторное техническое и бизнес-ревью](39-r0-technical-business-review.md) и [38 — Online ЭЦП без платежей](38-r0-eds-signing-no-payments.md) имеют приоритет над прежними банковскими/AR/AP/PAID примерами. **Не генерировать оплату или банковские сервисы из старого ТЗ.** Приложение ещё не прошло бизнес-TDD/PG qualification.
 
 ## Рабочие документы
 
@@ -23,6 +23,7 @@
 | 12 | [Project Audit — 2026-11-07](12-project-audit-2026-11-07.md) | Состояние кода, технические разрывы, риски, R0a и план реализации | Audit / Draft |
 | 13 | [Modular Architecture Options v1](13-modular-architecture-options-v1.md) | Сравнение подходов, bounded contexts, SaaS/On-Prem и правила модулей | Proposed |
 | 15 | [Data Platform: Read Models / Partitioning / PostGIS](15-data-platform-partitioning-postgis.md) | Владение данными, горячие проекции, GPS partitions, GIS, безопасность и тесты | Proposed |
+| 40 | [Contract Consistency & Business Readiness v1.7](40-r0-contract-consistency-business-readiness-v1-7.md) | Действующий R0 scope, machine ownership, P0/P1 и неподписанные BR/DEC; CI gates | Design corrected / approval pending |
 | 39 | [Second Technical + Business Re-review](39-r0-technical-business-review.md) | P0/P1 scope конфликт, права, ЭЦП, 8/10 POD, отрицательные тесты, неутвержденные решения | Specification audit; domain code pending |
 | 38 | [Online EDS / No Payments](38-r0-eds-signing-no-payments.md) | NCALayer, legal authority/verification, SIG-01..18, ban payments | Proposed / legal+provider approval pending |
 | JSON | [Scope + EDS Signing](contracts/r0-scope-eds-signing.v1.json) | Target product: no payments, 18 signing and 6 absence TDD contracts | Design only |
@@ -30,8 +31,8 @@
 | 35 | [R0 Developer Handbook](35-r0-developer-handbook.md) | Единственная практическая точка входа: R0, владелец данных, пользовательский сценарий, API/TDD, 8 открытых решений | Draft / ready for review |
 | JSON | [R0 Delivery Decision Contract](contracts/r0-delivery-contract.v1.json) | DEC-R0-01..08: открытые ADR/BR, fail-safe, ответственный и PR-gate | Proposed / none business-signed |
 | 34 | [TDD Roadmap Technical Audit v1.3](34-tdd-roadmap-technical-audit.md) | 27 technical findings, 23-PR DAG, customer ownership/evidence/payment gates, unresolved business signoff | Audit complete / implementation pending |
-| 33 | [TDD Development Roadmap v1.6](33-tdd-development-roadmap-v1.md) | RD-00..RD-12, 26 small PR cuts, draft/submit separation, early Outbox/RLS, owner boundaries, TDD+UI+CI gates | Revised proposal / no business module qualified |
-| JSON | [TDD Roadmap Contract v1.6](contracts/tdd-development-roadmap.v1.json) | Machine-readable DAG, PR cuts, BR/test traceability and ownership guards | Proposed / validated by separate CI when green |
+| 33 | [TDD Development Roadmap v1.7](33-tdd-development-roadmap-v1.md) | RD-00..RD-12, 26 small PR cuts, draft/submit separation, early Outbox/RLS, owner boundaries, TDD+UI+CI gates | Revised proposal / no business module qualified |
+| JSON | [TDD Roadmap Contract v1.7](contracts/tdd-development-roadmap.v1.json) | Machine-readable DAG, PR cuts, BR/test traceability and ownership guards | Proposed / validated by separate CI when green |
 | CI | [TDD Roadmap Contract Validator](../scripts/validate_tdd_roadmap.py) | Phase DAG, 17 modules, BR/BSC references, 26 PR cuts, 132 existing candidate test records and 8 new R0 decision gates, source/permission/UI gates | New CI contract gate; not business code |
 | 32 | [Scenario-Driven Backend Design v1](32-scenario-driven-backend-design-v1.md) | DDD/Modulith, command/query, DTO/MapStruct, REST, typed filters, offset/cursor pagination, SQL/RLS and opt-in Soft Delete | Proposed / architecture review; not implemented |
 | JSON | [Backend Query & Soft Delete Contract v1](contracts/backend-query-soft-delete.v1.json) | Machine-readable paging/filter/route, deletion eligibility, restoration, and planned acceptance gates | Proposed / not implemented |
