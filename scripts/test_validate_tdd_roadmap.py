@@ -301,5 +301,27 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         self.assertEqual(module.audit_v16_delivery_approvals(delivery), [])
 
 
+    def test_v17_lifecycle_storage_scope_positive(self):
+        lifecycle = load("docs/contracts/commercial-execution-lifecycle.v1.json")
+        storage = load("docs/contracts/storage-gis-module-contract.v1.json")
+        self.assertEqual(module.audit_v17_lifecycle_storage_scope(lifecycle, storage), [])
+
+    def test_v17_invoice_machine_reactivation_mutation(self):
+        lifecycle = load("docs/contracts/commercial-execution-lifecycle.v1.json")
+        storage = load("docs/contracts/storage-gis-module-contract.v1.json")
+        retired = next(x for x in lifecycle["retiredMachines"] if x["machine"] == "INVOICE")
+        lifecycle["machines"].append(retired["historicalDefinition"])
+        self.assertTrue(any("lifecycle machine reactivated" in e
+                            for e in module.audit_v17_lifecycle_storage_scope(lifecycle, storage)))
+
+    def test_v17_gis_finance_payment_write_mutation(self):
+        lifecycle = load("docs/contracts/commercial-execution-lifecycle.v1.json")
+        storage = load("docs/contracts/storage-gis-module-contract.v1.json")
+        next(x for x in storage["modules"] if x["id"] == "finance")[
+            "writeModel"] = "Invoice, Receivable, PaymentAllocation"
+        self.assertTrue(any("finance writeModel must not own" in e
+                            for e in module.audit_v17_lifecycle_storage_scope(lifecycle, storage)))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -21,7 +21,10 @@ KERUENIX управляет RFQ, версиями Quote, обязательст�
 | REV2-05 | P1 | Eleven retired payment test IDs synchronized in signed scope, roadmap and test banks | Exact retired-set parity, separate six PAY-ABS negative cases |
 | REV2-06 | P0 | Machine module ownership/public events are checked for forbidden payment entities | Mutation test for PaymentAllocation and InvoiceIssued |
 | REV2-07 | P1 | Commercial CustomerAccount/ServiceReview are `proposedOwnershipPendingADR`, not approved automatically | Owner ADR remains pending |
+| REV2-09 | P0 | Archived INVOICE/RECEIVABLE/PAYABLE lifecycle machines are non-executable; GIS finance owns no ledger | Validator rejects reactivated state machines and write-model payment records |
 | REV2-08 | P0 | `DEC-R0-07` business-scope acknowledgement is a valid PENDING state, not an approval | Approval evidence/authority/version/date required |
+
+The active lifecycle machine contract now contains nine transport/document machines; the three old finance machines are retained solely as historical records with `doNotImplement=true`.
 
 ## 3. Business readiness — truthful decision ledger
 

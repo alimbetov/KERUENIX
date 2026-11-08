@@ -321,6 +321,31 @@ def audit_v17_markdown_phase_table(road: dict, main_doc: str) -> list[str]:
             errors.append(f"{pid}: Markdown phase prerequisites differ from machine contract")
     return errors
 
+
+
+def audit_v17_lifecycle_storage_scope(lifecycle: dict, storage: dict) -> list[str]:
+    """Prevent archived payment lifecycles and storage from becoming active R0."""
+    errors: list[str] = []
+    retired_ids = {"INVOICE", "RECEIVABLE", "PAYABLE"}
+    active = {m.get("machine") for m in lifecycle.get("machines", [])}
+    archived = {m.get("machine") for m in lifecycle.get("retiredMachines", [])
+                if m.get("doNotImplement") is True and
+                   m.get("retired") == "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE"}
+    if active & retired_ids:
+        errors.append("Retired invoice/AR/AP lifecycle machine reactivated")
+    if not retired_ids.issubset(archived):
+        errors.append("Historical invoice/AR/AP lifecycle machines not safely retired")
+    if lifecycle.get("scopeOverlay", {}).get("scope") != "NO_PAYMENTS":
+        errors.append("Lifecycle lost NO PAYMENTS normative overlay")
+    finance = next((m for m in storage.get("modules", []) if m.get("id") == "finance"), {})
+    write_model = str(finance.get("writeModel", "")).lower()
+    if any(bad in write_model for bad in ("invoice", "receivable", "payable",
+                                          "paymentallocation", "settlement", "banktransaction")):
+        errors.append("GIS finance writeModel must not own payments or invoices")
+    if "commercialcostreport" not in write_model or "externalaccountingdocref" not in write_model:
+        errors.append("GIS finance writeModel missing commercial costing/external reference")
+    return errors
+
 def main() -> int:
     problems: list[str] = []
     road = load("docs/contracts/tdd-development-roadmap.v1.json")
@@ -334,6 +359,9 @@ def main() -> int:
     problems.extend(audit_v16_current_product_scope(road, access, signing_for_review, base_tests, neg_tests))
     delivery_for_scope = load("docs/contracts/r0-delivery-contract.v1.json")
     problems.extend(audit_v17_module_scope(modules, road, delivery_for_scope, signing_for_review, base_tests, neg_tests))
+    lifecycle = load("docs/contracts/commercial-execution-lifecycle.v1.json")
+    storage = load("docs/contracts/storage-gis-module-contract.v1.json")
+    problems.extend(audit_v17_lifecycle_storage_scope(lifecycle, storage))
     bsc_text = (ROOT / "docs/25-business-scenario-book.md").read_text(encoding="utf-8")
     main_doc = (ROOT / road["roadmapRef"]).read_text(encoding="utf-8")
     problems.extend(audit_v17_markdown_phase_table(road, main_doc))
