@@ -141,6 +141,10 @@ Do **not** sign approvals in GitHub code as personal information or legal certif
 
 **Explicitly not done in this update:** no implementation of these new PRs, no real user/customer/legal approval, no new arbitrary machine access grant, no Java domain Testcontainers tests. This handbook is an implementation specification and a source of clarity, not evidence that the platform is ready for production.
 
-## 10. v1.1 product scope binding amendment (current)
+## 10. v1.1 historical product scope (superseded by v1.6)
 
 The owner-directed R0 boundary is **transport + legal-document signing + commercial costing, NO PAYMENTS**. [38 — Signatures/No Payments](38-r0-eds-signing-no-payments.md) controls any historical financial/settlement ambiguity in this handbook. `PR-06S` introduces online NCA EDS signature verification (NCALayer first, eGov QR optional qualified provider), and `PR-17S` bank settlement is removed. **Never accept a foreign/expired/unverified signature**, and never confuse a signature with money transfer. Old TDD bank payment examples are recorded as out of R0 scope, not runnable positive release gates.
+
+## 11. v1.6 binding tech/business review
+
+[39 — Technical and Business Re-review](39-r0-technical-business-review.md) and [38 — Online EDS No Payments](38-r0-eds-signing-no-payments.md) are the current product rules: no payment APIs, accounting ledger or bank statuses in any planned product release. `FIN-01` is read-only scoped `commercial:cost:read`, `FIN-02/03/04` are retired. Carrier contract `PR-11` and Quote/POD relevant binding actions need `PR-06S` verified NCA EDS and legal entity authority where required. `SIG-01..18` and `PAY-ABS-01..06` are project test specifications, not executed tests. Old invoices/settlement prose above is **historical**, never generate an endpoint/table from it.
