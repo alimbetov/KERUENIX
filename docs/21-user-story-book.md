@@ -14,6 +14,10 @@
 
 **Based on:** [operational journeys](../idea/04-operational-workflows.md), [dispatcher day](../idea/17-forwarder-dispatcher-day-simulation.md), [commercial lifecycle](10-commercial-execution-lifecycle-v1.md), [existing lifecycle test plan](11-commercial-execution-acceptance-v1.md), [requirements matrix](04-requirements-traceability.md), [engineering TDD standard](20-mapstruct-tdd-engineering-standard.md).
 
+## Current R0 scope correction — signing YES, payments NO
+
+The [R0 scope and EDS contract](contracts/r0-scope-eds-signing.v1.json) supersedes any historical payment, accounts-receivable, payable, invoice issuance, bank reconciliation or `PAID` story in this book. For R0, **FIN only sees scoped commercial buy/sell costs, estimates and margin**, while `FAP` payment approval is retired. All payment story IDs stay in the archive for traceability, not as implementation requirements. Legally binding Quote and document actions require verified [signature evidence and legal authority](38-r0-eds-signing-no-payments.md) where the accepted legal profile requires it; there is no automatic right to sign from a role template.
+
 ## 1. User Story Book editorial rules
 
 - **One story ID, one business outcome:** `USB-<role>-NNN`, stable IDs never reused. Role describes primary actor, but collaborators and tenant owner must also be named.
@@ -84,7 +88,7 @@ All entries: `status=DRAFT`, `evidence=NOT EXECUTED`. Synthetic tenant IDs and s
 | USB-DRV-001 | DRV | As assigned driver I report pickup and custody evidence for actual cargo units | Trip started/GPS != pickup; duplicate offline evidence dedup | KX-LFC-005, LFC-011 |
 | USB-DSP-002 | DSP | As dispatcher I view shipment milestones and stale-aware GPS/ETA to handle delays | No false live position; GPS geofence != delivery; privacy-filtered customer data | KX-OPS-004, LFC-012 |
 | USB-RCV-001 | RCV | As consignee I record full/partial/refused delivery with verifiable POD | 8/10 units != delivered all; signed evidence/authorized receiver required per policy | KX-OPS-005, LFC-013/014 |
-| USB-FIN-001 | FIN | As financial controller I reconcile sell/buy amounts and evidence separately from actual cash receipt | Delivered != Paid; no duplicate payment allocation or invoice status from unverified callback | KX-FIN-001/002, LFC-021..026 |
+| USB-FIN-001 | FIN | As an authorized commercial analyst I view versioned buy/sell estimates and margin for my provider | Own provider only; no carrier/other-customer margin disclosure; NO payment status or ledger | R0 costing-only, AUTH-FIN-001 |
 | USB-TEN-001 | TEN | As tenant admin I grant/revoke scoped access for a carrier or customer on a shipment | Role != ownership; revoke must stop new access to GPS, quote, documents, cache | KX-TEN-001/002, LFC-008/017 |
 | USB-SUP-001 | SUP | As support operator I inspect job failures and initiate authorized safe replay without disclosing unrelated tenant data | Least privilege, audited replay, no duplicate side effects, RLS and source-owner checks | JOB-004..008, KX-ARC-OPS-001 |
 
@@ -142,7 +146,7 @@ These **15 additional DRAFT stories** supply missing external-client/product and
 | USB-SAL-004 | SAL | Respond to private verified customer review after authorized release (R1) | No editing original text/score; R1 |
 | USB-SAL-005 | SAL | Read verified customer feedback scoped to provider company | No foreign provider/customer reviews or edit of original content |
 | USB-DOC-001 | DOC | Verify document package before business use/release | Exact package, evidence and immutable version |
-| USB-FAP-001 | FAP | Approve valid payable by policy and amount | Initiator cannot self-approve same payment |
+| USB-FAP-001 | FAP | Historical payable approval story — **RETIRED / OUT OF KERUENIX PRODUCT SCOPE** | No payables or payment approval role is granted |
 
 **Interpretation:** `FIN` can prepare accounting evidence; `FAP` is a separate **approval capability** (may belong to another appointed person, not automatically a separate headcount). `SHP` and `EXC` must never be used interchangeably in security decisions. A person with several roles still cannot approve their own exception.
 
@@ -179,8 +183,8 @@ The **18 new DISCOVERED stories** below extend the original 40 and remain candid
 | `USB-DRV-002` | DRV | Передать офлайн pickup/custody событие без дублирования | R0 | Execution | BSC-005 | EXE-02 + idempotency |
 | `USB-RCV-002` | RCV | Подписать частичную приёмку/повреждение и учесть остаток | R0 | Execution | BSC-007 | EXE-03 + cargo conservation |
 | `USB-DOC-002` | DOC | Вернуть неполный пакет на исправление и проверить новую версию | R0 | Documents | BSC-008 | DOC-01; reject/release pending |
-| `USB-FIN-002` | FIN | Оспорить неподтверждённую доплату подрядчика | R0 | Finance | BSC-008 | FIN-02; dispute pending |
-| `USB-FIN-003` | FIN | Сверить аванс, частичную оплату и корректировку без двойных аллокаций | R0 | Finance | BSC-008 | FIN-04 |
+| `USB-FIN-002` | FIN | Оспорить предложенную подрядчиком коммерческую надбавку до изменения согласованной цены | R0 | Commercial/Finance costing | BSC-008 | Quote amendment needs approval and fresh signature where binding; FIN-02 retired |
+| `USB-FIN-003` | FIN | Историческая история сверки платежа — **вне продукта** | RETIRED | External Accounting | BSC-008 legacy | FIN-04 retired; no KERUENIX payment implementation |
 | `USB-COM-001` | COM | Блокировать назначение при DENY/критическом UNKNOWN нормативных требований | R0 safety-only | Compliance | BSC-004 | PENDING: independent compliance, no automatic override |
 | `USB-WHS-001` | WHS | Подтвердить складскую передачу CargoUnits с количеством/custody evidence | R1 | Warehouse/Execution | Later pass | PENDING (R1) |
 | `USB-OWN-001` | OWN | Получить ограниченные KPI по факту доставок, затрат, сроков и претензий | R1 | Finance/Reporting | Later pass | PENDING (R1) |
@@ -212,8 +216,8 @@ These **20 newly discovered** stories are candidates. Existing IDs are never ren
 | `USB-DRV-004` | DRV | Сообщить о поломке в пути и сохранить доказательство текущего custodian | R0 safety | Execution/Recovery | `SIM-25` | PENDING: interruption evidence, advanced rescue after R0 |
 | `USB-RCV-003` | RCV | Зафиксировать отсутствие получателя/отказ от подписи как неуспешную попытку | R0 safety | Execution | `SIM-27` | PENDING: failed delivery reason; no delivered |
 | `USB-DOC-003` | DOC | Выдать клиенту только проверенную версию POD/документа по актуальному гранту | R0 | Documents | `SIM-30` | DOC-01 + download authorization and short URL TTL |
-| `USB-FIN-004` | FIN | Исправить выпущенный счет через корректирующий документ/credit note | R1 | Finance | `SIM-31` | PENDING: finance adjustment not edit issued Invoice |
-| `USB-FAP-002` | FAP | Отклонить неподтвержденную выплату и зафиксировать отказ/основание | R0 safety | Finance | `SIM-32` | PENDING: payment:reject and SoD scope |
+| `USB-FIN-004` | FIN | Историческая история корректировки налогового/бухгалтерского счёта — вне продукта KERUENIX | RETIRED | External Accounting | `SIM-31` legacy | No internal ESF or credit-note issuance |
+| `USB-FAP-002` | FAP | Исторический отказ в платеже — вне продукта KERUENIX | RETIRED | External Accounting | `SIM-32` legacy | No payment permission or operation |
 | `USB-COM-002` | COM | Независимо рассмотреть документальное основание снятия compliance HOLD | R1 | Compliance | `SIM-19` | PENDING: independent compliance hold release; default DENY in R0 |
 | `USB-TEN-006` | TEN | При увольнении внешнего контактного лица отозвать точечный CustomerAccount grant | R0 | Tenancy | `SIM-34` | TEN-13: revoke one member, preserve coworker access |
 | `USB-WHS-002` | WHS | Оформить межскладскую/кросс-док передачу частей груза | R1 | Warehouse/Execution | `SIM-36` | PENDING: ledger and cargo-unit custody |
