@@ -35,8 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles({"platform-db","platform-db-migrate-test"})
 class PlatformOutboxClaimIntegrationTest {
-    private static final UUID A=UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    private static final UUID B=UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private static final UUID A=UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+    private static final UUID B=UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddddd");
     @Autowired DataSource dataSource;
     PlatformTenantTransaction app;
     PlatformOutboxClaims worker;
