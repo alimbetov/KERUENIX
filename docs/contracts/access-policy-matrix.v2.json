@@ -287,6 +287,12 @@
       "owner": "Platform Jobs (technical)",
       "required": "Scoped platform operator job metadata or specifically approved replay, tenant and job-type allowlists, audit",
       "separation": "No global customer business-data access; replay cannot bypass domain authorization"
+    },
+    "AP-COMMERCIAL-COST-READ": {
+      "kind": "GUARD_ONLY",
+      "owner": "Finance (commercial cost read-only context)",
+      "required": "Verified provider Tenant and quotation ownership; can view only fields authorized for role and business relation",
+      "separation": "Carrier/customer cannot read provider buy-cost margin unless explicit approved policy; no payment or bank/ledger capabilities"
     }
   },
   "separationOfDuties": [
@@ -1654,9 +1660,9 @@
       "id": "FIN-01",
       "module": "Finance",
       "roleTemplate": "FIN",
-      "permission": "invoice:prepare",
-      "resourceScope": "OWN_PROVIDER_LEGAL_ENTITY_AND_AUTHORIZED_ORDER",
-      "approvalPolicy": "AUDITABLE_DOCUMENT_SNAPSHOT_AMOUNT_AND_VERSION",
+      "permission": "commercial:cost:read",
+      "resourceScope": "OWN_PROVIDER_LEGAL_ENTITY_AUTHORIZED_QUOTE_COMMERCIAL_COST",
+      "approvalPolicy": "OWN_TENANT_QUOTE_VERSION_ROLE_FIELD_MASKING_NO_PAYMENT_STATE",
       "storyId": "USB-FIN-001",
       "acceptanceId": "AUTH-FIN-001",
       "priority": "R0",
@@ -1667,14 +1673,15 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "approvalPolicyId": "AP-FINANCE-PREP",
+      "approvalPolicyId": "AP-COMMERCIAL-COST-READ",
       "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
-      "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
+      "dataFields": "SELL_BUY_ESTIMATE_AND_MARGIN_ROLE_FILTERED_NO_BANK_OR_ACCOUNTING_DATA",
       "boundary": "EXPORTED_MODULE_API_ONLY",
       "testStatus": "PLANNED_NOT_EXECUTED",
-      "accessAction": "COMMAND",
+      "accessAction": "READ",
       "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
-      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK",
+      "scopeChangeNote": "Replaces legacy invoice:prepare permission; read-only commercial pricing reports; no fiscal invoice generation"
     },
     {
       "id": "FIN-02",
@@ -1685,7 +1692,7 @@
       "approvalPolicy": "NO_PAYMENT_POSTING_FROM_UI_ONLY_AND_NO_AUTO_APPROVAL",
       "storyId": "USB-FIN-001",
       "acceptanceId": "AUTH-FIN-002",
-      "priority": "R0",
+      "priority": "RETIRED_OUT_OF_PRODUCT_SCOPE",
       "subjectType": "TENANT_MEMBER",
       "subjectConstraints": [
         "activeTenantId",
@@ -1694,13 +1701,14 @@
         "verifiedMembershipOrPartnerGrant"
       ],
       "approvalPolicyId": "AP-FINANCE-PREP",
-      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "decision": "DENY_UNCONDITIONALLY",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED",
+      "testStatus": "HISTORICAL_ONLY_NOT_TO_IMPLEMENT",
       "accessAction": "COMMAND",
-      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
-      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+      "templateAssignment": "NEVER_ASSIGN_RETIRED_PERMISSION",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK",
+      "scopeChangeNote": "User excluded all payment/ledger capabilities from KERUENIX, not deferred to R1/R2"
     },
     {
       "id": "FIN-03",
@@ -1711,7 +1719,7 @@
       "approvalPolicy": "INDEPENDENT_APPROVER_FROM_INITIATOR_AND_VERIFIED_ACCOUNTING_EVIDENCE",
       "storyId": "USB-FAP-001",
       "acceptanceId": "AUTH-FIN-003",
-      "priority": "R0",
+      "priority": "RETIRED_OUT_OF_PRODUCT_SCOPE",
       "subjectType": "TENANT_MEMBER",
       "subjectConstraints": [
         "activeTenantId",
@@ -1720,13 +1728,14 @@
         "verifiedMembershipOrPartnerGrant"
       ],
       "approvalPolicyId": "AP-FINANCE",
-      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "decision": "DENY_UNCONDITIONALLY",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED",
+      "testStatus": "HISTORICAL_ONLY_NOT_TO_IMPLEMENT",
       "accessAction": "APPROVAL",
-      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
-      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+      "templateAssignment": "NEVER_ASSIGN_RETIRED_PERMISSION",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK",
+      "scopeChangeNote": "User excluded all payment/ledger capabilities from KERUENIX, not deferred to R1/R2"
     },
     {
       "id": "SUP-01",
@@ -2078,7 +2087,7 @@
       "approvalPolicy": "APPROVAL_NOT_EQUAL_SETTLEMENT_AMOUNT_CURRENCY_ALLOCATION_DEDUP",
       "storyId": "USB-FIN-001",
       "acceptanceId": "AUTH-FIN-004",
-      "priority": "R0",
+      "priority": "RETIRED_OUT_OF_PRODUCT_SCOPE",
       "approvalPolicyId": "AP-FINANCE-RECONCILE",
       "subjectType": "TENANT_MEMBER",
       "subjectConstraints": [
@@ -2087,13 +2096,14 @@
         "resourceId",
         "verifiedMembershipOrPartnerGrant"
       ],
-      "decision": "DENY_UNLESS_ALL_GUARDS_PASS",
+      "decision": "DENY_UNCONDITIONALLY",
       "dataFields": "OWNER_CONTROLLED_ALLOWLIST",
       "boundary": "EXPORTED_MODULE_API_ONLY",
-      "testStatus": "PLANNED_NOT_EXECUTED",
+      "testStatus": "HISTORICAL_ONLY_NOT_TO_IMPLEMENT",
       "accessAction": "COMMAND",
-      "templateAssignment": "SUGGESTED_NOT_AUTOMATIC",
-      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK"
+      "templateAssignment": "NEVER_ASSIGN_RETIRED_PERMISSION",
+      "executionAuthorization": "CURRENT_RESOURCE_AND_GRANT_RECHECK",
+      "scopeChangeNote": "User excluded all payment/ledger capabilities from KERUENIX, not deferred to R1/R2"
     }
   ],
   "adversarialAcceptance": [
@@ -2173,7 +2183,9 @@
       "id": "AUTH-X-013",
       "target": "one user is Tenant Owner and FinanceApprover and requests self financial approval",
       "expected": "no bypass of payment-level SoD",
-      "testLevel": "JUnit+PostgreSQL"
+      "testLevel": "JUnit+PostgreSQL",
+      "r0Applicability": "HISTORICAL_BANK_TEST_RETIRED_NO_PAYMENT_PRODUCT",
+      "implementationPolicy": "Do not implement bank/ledger behavior; substitute PAY-ABS-01..06 absence controls"
     },
     {
       "id": "AUTH-X-014",
@@ -2191,7 +2203,9 @@
       "id": "AUTH-X-016",
       "target": "quote acceptance / booking / review confuse lifecycle projections",
       "expected": "no accepted quote implies booking; GPS not POD; delivery not payment",
-      "testLevel": "Module integration+E2E"
+      "testLevel": "Module integration+E2E",
+      "r0Applicability": "HISTORICAL_BANK_TEST_RETIRED_NO_PAYMENT_PRODUCT",
+      "implementationPolicy": "Do not implement bank/ledger behavior; substitute PAY-ABS-01..06 absence controls"
     },
     {
       "id": "AUTH-X-017",
@@ -2239,7 +2253,9 @@
       "id": "AUTH-X-024",
       "target": "Finance approver approves outgoing payable without bank settlement evidence",
       "expected": "approval recorded but Paid/Settled unchanged until independently reconciled verified cash fact",
-      "testLevel": "Finance unit+PostgreSQL"
+      "testLevel": "Finance unit+PostgreSQL",
+      "r0Applicability": "HISTORICAL_BANK_TEST_RETIRED_NO_PAYMENT_PRODUCT",
+      "implementationPolicy": "Do not implement bank/ledger behavior; substitute PAY-ABS-01..06 absence controls"
     },
     {
       "id": "AUTH-X-025",
@@ -2333,7 +2349,7 @@
     "Declining a quote is a state-changing command and cannot use a read guard as its only authorization",
     "Customer cancellation request does not itself change Booking status; Booking owner processes contractual effects",
     "External customer self-revoke affects the actor's account membership only, never colleagues or provider-wide relationship",
-    "Financial approval, payment execution and settlement reconciliation are distinct evidenced operations",
+    "No payment execution, settlement reconciliation or AR/AP posting exists in KERUENIX; FIN-02/03/04 are retired and FIN-01 is read-only commercial costing",
     "Provider inbound RFQ assignment is guarded by branch/team and expectedVersion concurrency",
     "Customer My Orders uses exported module APIs and a composed provider/customer-scoped projection; no Commercial -> Booking internal direct dependency",
     "Service issue/claim intake is possible before final delivery, separate from post-service private review eligibility"
@@ -2349,5 +2365,19 @@
     "Complaint handling SLA/status and ownership vs public reviews",
     "Data minimization for composed My Orders projection across Commercial/Booking/Execution/Tracking/Documents",
     "Refresh-token/session revocation consistency and already issued object-storage signed URLs"
-  ]
+  ],
+  "scopeOverlay": {
+    "source": "docs/contracts/r0-scope-eds-signing.v1.json",
+    "version": "2026-11-08-NO_PAYMENTS_EDS",
+    "businessDecision": "No payment processing or accounting ledger in any planned product release without an explicit future change request",
+    "retiredPermissions": [
+      "payment:prepare",
+      "payment:approve",
+      "finance:payment:reconcile",
+      "invoice:prepare"
+    ],
+    "activeCommercialPermission": "commercial:cost:read",
+    "policy": "Retired permissions are unconditionally denied and MUST NOT be included in generated Spring Security grants/roles/OpenAPI; historical IDs retained only for traceability",
+    "signatures": "Verifier-only technical platform capability does not grant domain SIGN/ACCEPT permissions without verified NCA EDS and legal entity authority"
+  }
 }
