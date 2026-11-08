@@ -241,5 +241,65 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
                             )))
 
 
+    def module_scope(self, modules=None, road=None, delivery=None, signing=None,
+                     base=None, negatives=None):
+        return module.audit_v17_module_scope(
+            modules or load("docs/contracts/module-boundaries.v1.json"),
+            road or self.roadmap,
+            delivery or load("docs/contracts/r0-delivery-contract.v1.json"),
+            signing or load("docs/contracts/r0-scope-eds-signing.v1.json"),
+            base or load("docs/contracts/r0-tdd-scenarios.v1.json"),
+            negatives or load("docs/contracts/r0-negative-scenarios.v1.json"))
+
+    def test_v17_module_scope_positive(self):
+        self.assertEqual(self.module_scope(), [])
+
+    def test_v17_payment_allocation_ownership_mutation(self):
+        catalog = load("docs/contracts/module-boundaries.v1.json")
+        next(x for x in catalog["modules"] if x["id"] == "finance")["owns"].append("PaymentAllocation")
+        self.assertTrue(any("Finance owns" in e or "forbidden ownership" in e
+                            for e in self.module_scope(modules=catalog)))
+
+    def test_v17_invoice_issued_event_mutation(self):
+        catalog = load("docs/contracts/module-boundaries.v1.json")
+        next(x for x in catalog["modules"] if x["id"] == "finance")["publicContracts"].append("InvoiceIssued")
+        self.assertTrue(any("Finance public contracts" in e or "forbidden ownership" in e
+                            for e in self.module_scope(modules=catalog)))
+
+    def test_v17_internal_invoice_writer_mutation(self):
+        road = copy.deepcopy(self.roadmap)
+        next(x for x in road["domainOwnershipDecisions"] if x["resource"] == "Invoice")["canonicalWriter"] = "finance"
+        self.assertTrue(any("Invoice must remain external" in e
+                            for e in self.module_scope(road=road)))
+
+    def test_v17_refund_ledger_mutation(self):
+        delivery = load("docs/contracts/r0-delivery-contract.v1.json")
+        next(x for x in delivery["decisions"] if x["id"] == "DEC-R0-04")[
+            "checks"] = ["penalty and refund are authorized ledger facts"]
+        self.assertTrue(any("Cancellation cannot create" in e
+                            for e in self.module_scope(delivery=delivery)))
+
+    def test_v17_retired_scope_mismatch_mutation(self):
+        signed = load("docs/contracts/r0-scope-eds-signing.v1.json")
+        signed["roadmap"]["historicPaymentCaseIds"].remove("TDD-SIM-32-G22-02")
+        self.assertTrue(any("Retired historical payment" in e
+                            for e in self.module_scope(signing=signed)))
+
+    def test_v17_phase_table_parity_and_mutation(self):
+        self.assertEqual(module.audit_v17_markdown_phase_table(self.roadmap, self.markdown), [])
+        changed = self.markdown.replace(
+            "`RD-04` | finance owns only versioned commercial costing",
+            "`RD-06`, `RD-08` | finance owns only versioned commercial costing", 1)
+        self.assertNotEqual(changed, self.markdown)
+        self.assertTrue(any("RD-09: Markdown phase prerequisites" in e
+                            for e in module.audit_v17_markdown_phase_table(self.roadmap, changed)))
+
+    def test_v17_business_scope_pending_not_approved(self):
+        delivery = load("docs/contracts/r0-delivery-contract.v1.json")
+        decision = next(x for x in delivery["decisions"] if x["id"] == "DEC-R0-07")
+        self.assertEqual(decision["status"], "BUSINESS_SCOPE_ACKNOWLEDGMENT_PENDING")
+        self.assertEqual(module.audit_v16_delivery_approvals(delivery), [])
+
+
 if __name__ == "__main__":
     unittest.main()

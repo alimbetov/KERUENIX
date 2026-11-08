@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CI contract verification for KERUENIX TDD Roadmap v1.6.
+"""CI contract verification for KERUENIX TDD Roadmap v1.7.
 
 Standard library only; checks documentary consistency, NOT executable-domain
 qualification or real stakeholder signoff.
@@ -172,7 +172,7 @@ def audit_v16_delivery_approvals(delivery: dict) -> list[str]:
     allowed = {
         "PROPOSED_ADR_PENDING", "PERMISSION_POLICY_PENDING", "BR_11_PENDING",
         "PRODUCT_POLICY_PENDING", "TECHNICAL_ARCHITECTURE_PROPOSAL",
-        "BR_11_12_PENDING", "ADR_QUALITY_PENDING", "APPROVED", "REJECTED",
+        "BR_11_12_PENDING", "ADR_QUALITY_PENDING", "BUSINESS_SCOPE_ACKNOWLEDGMENT_PENDING", "APPROVED", "REJECTED",
         "DEFERRED_SAFE_DENY",
     }
     for decision in delivery.get("decisions", []):
@@ -213,8 +213,8 @@ def audit_v16_current_product_scope(road: dict, access: dict, signing: dict,
     p9 = next((p for p in road["phases"] if p["id"] == "RD-09"), {})
     if p9.get("dependsOn") != ["RD-04"]:
         errors.append("RD-09 commercial costing must not wait for Delivery/POD/Payments")
-    if signing.get("schemaVersion") != "1.1.0":
-        errors.append("Signing scope v1.1 is required")
+    if signing.get("schemaVersion") != "1.2.0":
+        errors.append("Signing scope v1.2 is required")
     if signing.get("productBoundary", {}).get("mode") != "TRANSPORT_AND_CONTRACT_MANAGEMENT_NO_PAYMENTS":
         errors.append("Product must exclude bank and payment mechanics globally")
     sigs = signing.get("signing", {})
@@ -244,6 +244,83 @@ def audit_v16_current_product_scope(road: dict, access: dict, signing: dict,
     return errors
 
 
+
+
+def audit_v17_module_scope(modules: dict, road: dict, delivery: dict,
+                           signing: dict, base_tests: dict,
+                           neg_tests: dict) -> list[str]:
+    """Check machine contracts for obsolete financial ownership and test drift."""
+    errors: list[str] = []
+    modules_by_id = {m["id"]: m for m in modules["modules"]}
+    finance = modules_by_id["finance"]
+    allowed_owns = {"CostEstimate", "CommercialCostReport", "MarginReadModel",
+                    "ExternalAccountingDocRef"}
+    allowed_apis = {"CommercialCostReportApi", "ExternalAccountingReferenceApi"}
+    if set(finance.get("owns", [])) != allowed_owns:
+        errors.append("Finance owns must be commercial costing only (no payments)")
+    if set(finance.get("publicContracts", [])) != allowed_apis:
+        errors.append("Finance public contracts must exclude invoice/payment events")
+    forbidden = ("payment", "receivable", "payable", "invoice",
+                 "settlement", "refund", "bankcallback", "banktransaction")
+    for item in modules["modules"]:
+        for name in item.get("owns", []) + item.get("publicContracts", []):
+            if any(word in name.lower() for word in forbidden):
+                errors.append(f"{item['id']}: forbidden ownership/public contract {name}")
+    com = modules_by_id["commercial"]
+    if not {"CustomerAccount", "ServiceReview"}.issubset(
+            set(com.get("proposedOwnershipPendingADR", []))):
+        errors.append("Commercial proposed CustomerAccount/ServiceReview ADR missing")
+    invoices = [item for item in road.get("domainOwnershipDecisions", [])
+                if item.get("resource") == "Invoice"]
+    if (len(invoices) != 1 or
+            invoices[0].get("canonicalWriter") != "EXTERNAL_ACCOUNTING_ONLY" or
+            invoices[0].get("decision") != "RETIRED_OUT_OF_PRODUCT_SCOPE"):
+        errors.append("Invoice must remain external, not a KERUENIX aggregate")
+    cancel = next((d for d in delivery["decisions"]
+                   if d["id"] == "DEC-R0-04"), {})
+    checks = " ".join(cancel.get("checks", [])).lower()
+    if "ledger facts" in checks or "no refund or payment ledger" not in checks:
+        errors.append("Cancellation cannot create refund/payment ledger facts")
+    scope_ids = set(signing["roadmap"]["historicPaymentCaseIds"])
+    road_ids = set(road["testSelection"]["r0OutOfScopeHistory"]["caseIds"])
+    cases = (base_tests["blockerCases"] + base_tests["r0SafetyCases"] +
+             base_tests["crossRoleCases"] + neg_tests["cases"])
+    retired_actual = {c["id"] for c in cases
+                      if c.get("r0Applicability") == "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE"}
+    if scope_ids != road_ids or retired_actual != road_ids or len(scope_ids) != 11:
+        errors.append("Retired historical payment test IDs differ across scope, Roadmap and test banks")
+    return errors
+
+
+def audit_v17_markdown_phase_table(road: dict, main_doc: str) -> list[str]:
+    """Verify public RD dependencies against machine JSON."""
+    start = "R0 phase plan (13 gates):"
+    end = "## 3. Universal TDD implementation protocol"
+    if start not in main_doc or end not in main_doc:
+        return ["RD phase Markdown section absent"]
+    section = main_doc.split(start, 1)[1].split(end, 1)[0]
+    rows: dict[str, list[str]] = {}
+    errors: list[str] = []
+    for line in section.splitlines():
+        if not line.startswith("| `RD-"):
+            continue
+        cols = [c.strip() for c in line.split("|")[1:-1]]
+        if len(cols) < 4:
+            errors.append("Malformed RD phase row")
+            continue
+        pid = cols[0].strip("` ")
+        if pid in rows:
+            errors.append(f"{pid}: duplicate Markdown phase")
+        rows[pid] = re.findall(r"RD-\d{2}", cols[2])
+    expected = {p["id"]: p.get("dependsOn", []) for p in road["phases"]
+                if re.fullmatch(r"RD-\d{2}", p["id"])}
+    if set(rows) != set(expected):
+        errors.append("Markdown R0 phase IDs differ from Roadmap JSON")
+    for pid in set(rows) & set(expected):
+        if rows[pid] != expected[pid]:
+            errors.append(f"{pid}: Markdown phase prerequisites differ from machine contract")
+    return errors
+
 def main() -> int:
     problems: list[str] = []
     road = load("docs/contracts/tdd-development-roadmap.v1.json")
@@ -255,8 +332,11 @@ def main() -> int:
     access = load("docs/contracts/access-policy-matrix.v2.json")
     signing_for_review = load("docs/contracts/r0-scope-eds-signing.v1.json")
     problems.extend(audit_v16_current_product_scope(road, access, signing_for_review, base_tests, neg_tests))
+    delivery_for_scope = load("docs/contracts/r0-delivery-contract.v1.json")
+    problems.extend(audit_v17_module_scope(modules, road, delivery_for_scope, signing_for_review, base_tests, neg_tests))
     bsc_text = (ROOT / "docs/25-business-scenario-book.md").read_text(encoding="utf-8")
     main_doc = (ROOT / road["roadmapRef"]).read_text(encoding="utf-8")
+    problems.extend(audit_v17_markdown_phase_table(road, main_doc))
 
     def check(condition: bool, message: str) -> None:
         if not condition:
@@ -267,8 +347,8 @@ def main() -> int:
         check(len(values) == len(set(values)), f"Duplicate {label} ID")
         return set(values)
 
-    check(road["schemaVersion"] == "1.6.0", "Roadmap schema version must be 1.6.0")
-    check("v1.6" in main_doc[:400], "Roadmap Markdown version and JSON must match")
+    check(road["schemaVersion"] == "1.7.0", "Roadmap schema version must be 1.7.0")
+    check("v1.7" in main_doc[:400], "Roadmap Markdown version and JSON must match")
     module_ids = unique(modules["modules"], "id", "business module")
     check(len(module_ids) == 17, f"Expected 17 business module IDs, got {len(module_ids)}")
     phase_ids = unique(road["phases"], "id", "phase")
@@ -382,7 +462,7 @@ def main() -> int:
     # New v1.4 R0 clarity contract: each decision must have a real owner, gate
     # and safe fallback. These are proposed decisions, NEVER approval evidence.
     delivery = load("docs/contracts/r0-delivery-contract.v1.json")
-    check(delivery["schemaVersion"] == "1.1.0", "Delivery contract schema mismatch")
+    check(delivery["schemaVersion"] == "1.2.0", "Delivery contract schema mismatch")
     decision_ids = unique(delivery["decisions"], "id", "R0 delivery decision")
     check(decision_ids == {f"DEC-R0-{i:02d}" for i in range(1, 9)},
           "Expected eight numbered and distinct R0 delivery decisions")
@@ -545,7 +625,7 @@ def main() -> int:
           "PR-06S" in pr_map["PR-13"]["dependsOnPrs"],
           "Binding legal actions must require EDS adapter and signature verification")
     signing = load("docs/contracts/r0-scope-eds-signing.v1.json")
-    check(signing["schemaVersion"] == "1.1.0",
+    check(signing["schemaVersion"] == "1.2.0",
           "No-payments/EDS signing scope schema mismatch")
     check(signing["productBoundary"]["mode"] == "TRANSPORT_AND_CONTRACT_MANAGEMENT_NO_PAYMENTS",
           "User-directed no-payment product scope must be preserved")
