@@ -83,6 +83,7 @@ class TrustedTenantHttpIntegrationTest {
 
     @Autowired MockMvc mvc;
     @Autowired DataSource dataSource;
+    @Autowired QualificationGrantRegistry grantRegistry;
 
     static KeyPair ephemeralKeyPair() {
         try {
@@ -96,6 +97,7 @@ class TrustedTenantHttpIntegrationTest {
 
     @BeforeEach
     void allowRestrictedRuntimeRoleToWriteTestOnlyAudit() throws Exception {
+        grantRegistry.reset();
         try (Connection admin = DriverManager.getConnection(
                 System.getenv("KERUENIX_DB_URL"),
                 System.getenv("KERUENIX_DB_MIGRATOR_USER"),
@@ -240,15 +242,65 @@ class TrustedTenantHttpIntegrationTest {
         assertAuditAbsent(TENANT_A, missing);
     }
 
+    static final class QualificationGrantRegistry {
+        boolean canAccess(String subject, UUID tenant, UUID account) {
+            return tenant.equals(TENANT_A) &&
+                    (("alice".equals(subject) && ACCOUNT_X.equals(account))
+                      || ("bob".equals(subject) && ACCOUNT_Y.equals(account)));
+        }
+
+        void revoke(String subject, UUID tenant, UUID account) {
+            // RED: missing invalidation of previously issued access.
+        }
+
+        void reset() {
+            // RED: nothing persisted in the fixture yet.
+        }
+    }
+
+
+    @Test
+    void revokedCustomerGrantImmediatelyDeniesSamePreviouslyValidJwt() throws Exception {
+        String stillSignedAndUnexpiredToken = valid("alice");
+        UUID first = UUID.randomUUID(), second = UUID.randomUUID();
+
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_X))
+                .header("Authorization", "Bearer " + stillSignedAndUnexpiredToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(first, TENANT_A)))
+                .andExpect(status().isAccepted());
+
+        grantRegistry.revoke("alice", TENANT_A, ACCOUNT_X);
+
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_X))
+                .header("Authorization", "Bearer " + stillSignedAndUnexpiredToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(second, TENANT_A)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("KX-AUTH-403-001"));
+        assertAuditAbsent(TENANT_A, second);
+
+        // A revoked user must not prevent another independently granted user
+        // from performing an authorized operation for the other customer.
+        UUID bob = UUID.randomUUID();
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_Y))
+                .header("Authorization", "Bearer " + valid("bob"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(bob, TENANT_A)))
+                .andExpect(status().isAccepted());
+    }
+
     @TestConfiguration(proxyBeanMethods = false)
     static class QualificationConfig {
         @Bean
-        TenantScopeAuthorization qualifier() {
-            // Synthetic server-side grant fixture; NOT a production grant database.
-            return new TenantScopeAuthorization((subject, tenant, account) ->
-                    tenant.equals(TENANT_A) &&
-                            (("alice".equals(subject) && ACCOUNT_X.equals(account))
-                              || ("bob".equals(subject) && ACCOUNT_Y.equals(account))));
+        QualificationGrantRegistry qualificationGrants() {
+            return new QualificationGrantRegistry();
+        }
+
+        @Bean
+        TenantScopeAuthorization qualifier(QualificationGrantRegistry grants) {
+            // Synthetic mutable grant fixture. Production PR-02/03 remains DENY ALL.
+            return new TenantScopeAuthorization(grants::canAccess);
         }
 
         @Bean
