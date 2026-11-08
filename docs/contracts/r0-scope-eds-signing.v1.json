@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "date": "2026-11-08",
-  "status": "PROPOSED_R0_USER_DIRECTION_EDS_PROVIDER_LEGAL_APPROVAL_PENDING",
+  "status": "V1_6_AUDITED_NO_PAYMENTS_ESIGN_WITH_ART50_61_62_REQUIREMENTS_LEGAL_PROVIDER_SIGNOFF_PENDING",
   "productBoundary": {
     "mode": "TRANSPORT_AND_CONTRACT_MANAGEMENT_NO_PAYMENTS",
     "allowed": [
@@ -46,7 +46,8 @@
         "id": "PAY-ABS-06",
         "test": "No bank API secrets, payment gateway SDK, webhook or private financial payload in logs/telemetry"
       }
-    ]
+    ],
+    "futureScope": "Payment execution, bank reconciliation, AR/AP, fiscal invoice emission and payment statuses NOT planned even after R0; require explicit new user product scope decision to propose them"
   },
   "signing": {
     "kind": "TECHNICAL_PLATFORM_PORT_NOT_BUSINESS_MODULE",
@@ -115,7 +116,11 @@
       "signer authorization for exact legal entity and action",
       "no cross-tenant/account signed-artifact replay",
       "server-side verification, never trust browser boolean",
-      "original document+signature+verification evidence retained immutably"
+      "original document+signature+verification evidence retained immutably",
+      "Signer shown the exact document being signed, performs explicit consent, receives signing notice and can save original signed document as applicable under Digital Code Article 50",
+      "Before binding on behalf of a legal entity, verify delegation/authority through legally required source and fail closed on unavailability under Digital Code Article 61",
+      "Provide legally compliant public/independent verification route for signatures on KERUENIX signed documents; restrict confidential document access and separate proof metadata from content",
+      "Electronic document remains portable/verifiable outside KERUENIX under Digital Code Article 62; preserve required revocation/time evidence and policy versions"
     ],
     "security": "Never upload, store, request or log private key, key password or OTP. Protect certificate personal data and signed originals.",
     "atomicity": "External signing is async: verified signed artifact staged durably; owner CAS state+audit+Outbox committed in one database transaction, with idempotent replay.",
@@ -133,8 +138,36 @@
       "SIG-10",
       "SIG-11",
       "SIG-12",
-      "SIG-13"
-    ]
+      "SIG-13",
+      "SIG-14",
+      "SIG-15",
+      "SIG-16",
+      "SIG-17",
+      "SIG-18"
+    ],
+    "tddAcceptanceExtension": [
+      {
+        "id": "SIG-14",
+        "assertion": "Display exact frozen original to signer and require explicit user action; deliver notice and copy/save of signed document under applicable Article 50 policy"
+      },
+      {
+        "id": "SIG-15",
+        "assertion": "Check legal entity authority via applicable official service, fail closed on unavailable/invalid delegation before binding owner transition"
+      },
+      {
+        "id": "SIG-16",
+        "assertion": "Provide open legally compliant signature verification mechanism, no disclosure of private document content to unauthorized caller"
+      },
+      {
+        "id": "SIG-17",
+        "assertion": "Original electronic document portable outside app with signed content, evidence chain, suitable time/revocation proof; remains verifiable after restore"
+      },
+      {
+        "id": "SIG-18",
+        "assertion": "Multi-party legal form: required party signatures all present on exact document version before binding; late signature on superseded version rejected"
+      }
+    ],
+    "legalScope": "Kazakhstan Digital Code of 2026 arts 49,50,61,62; actual signature format and legal evidence profile requires counsel approval; NCALayer initial design not proof of working integration; QR only where provider onboarding confirmed."
   },
   "roadmap": {
     "removePr": "PR-17S",
@@ -159,7 +192,14 @@
       "NEG-R0-035",
       "NEG-R0-036"
     ],
-    "historicTreatment": "Payment positive cases tagged OUT_OF_SCOPE_R0 in historical acceptance bank, kept for traceability but not pilot release gate. Security absence tests PAY-ABS-01..06 mandatory."
+    "historicTreatment": "Payment positive cases tagged OUT_OF_SCOPE_R0 in historical acceptance bank, kept for traceability but not pilot release gate. Security absence tests PAY-ABS-01..06 mandatory.",
+    "qualificationBlockers": [
+      "Legal counsel confirms where EDS required vs other valid digital confirmation modes",
+      "NCA/Egov provider PoC and certificate/authority verification",
+      "Real certificate revocation and signing-time evidence handling",
+      "Article50 user preview, explicit action, signed document notice and save",
+      "Public verification ability while preserving customer confidentiality"
+    ]
   },
   "approvals": {
     "userScope": "REQUIREMENTS_INPUT",
