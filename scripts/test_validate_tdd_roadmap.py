@@ -152,21 +152,19 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         self.assertTrue(any("PR-17 blanket-POD" in p for p in self.check_risk(road)))
 
     def test_decision_approval_requires_real_reviewer_evidence(self) -> None:
-        from validate_tdd_roadmap import audit_v14_delivery_approvals
         doc = module.load("docs/contracts/r0-delivery-contract.v1.json")
         decision = next(d for d in doc["decisions"] if d["id"] == "DEC-R0-01")
         decision["status"] = "APPROVED"
         self.assertTrue(any("DEC-R0-01: APPROVED without" in error
-                            for error in audit_v14_delivery_approvals(doc)))
+                            for error in module.audit_v14_delivery_approvals(doc)))
 
     def test_decision_approval_with_evidence_can_be_recorded(self) -> None:
-        from validate_tdd_roadmap import audit_v14_delivery_approvals
         doc = module.load("docs/contracts/r0-delivery-contract.v1.json")
         decision = next(d for d in doc["decisions"] if d["id"] == "DEC-R0-01")
         decision.update(status="APPROVED", approvalEvidenceRef="restricted://adr/1",
                         approverAuthorityRef="role:approved-decision-owner",
                         approvedVersion="1", approvedAtUtc="2026-11-08T09:00:00Z")
-        self.assertFalse(audit_v14_delivery_approvals(doc))
+        self.assertFalse(module.audit_v14_delivery_approvals(doc))
 
     def test_wrong_markdown_pr_prerequisite_fails(self) -> None:
         q = chr(96)
