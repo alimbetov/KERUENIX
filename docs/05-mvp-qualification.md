@@ -10,7 +10,7 @@
 
 ## Audited R0 TDD Delivery Roadmap
 
-[33 — TDD Roadmap v1.4](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) define **13 R0 stage gates**, 26 independently testable PR outcomes and real RLS/Outbox/Modulith, cross-role API+UI and exact-SHA qualification. R0 events and retries begin at RD-01, **not** at late RD-10. Each irreversible operation is fail-closed until the applicable BR signoff. No stage is deemed complete from this planning document, and no migration, booking, custody or finance integration is qualified yet.
+[33 — TDD Roadmap v1.7](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) define **13 R0 stage gates**, 26 independently testable PR outcomes and real RLS/Outbox/Modulith, cross-role API+UI and exact-SHA qualification. R0 events and retries begin at RD-01, **not** at late RD-10. Each irreversible operation is fail-closed until the applicable BR signoff. No stage is deemed complete from this planning document, and no migration, booking, custody or finance integration is qualified yet.
 
 ## Error-handling foundation qualification (handler CI passed; domain tests pending)
 
@@ -59,7 +59,7 @@ Prior to R0 code and release qualification, select and review the critical verti
 
 ## Commercial & Execution v1: обязательный Gate R0
 
-Новый проектный стандарт [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) разделяет 12 агрегатных state machines и ресурсную/договорную/финансовую ответственность. В Release 0 должны быть реализованы основные happy path и безопасные error branches **RFQ → QuoteVersion → CarrierOffer/own capacity → Reservation → Booking → Trip → Shipment/POD → DocumentPackage → Invoice/AR/AP reconciliation**. Отдельные предложения подрядчика допускается заменить own-fleet сценарием, но при этом тест **CarrierOffer vs Booking** всё равно должен быть проверен на pilot fixture.
+Новый проектный стандарт [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) разделяет 9 активных транспортно-документальных state machines (3 прежних финансовых автомата переведены в архив) и ресурсную/договорную/финансовую ответственность. В Release 0 должны быть реализованы основные happy path и безопасные error branches **RFQ → QuoteVersion → CarrierOffer/own capacity → Reservation → Booking → Trip → Shipment/POD → DocumentPackage → Invoice/AR/AP reconciliation**. Отдельные предложения подрядчика допускается заменить own-fleet сценарием, но при этом тест **CarrierOffer vs Booking** всё равно должен быть проверен на pilot fixture.
 
 **Блокирующие проверки:** просроченная цена не принимается; нет подтверждённой машины — нет Booking.CONFIRMED; рейс не доказывает pickup; частичная доставка не закрывает всё; документы не отмечаются complete без проверки; платёжных механизмов и статусов PAID/SETTLED нет в KERUENIX; проверяется ЭЦП и документ; отмена после старта не удаляет custody. Дополнительная матрица: [11 — Lifecycle Acceptance](11-commercial-execution-acceptance-v1.md).
 

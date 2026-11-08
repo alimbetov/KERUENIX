@@ -2,6 +2,8 @@
 
 **Статус:** DRAFT · **Версия:** 0.2. Каноническое разделение понятий требуется принять до создания таблиц.
 
+**Нормативный R0 scope v1.7:** [Contract Consistency](40-r0-contract-consistency-business-readiness-v1-7.md) supersedes the old Invoice/Receivable/Payable/payment design. Active machine contract has nine non-payment lifecycle machines; three financial machines are archived only.
+
 ## Основные бизнес-сущности
 
 | Сущность | Смысл | Инвариант |
@@ -25,7 +27,7 @@
 | `WarehouseStockLedger` | Журнал движения складских единиц | Остатки/резервы под транзакционным контролем |
 | `RecoveryCase` | Срыв перевозки и замена исполнителя | Не создаёт новый Order |
 | `DeliveryEvidence/POD` | Принятый груз и документы | Подтверждается по CargoUnit, включая частичный приём |
-| `Invoice/Receivable/Payable` | Денежные обязательства | Invoice, cash receipt, settlement — разные состояния |
+| `CommercialCostReport/ExternalAccountingDocRef` | Коммерческая стоимость и внешняя ссылка на документ | Нет внутренних Invoice/AR/AP/Payment/settlement состояний |
 | `TrackingSnapshot` | Клиентское представление фактов | Производная, permission-filtered проекция |
 
 ## Разделение жизненных циклов
@@ -43,13 +45,11 @@
 | SHIPMENT | REGISTERED → READY_FOR_PICKUP → IN_CUSTODY → PARTIALLY_DELIVERED / DELIVERED | Подтверждённое движение физического груза |
 | DELIVERY_ATTEMPT | PLANNED → ARRIVED → EVIDENCE_PENDING → ACCEPTED / PARTIAL / REJECTED | Отдельная попытка и доказательства |
 | DOCUMENT_PACKAGE_VERSION | OPEN → COLLECTING → REVIEW_PENDING → COMPLETE | Проверка документов и их версий |
-| INVOICE | DRAFT → ISSUED | Финансовый документ неизменен после выпуска |
-| RECEIVABLE | OPEN → PARTIALLY_SETTLED → SETTLED | Долг клиента и денежные аллокации |
-| PAYABLE | PENDING_VERIFICATION → APPROVED → OPEN → PARTIALLY_SETTLED → SETTLED | Обязательство перед партнёром |
+| Commercial Cost (read model, not invoice state machine) | PROPOSED/REVISED/CONFIRMED pricing snapshots | Не означает PAID, бухгалтерия владеет своим ledger |
 
 В таблице показаны основные ветки; `CANCELLED`, `FAILED`, `WRITTEN_OFF`, `DISPUTED`, `REJECTED` и компенсации описаны полностью только в контракте. `IN_TRANSIT`, `AT_HUB` и `TRANSFER` могут быть повторяющимися Shipment milestones по нескольким TransportLeg, а не взаимоисключающими terminal statuses.
 
-`Order.operationalComplete`, `Order.documentsComplete`, `Order.financiallyClosed` — **разные вычисляемые состояния**, основанные на подтверждённых фактах и политике закрытия. Customer-facing tracking — permission-filtered projection, никогда не source of truth.
+`Order.operationalComplete`, `Order.documentsComplete` и коммерческая оценка затрат — **разные производные проекции**, не платёжное/бухгалтерское закрытие. Customer-facing tracking — permission-filtered projection, никогда не source of truth.
 
 ## Правила операций
 
@@ -68,7 +68,7 @@
 
 Формат: `event_id, tenant_id, aggregate_type, aggregate_id, aggregate_version, event_type, occurred_at, received_at, actor/source, correlation_id, causation_id, payload_schema_version, evidence_refs`.
 
-Примеры: `RFQQualified`, `QuoteAccepted`, `CapacityReserved`, `CargoClassified`, `LoadPlanValidated`, `CargoHandedOver`, `TripInterrupted`, `RescueOfferAccepted`, `WarehouseReceived`, `ShipmentPartiallyDelivered`, `PODApproved`, `InvoiceMatched`, `PaymentAllocated`.
+Примеры: `RFQQualified`, `QuoteAccepted`, `CapacityReserved`, `CargoClassified`, `LoadPlanValidated`, `CargoHandedOver`, `TripInterrupted`, `RescueOfferAccepted`, `WarehouseReceived`, `ShipmentPartiallyDelivered`, `PODApproved`, `CommercialCostSnapshotUpdated`, `ExternalAccountingDocumentReferenced`.
 
 ## Граница ответственности и трёхсторонняя ситуация
 

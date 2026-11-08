@@ -1,6 +1,7 @@
 # 11 — Commercial & Execution v1: Acceptance, Test Matrix & Simulation
 
 **Статус:** TEST PLAN / DRAFT · **Дата:** 07.11.2026. Ни один тест из этого файла не выполнялся.  
+**Нормативное ограничение v1.7:** [Contract Consistency](40-r0-contract-consistency-business-readiness-v1-7.md). All historical financial-payment LFC cases are ARCHIVED, not executable product acceptance. Real settlement is external.
 **Контракты:** [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) и [Machine-readable transitions](contracts/commercial-execution-lifecycle.v1.json).
 
 ## 1. Цели
@@ -9,7 +10,7 @@
 - согласование обязательств между грузовладельцем, экспедитором и перевозчиком;
 - подтверждение ресурса без двойного бронирования;
 - перевозку и доказанную передачу конкретных грузовых единиц;
-- документальное и финансовое закрытие отдельно от физического;
+- документальное и операционное закрытие, отдельно от оценки коммерческих затрат (без внутренней оплаты);
 - безопасные отказы и компенсации на всех этапах;
 - изоляцию двух tenants и межкомпанийный scoped access.
 
@@ -33,12 +34,12 @@
 | 10 | Tracking shows progress | `IN_TRANSIT` derived milestone | not necessarily live GPS; freshness explicit |
 | 11 | Consignee receives all cargo | DeliveryAttempt: `ACCEPTED`; Shipment: `DELIVERED` | 10/10 CargoUnit, POD |
 | 12 | Documents checked | DocumentPackage: `COMPLETE` | mandatory evidence, signatures |
-| 13 | Invoice issued, receivable created | Invoice: `ISSUED`; Receivable: `OPEN` | finance refs, due date |
-| 14 | Customer pays verified amount | Receivable: `SETTLED` | matched cash allocation |
-| 15 | Supplier invoice approved and paid | Payable: `SETTLED` | separately approved/allocated |
-| 16 | Order closing | derived operational/financial closure | audit, claims/adjustments policy |
+| 13 | Commercial cost report | Sell/buy/cost/margin from approved terms | approved QuoteVersion, currency, role-masked fields |
+| 14 | External accounting reference (optional) | Opaque document ref only, no PAID state | external issuer and consented access |
+| 15 | Payment API absence negative check | No Invoice/Receivable/Payable/PaymentAllocation created | PAY-ABS-01..06, no bank handler |
+| 16 | Operational closure | Complete custody and mandatory verified documents | audit and contractual exceptions |
 
-**Экономика (условная):** 620 000 KZT клиенту − 430 000 KZT подрядчику − 65 000 KZT дополнительных ожидаемых затрат = 125 000 KZT ожидаемой прямой разницы до других расходов/налогов/претензий. Предоплата 50% подрядчику = 215 000 KZT; положительная ожидаемая маржа **не** гарантирует положительный cash flow.
+**Экономика (условная):** 620 000 KZT клиенту − 430 000 KZT подрядчику − 65 000 KZT дополнительных ожидаемых затрат = 125 000 KZT ожидаемой прямой разницы до других расходов/налогов/претензий. Ожидаемая маржа **не** свидетельствует об оплате; данные платежей остаются исключительно во внешней бухгалтерии.
 
 ## 3. Негативные и adversarial тесты
 
@@ -62,20 +63,20 @@
 | LFC-017 | Подрядчику открыли доступ к Shipment | Только его работа и условия, не sales rate/маржа | P0 |
 | LFC-018 | Booking cancelled до старта | Release reservation + cancellation charge policy; no ghost trip | P0 |
 | LFC-019 | Прекращение Booking после Trip STARTED | TERMINATED_WITH_EXCEPTION + cargo disposition, не обычный CANCELLED | P0 |
-| LFC-020 | POD доставлено, акт не подписан | Shipment delivered, DocPackage not COMPLETE, finance close blocked | P0 |
-| LFC-021 | Клиент оплатил 50% | Receivable PARTIALLY_SETTLED, outstanding balance and due date | P0 |
-| LFC-022 | Повторное банковское событие | Только одна PaymentAllocation | P0 |
-| LFC-023 | Подрядчик предъявил спорный surcharge | Payable APPROVAL_REQUIRED/Dispute, не автовыплата | P0 |
-| LFC-024 | Клиент не заплатил 30 дней | AR OVERDUE flag; shipment remains delivered | P0 |
-| LFC-025 | Предоплата подрядчику до перевозки | Advance recorded, Payable settlement and service fact separate | P0 |
+| LFC-020 | POD доставлено, акт не подписан | Shipment physical delivered, DocPackage not COMPLETE; legal document closure pending, no payment status | P0 |
+| LFC-021 | HISTORICAL RETIRED — earlier internal payment/AR/AP scenario | NOT APPLICABLE: no payment state, invoice or ledger in KERUENIX | ARCHIVED |
+| LFC-022 | HISTORICAL RETIRED — earlier internal payment/AR/AP scenario | NOT APPLICABLE: no payment state, invoice or ledger in KERUENIX | ARCHIVED |
+| LFC-023 | Подрядчик предъявил спорный surcharge | Только запрос на изменение коммерческой цены и отдельное утверждение, без Payable | P0 |
+| LFC-024 | HISTORICAL RETIRED — earlier internal payment/AR/AP scenario | NOT APPLICABLE: no payment state, invoice or ledger in KERUENIX | ARCHIVED |
+| LFC-025 | HISTORICAL RETIRED — earlier internal payment/AR/AP scenario | NOT APPLICABLE: no payment state, invoice or ledger in KERUENIX | ARCHIVED |
 | LFC-026 | Изменение стоимости курса/налога после quote | Original snapshot reproducible; revision requires new version | P0 |
 | LFC-027 | DocumentPackage REJECTED, повторная подача | Revised documents, immutable audit, reviewed package | P0 |
-| LFC-028 | Кредит-нота на выпущенный invoice | Original invoice immutable, adjustment linked, AR balance recomputed | P1 |
+| LFC-028 | HISTORICAL RETIRED — earlier internal payment/AR/AP scenario | NOT APPLICABLE: no payment state, invoice or ledger in KERUENIX | ARCHIVED |
 | LFC-029 | Late out-of-order event после delivered | No state regression; reconciliation/audit event | P0 |
 | LFC-030 | Disconnect Cloud↔On-Prem during carrier confirm | No false confirmed Booking; retry/status sync | P1 |
 | LFC-031 | Customer tracking external link revoked | Deny timeline/documents, event stream stops | P1 |
 | LFC-032 | Same CargoUnit attached to two active custody holders | Reject or reconciliation; no silent duplicate | P0 |
-| LFC-033 | Payment initiated by dispatcher without finance right | DENY before ledger change | P0 |
+| LFC-033 | HISTORICAL RETIRED — earlier internal payment/AR/AP scenario | NOT APPLICABLE: no payment state, invoice or ledger in KERUENIX | ARCHIVED |
 | LFC-034 | Клиент отменил заказ после pickup | Exception/return, no direct terminal cancel | P0 |
 | LFC-035 | Partial delivered + remaining returned | Per-unit reconciliation, correct aggregate final disposition | P0 |
 | LFC-036 | Same idempotency key with altered payload | 409, no second effect | P0 |
@@ -85,20 +86,20 @@
 1. **Resource exclusion:** for an indivisible vehicle/driver/trailer capacity slot, overlapping confirmed reservations must be ≤1 unless approved shared-load configuration explicitly supports it.
 2. **Cargo conservation:** for each identified CargoUnit quantity, pickup quantity must equal sum of currently held, accepted delivered, returned and incident-disposed quantities (with verified corrections), never negative.
 3. **No premature delivery:** `Shipment.DELIVERED` implies validated POD/custody evidence for all mandatory units; GPS-only evidence never satisfies it.
-4. **Money precision:** `sum(confirmed allocations) + outstanding = adjusted due` per currency/ledger; duplicates do not change sum.
+4. **Commercial price precision:** sell/buy/cost/margin has explicit currency, scale, rounding and immutable version; no payment allocations.
 5. **Price integrity:** a CustomerQuoteVersion after ISSUED cannot be mutated in-place.
 6. **Tenant safety:** every command, event handler, cached read and file request uses verified tenant/party resource scope.
 7. **State monotonicity:** late events do not regress recognized states; corrective business facts create new versions/compensations.
 8. **Legality:** DENY or critical UNKNOWN cannot be transformed into route/cargo approved status without valid applicable legal resolution.
 9. **Document truth:** PACKAGE.COMPLETE requires required checklist with verified evidence; no upload-only automatic complete.
-10. **Closure truth:** operationalComplete, documentComplete, invoiceIssued, paid and financiallyClosed remain independent.
+10. **Closure truth:** operationalComplete and documentComplete are independent of commercialCostReport; no invoiceIssued/paid/financiallyClosed field is inferred.
 
 ## 5. Test data and pipeline
 
 - Two independent tenants, one shipper and one carrier, optionally warehouse and 3PL.
 - 20 synthetic Orders with repeated customer reference numbers and intentionally clashing capacity.
 - Two vehicles (one specialized/incompatible), 10 identified CargoUnits, route plans, loading and custody events.
-- Quote versions with expiry boundary; sample advance, due date, partial payment and disputed surcharge.
+- Quote versions with expiry boundary; versioned cost/margin and disputed surcharge, plus PAY-ABS forbidden payment attempts.
 - PostgreSQL Testcontainers with RLS; transactional outbox and inbox replay.
 - Unit state-transition tests generated from JSON candidate contract; invariant/guard tests must use **production code** once available.
 - REST/GraphQL (if chosen) contract tests, async eventual consistency, WebSocket/SSE privacy and signed document access.

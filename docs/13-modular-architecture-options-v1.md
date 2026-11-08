@@ -58,7 +58,7 @@ KERUENIX должен работать как облачный Multi-Tenant SaaS
 | `execution` | Trip, TransportLeg, Shipment, Custody, DeliveryAttempt/POD; physical source of truth | `ExecutionApi.recordPickup/Delivery`, `ShipmentDelivered` |
 | `tracking` | Только customer-visible read models, ETA freshness, tracking access grants | `TrackingQueryApi.getShipment` |
 | `documents` | DocumentPackageVersion, attachment/evidence refs, review, retention | `DocumentApi.verifyPackage` |
-| `finance` | Expected/actual cost, customer/supplier obligation, AR/AP, payment evidence | `FinanceApi.reconcile`, `InvoiceIssued` |
+| `finance` | Sell/buy contract cost, margin report, opaque external accounting-document reference | `CommercialCostReportApi`, `ExternalAccountingReferenceApi`; no payment ledger |
 | `compliance` | Cargo/vehicle safety decisions, valid RuleSet applicability; basic R0 fail-closed | `ComplianceApi.assess`, `ComplianceDenied` |
 
 Для R0 `execution` включает несколько агрегатов, но их модель отделена. Когда volume/team/complexity потребуют, его можно **логически** разделить на `dispatch`, `shipment`, `delivery` ещё до микросервисов.
@@ -156,9 +156,9 @@ Write model и read model могут принадлежать разным мо�
 
 **Architecture tests:** `ApplicationModules.verify()`, forbid dependency cycles and access to internal packages, optional `@ApplicationModule(allowedDependencies=...)`, no shared business entities; `@ApplicationModuleTest` per core module; ArchUnit checks for forbidden repository dependency; generated module diagrams.
 
-**Integration/E2E:** PostgreSQL Testcontainers+RLS for 2–4 tenants, concurrent capacity holds, expired quote, POD vs GPS, double payment/webhook, outbox replay, S3 document grants, On-Prem standalone API contract smoke. Track exact SHA.
+**Integration/E2E:** PostgreSQL Testcontainers+RLS for 2–4 tenants, concurrent capacity holds, expired quote, POD vs GPS, duplicate custody/evidence events, outbox replay, S3 document grants, On-Prem standalone API contract smoke. Track exact SHA.
 
-**Next implementation task:** create `feat/foundation-r0` only after business sign-off on core Quote/Booking/Finance invariants, then start Spring Boot application with `tenancy`, `commercial`, `fleet`, `booking` modules. No microservices, Kafka cluster or K8s are prerequisites for first domain slice.
+**Next implementation task:** PR-00 business decisions and PR-01 platform foundation may start in parallel in the existing delivery plan. Binding Quote/Carrier/Booking/POD operations require their applicable business/legal approvals before activation, not before foundational code. No automatic creation of new branch is required. No microservices, Kafka cluster or K8s are prerequisites for first domain slice.
 
 ## 12. Status
 
