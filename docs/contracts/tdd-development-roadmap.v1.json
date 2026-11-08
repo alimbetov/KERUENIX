@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "1.5.0",
-  "documentStatus": "R0_NO_PAYMENTS_EDS_SIGNING_SCOPE_V1_5_PROPOSED_NO_BUSINESS_CODE",
+  "schemaVersion": "1.6.0",
+  "documentStatus": "SECOND_REVIEW_V1_6_NO_PAYMENTS_CONTRACTS_AND_EDS_R0_PENDING_REAL_IMPLEMENTATION",
   "date": "2026-11-07",
   "roadmapRef": "docs/33-tdd-development-roadmap-v1.md",
   "baselineRef": "docs/32-scenario-driven-backend-design-v1.md",
@@ -310,7 +310,8 @@
         "AUTH-EXT-006, AUTH-X-005/006 as applicable",
         "race accept/expiry/supersede, stale expectedVersion",
         "approve own exception denied; no hidden buy rate in response",
-        "PR-06S SIG-01..13: invalid certificate, signer authority, wrong hash, replay, expiry, secure evidence"
+        "PR-06S SIG-01..13: invalid certificate, signer authority, wrong hash, replay, expiry, secure evidence",
+        "EDS UX/legal proof: SIG-14..18 — exact visual document, authority checking, verifier, archive, multi-party signatures"
       ],
       "gate": "Only authorized exact current quote version can be accepted; never mutate issued terms; no implicit Booking.CONFIRMED.",
       "next": "RD-06 (with RD-05).",
@@ -406,7 +407,7 @@
         "BR-07",
         "BR-11"
       ],
-      "scope": "Booking.ResourcePending→Confirmed only after quote and confirmed capacity; CarrierOffer selected is not exclusive reserve. Own-fleet vs partner carrier, hold TTL, durable orchestration/recovery and cancellation before/after start with compensation. BR-11 cancellation request and exceptional review is a separate Booking-owned PR-12C: request-only first, no false cancel/release.",
+      "scope": "Booking.ResourcePending→Confirmed only after quote and confirmed capacity; CarrierOffer selected is not exclusive reserve. Own-fleet vs partner carrier, hold TTL, durable orchestration/recovery and cancellation before/after start with compensation. BR-11 cancellation request and exceptional review is a separate Booking-owned PR-12C: request-only first, no false cancel/release. Carrier binding EDS evidence through PR-06S, or legal-approved external signed original; selection without signature remains nonbinding if profile demands EDS.",
       "code": [
         "Booking aggregate, BookingProcessManager persisted steps",
         "Fleet API integration; typed events/outbox/inbox",
@@ -544,9 +545,7 @@
       "name": "Commercial Cost & External Accounting Handoff (No Payments)",
       "stage": "R0",
       "dependsOn": [
-        "RD-06",
-        "RD-07",
-        "RD-08"
+        "RD-04"
       ],
       "modules": [
         "finance",
@@ -568,9 +567,10 @@
         "Scoped margin visibility, no carrier leak of provider margin",
         "Currency/rounding and price version tests",
         "No payment/refund/reconciliation route, table, webhook, or PAID/SETTLED transition",
-        "External document reference not bank proof"
+        "External document reference not bank proof",
+        "PAY-ABS-01..06 absence checks, true in R0 and future products absent scope change"
       ],
-      "gate": "Business price report accurate and scoped; absent all payment APIs, bank callbacks, PaymentAllocation and PAID/SETTLED states; external financial documents are references, not tax invoices generated here.",
+      "gate": "Business price report accurate and scoped; absent all payment APIs, bank callbacks, PaymentAllocation and PAID/SETTLED states; external financial documents are references, not tax invoices generated here. Enforce no banking/ledger payloads and no R0 payment permission. BR-12 is scope acknowledgement, NOT a mandate to build bank adapters.",
       "next": "RD-10/11.",
       "status": "PLANNED_NOT_QUALIFIED",
       "frontendAcceptance": "Commercial reports: quoted sell, carrier buy, cost/margin, external document link; no pay/mark-paid/refund controls.",
@@ -578,7 +578,7 @@
         "finance"
       ],
       "phaseModuleSemantics": "Participating modules listed in modules; ONLY primaryWriteOwners write their own canonical resources; exported APIs/events for others",
-      "tddRiskNotes": "Finance module name remains in canonical 17-module registry but implements only commercial calculations and external accounting references, not accounting or banking.",
+      "tddRiskNotes": "Finance module name remains in canonical 17-module registry but implements only commercial calculations and external accounting references, not accounting or banking. RD-09 can run after signed commercial terms PR-07, independent of Execution and POD; external accountant owns fiscal/payment actions.",
       "deliveryPrs": [
         "PR-17"
       ],
@@ -596,8 +596,7 @@
       "modules": [
         "tenancy",
         "booking",
-        "execution",
-        "finance"
+        "execution"
       ],
       "bsc": [
         "BSC-011",
@@ -607,7 +606,7 @@
         "BR-04",
         "BR-11"
       ],
-      "scope": "Cross-cutting durable Job Engine, outbox/inbox, retry classification/dead letter, fencing, observability, error catalog consistency. Subscription suspension during live cargo follows BR-04 with explicit safety continuity; do not build full SaaS Control billing in R0. This is RESILIENCE HARDENING of Outbox/Inbox/Jobs introduced in RD-01 and used in all state-writing slices, not first implementation of reliability. Payment provider dependency removed from resilience work.",
+      "scope": "Cross-cutting durable Job Engine, outbox/inbox, retry classification/dead letter, fencing, observability, error catalog consistency. Subscription suspension during live cargo follows BR-04 with explicit safety continuity; do not build full SaaS Control billing in R0. This is RESILIENCE HARDENING of Outbox/Inbox/Jobs introduced in RD-01 and used in all state-writing slices, not first implementation of reliability. Payment provider dependency removed from resilience work. No bank payout/reconciliation responsibilities.",
       "code": [
         "PostgreSQL-backed durable jobs and reclaim supervisor",
         "policy-scoped service principals, retry/replay approvals",
@@ -916,7 +915,7 @@
   ],
   "noAutoActivationOfExtensionModules": true,
   "audit": {
-    "version": "1.5",
+    "version": "1.6",
     "source": "docs/34-tdd-roadmap-technical-audit.md",
     "findingsTotal": 27,
     "releaseBlockers": [
@@ -990,7 +989,8 @@
       }
     ],
     "documentationReleaseNote": "Usability/implementation clarity pass: retained 27 audit findings, converted missing R0 scopes into separate PR-10V/12C/16R and canonical delivery contract DEC-R0-01..08",
-    "scopeChange": "User-requested no payment mechanisms; NCA EDS signing technical adapter for binding documents, subject to legal/provider approval"
+    "scopeChange": "User-requested no payment mechanisms; NCA EDS signing technical adapter for binding documents, subject to legal/provider approval",
+    "secondBusinessTechnicalReview": "2026-11-08: synchronized payment retirement in User Story/BSC/access contract; signed carrier commitment needs NCA EDS gate; costing phase independent of custody; isolate historical bank tests and add Article50/61/62 signature acceptance."
   },
   "executionGovernance": {
     "statusTruth": "Do not mark stage QUALIFIED from plan or a previous commit; require exact SHA + job logs + migration and fixtures",
@@ -1041,11 +1041,14 @@
     "invoiceTrigger": "PR-17 InvoiceType and trigger matrix needs Finance/legal business approval: ADVANCE only if supported contract terms; never PAID until PR-17S verified evidence.",
     "orderADR": "PR-12 must not create independent mutable Order until DEC-R0-01 canonical owner/Order-projection ADR is approved.",
     "reviewOwner": "Private verified customer review is Commercial-owned via neutral versioned DeliveryEligibleForReview projection; never direct Commercial->Execution package import.",
-    "financeIndependence": "PR-17 Invoice engine can qualify approved ADVANCE after PR-07, without waiting for POD/Documents. POST_SERVICE issuance stays blocked until delivered proof and contractual trigger, integration qualified in PR-19.",
+    "financeIndependence": "PR-17 CommercialCostReport depends on PR-07 signed commercial terms only, not POD/Booking/Finance settlement. External accounting remains separate. Never issue ESF, PAID/SETTLED, AR/AP, refunds or bank transactions.",
     "cancellationIndependence": "PR-13 pickup does not wait for BR-11 cancellation feature PR-12C. Final user journey PR-19 covers cancellation branch separately.",
     "privateReviewFixture": "PR-16R needs two acceptance branches: partial 8/10 denies premature feedback; distinct verified completed service permits one private review",
     "noPayments": "Product excludes bank transaction ingestion, payment gateway, accounting ledger, AR/AP reconciliation, allocations, refund and PAID states. External accounting handles all payment settlement.",
-    "signatures": "platform/signing technical port verifies NCA EDS exact bytes/hash, signer authority and cert, immutable original; private keys never server, NCALayer first, QR optional."
+    "signatures": "platform/signing technical port verifies NCA EDS exact bytes/hash, signer authority and cert, immutable original; private keys never server, NCALayer first, QR optional.",
+    "nonPaymentGlobalScope": "No bank/payment functions planned in KERUENIX product, R0/R1/R2; change requires new explicit scope decision and revised tests. Historical docs/contracts must be marked retired, never treated as active release requirements.",
+    "signerCertificateChecks": "Article 50 user must preview same bytes, explicit sign, receive notice and keep signed original; Article 61 legal-entity signer authority check through applicable official root CA service; provide public verifier and allow portable document preservation Art 62, subject to legal review.",
+    "financeSettlement": "RETIRED_OUT_OF_PRODUCT_SCOPE"
   },
   "trackOwnership": {
     "concept": "A stage may involve multiple modules, but only the owning module can write its canonical tables; each PR declares exactly one primary write owner or a platform technical owner.",
@@ -1288,8 +1291,8 @@
       "id": "PR-06S",
       "phase": "RD-04",
       "owner": "platform",
-      "outcome": "NCA EDS online signing platform port: NCALayer web adapter and server verification of immutable legal documents; optional eGov QR via qualified provider",
-      "testGate": "SIG-01..13, signer authority, certificate chain/revocation/time, exact document bytes, no private keys, replay/expired/wrong-tenant denial, external provider timeout safe pending",
+      "outcome": "NCA EDS online signing platform port: NCALayer web adapter and server verification of immutable legal documents; optional eGov QR via qualified provider; publicly verifiable portable original, exact-document user preview and legal entity authority service",
+      "testGate": "SIG-01..18, signer authority, certificate chain/revocation/time, exact document bytes, no private keys, replay/expired/wrong-tenant denial, external provider timeout safe pending",
       "dependsOnPrs": [
         "PR-01",
         "PR-02"
@@ -1310,7 +1313,7 @@
         ],
         "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
       },
-      "caseCoverageNote": "SIG-01..SIG-13 are new signature-specific test specs outside 132 historical cases; no production signature claim before real NCA adapter acceptance."
+      "caseCoverageNote": "SIG-01..SIG-13 are new signature-specific test specs outside 132 historical cases; no production signature claim before real NCA adapter acceptance. New SIG-14..18 added for Digital Code articles 50/61/62."
     },
     {
       "id": "PR-07",
@@ -1460,10 +1463,11 @@
       "phase": "RD-06",
       "owner": "commercial",
       "outcome": "carrier sourced offer+withdrawal/ack and own-fleet alternative",
-      "testGate": "partner grants, no margin disclosure, no false capacity, BR-06",
+      "testGate": "partner grants, no margin disclosure, no false capacity, BR-06; binding carrier agreement uses signed legal-entity authority and immutable terms where legally required",
       "dependsOnPrs": [
         "PR-03",
-        "PR-06"
+        "PR-06",
+        "PR-06S"
       ],
       "criticalCaseIds": [
         "NEG-R0-013",
@@ -1761,7 +1765,7 @@
       "phase": "RD-11",
       "owner": "cross-functional",
       "outcome": "full external-customer→forwarder→carrier→driver→receiver journey, EDS binding evidence and commercial cost report; no payments",
-      "testGate": "accepted P0 negative, RLS, outage recovery, UI states and artifact evidence; verified EDS authority/immutability and no payment route/status",
+      "testGate": "accepted P0 negative, RLS, outage recovery, UI states and artifact evidence; verified EDS authority/immutability and no payment route/status; two distinct fixture branches: 8/10 POD remains partial and review denied, separately verified completion permits one private review; carrier signed commitment under relevant legal rule",
       "dependsOnPrs": [
         "PR-12",
         "PR-12C",
@@ -1853,20 +1857,23 @@
       "APPLICABLE_FAIL_CLOSED",
       "DEFERRED_R1_R2",
       "NOT_APPLICABLE_WITH_REASON",
-      "BLOCKED_PENDING_BR"
+      "BLOCKED_PENDING_BR",
+      "RETIRED_OUT_OF_PRODUCT_SCOPE",
+      "REPLACED_BY_NONPAYMENT_ABSENCE_TEST"
     ],
     "policyRlsAndConcurrencyMandatory": [
       "all tenant/customer-cross reads and writes",
       "exclusive vehicle hold",
       "quote accept/expiry with expectedVersion",
       "offline custody authority and CargoUnit conservation",
-      "bank allocation unique reference",
-      "outbox/inbox replay and subscription continuity"
+      "outbox/inbox replay and subscription continuity",
+      "No active payment API/ledger/role/action, and no payment statuses or source secrets (PAY-ABS-01..06)",
+      "NCA EDS signing verified certificate authority + actual legal entity authority, public signature verification and portable originals (SIG-01..18)"
     ],
     "prEligibilityRule": "Case criticalCaseIds must exist in original 132, PR activationGate BR refer to known BR, UI acceptance required for business-facing PR; build does not grant legal rights.",
     "additionalLocalTests": "PR-10V registry, PR-12C specific business contract and PR-16R UI/unit checks use local IDs in implementation manifests and are not counted as 132 pre-existing cases.",
     "r0OutOfScopeHistory": {
-      "reason": "Payment mechanisms removed by explicit project scope; preserve historical TDD bank, mark positive bank test cases not required for R0",
+      "reason": "Payment banking/ledger mechanics removed from KERUENIX current and target product scope, not deferred to R1/R2; positive legacy tests retired while absence tests apply",
       "caseIds": [
         "TDD-R0-E2E-06",
         "TDD-SIM-32-G22-01",
@@ -1876,9 +1883,11 @@
         "NEG-R0-033",
         "NEG-R0-034",
         "NEG-R0-035",
-        "NEG-R0-036"
+        "NEG-R0-036",
+        "TDD-SIM-32-G22-02",
+        "TDD-SIM-31-S23-01"
       ],
-      "replacementContract": "R0 external accounting document ref and denial of /payments, /refunds, /reconcile routes"
+      "replacementContract": "PAY-ABS-01..06 negative absence controls; commercial pricing/costing + signature evidence where legally required. DO NOT DEFER payment implementation as future release."
     }
   },
   "earlyInfrastructure": [
@@ -2032,7 +2041,7 @@
   },
   "financeSettlementGate": {
     "id": "FIN-OUT-OF-SCOPE-R0",
-    "scope": "RD-09 commercial cost reporting only",
+    "scope": "No payment product scope. Commercial cost and external accounting document reference only.",
     "paymentMechanismsEnabled": false,
     "withoutVerifiedProvider": "No payment features under any provider; external accounting owns payments",
     "mockRule": "SIMULATED payment test does not create transaction, PAID, SETTLED, payable, receivable or payment allocation",
@@ -2041,7 +2050,9 @@
       "NEG-R0-033",
       "NEG-R0-034",
       "NEG-R0-035",
-      "NEG-R0-036"
+      "NEG-R0-036",
+      "TDD-SIM-32-G22-02",
+      "TDD-SIM-31-S23-01"
     ],
     "tests": [
       "NEG-R0-008",
@@ -2097,7 +2108,7 @@
   },
   "financeBoundaryGate": {
     "id": "FIN-OUT-OF-SCOPE-R0",
-    "scope": "RD-09 commercial cost reporting only",
+    "scope": "No payment product scope. Commercial cost and external accounting document reference only.",
     "paymentMechanismsEnabled": false,
     "withoutVerifiedProvider": "No payment features under any provider; external accounting owns payments",
     "mockRule": "SIMULATED payment test does not create transaction, PAID, SETTLED, payable, receivable or payment allocation",
@@ -2106,7 +2117,9 @@
       "NEG-R0-033",
       "NEG-R0-034",
       "NEG-R0-035",
-      "NEG-R0-036"
+      "NEG-R0-036",
+      "TDD-SIM-32-G22-02",
+      "TDD-SIM-31-S23-01"
     ],
     "tests": [
       "NEG-R0-008",
