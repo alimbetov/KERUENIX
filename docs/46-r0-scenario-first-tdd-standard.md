@@ -46,6 +46,8 @@
 
 **Второй модульный S0 checkpoint:** [52 — Commercial, 57 контрактов](52-s0-commercial-test-design-review.md) / [machine contracts](contracts/r0-s0-commercial-case-contracts.v1.json). Сюда включены 30 основных коммерческих, 9 зависимых cross-PR и 18 SIG-кандидатов. Quote/EDS/Booking binding transitions остаются DENY/HOLD до реального BR/legal согласования; это не запуск S1 или Test Review.
 
+**Третий модульный S0 checkpoint:** [53 — Cargo, Compliance, Fleet, Booking](53-s0-cargo-fleet-booking-test-design.md) / [37 contract designs](contracts/r0-s0-cargo-fleet-booking-case-contracts.v1.json). Проверка `UNKNOWN → HOLD`, эксклюзивности Capacity и запрет потери cargo custody при отмене остаются обязательными; проекты не означают финальный Test Review.
+
 ## Пакеты S0 → S1 по порядку рисков
 
 1. **FOUND + Tenancy:** RLS, JWT, CustomerAccount, revoke, module graph, Liquibase migration и recovery (PR-01..03).

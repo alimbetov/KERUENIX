@@ -22,6 +22,8 @@ on:
       - 'scripts/test_s0_platform_tenancy.py'
       - 'scripts/validate_s0_commercial.py'
       - 'scripts/test_s0_commercial.py'
+      - 'scripts/validate_s0_cargo_booking.py'
+      - 'scripts/test_s0_cargo_booking.py'
       - 'scripts/validate_decision_readiness.py'
       - 'scripts/test_decision_readiness.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
@@ -47,6 +49,8 @@ on:
       - 'scripts/test_s0_platform_tenancy.py'
       - 'scripts/validate_s0_commercial.py'
       - 'scripts/test_s0_commercial.py'
+      - 'scripts/validate_s0_cargo_booking.py'
+      - 'scripts/test_s0_cargo_booking.py'
       - 'scripts/validate_decision_readiness.py'
       - 'scripts/test_decision_readiness.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
@@ -75,3 +79,4 @@ jobs:
           python3 scripts/validate_s0_extension_gwt.py
           python3 scripts/validate_s0_platform_tenancy.py
           python3 scripts/validate_s0_commercial.py
+          python3 scripts/validate_s0_cargo_booking.py

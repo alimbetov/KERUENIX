@@ -92,6 +92,8 @@
 
 **S0 Commercial:** [52 — 57 коммерческих case contracts](52-s0-commercial-test-design-review.md) + [machine oracle matrix](contracts/r0-s0-commercial-case-contracts.v1.json). Учитываются RFQ/Quote/EDS/CarrierOffer, 9 cross-owner зависимостей. Статус `PROPOSED_NOT_REVIEWED`, никаких новых обязательств или подписей от зелёного CI.
 
+**S0 Cargo/Fleet/Booking:** [53 — 37 GWT/oracle contracts](53-s0-cargo-fleet-booking-test-design.md) + [machine matrix](contracts/r0-s0-cargo-fleet-booking-case-contracts.v1.json). Все 27 primary + 4 cross-owner + 6 Cargo local checks пока ожидают review; binding-переходы до BR/DEC остаются `DENY/HOLD`.
+
 ## 5. Definition of Done для Scenario Design
 
 S0 считается подготовленным к **Test-First** только если все 121 активных R0 case имеют подтверждённые ownership/BR applicability, полные Given/When/Then и oracle (HTTP + DB + Outbox/Inbox/Audit/UI где применимо). Для локальных PR-08/06S/17/20 дописаны отдельные test case contracts. Все 26 PR связаны с реальными (или явно out-of-scope) test goals.
