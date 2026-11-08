@@ -26,10 +26,11 @@
     },
     "priorHandlerCi": "Backend Error Contract on PR HEAD 964eaec3: completed success as observed before v1.1 update; only error-contract scope",
     "lastAuditedHead": "5beab03f3b4ea511a68dcad3436a2d0f6d4fda16",
-    "roadmapContractValidation": "FAILED_ON_SHA_5beab03f_BAD_SCHEMA_AND_FINDINGS_UNTIL_V1_3_CORRECTION",
+    "roadmapContractValidation": "V1_4_CONTRACT_AND_MUTATION_TESTS_SPECIFIED_EXACT_SHA_CI_EVIDENCE_MUST_BE_RECHECKED",
     "applicationModuleTests": "NOT_EXECUTED",
     "realPostgresqlRls": "NOT_IMPLEMENTED",
-    "frontendBusinessJourneys": "NOT_IMPLEMENTED"
+    "frontendBusinessJourneys": "NOT_IMPLEMENTED",
+    "roadmapNoSilentPromotion": "All stages remain PLANNED_NOT_QUALIFIED; doc CI only checks catalog consistency"
   },
   "rules": {
     "execution": "TEST_FIRST_WITH_APPROVED_ACCEPTANCE_CRITERIA",
@@ -938,7 +939,7 @@
       "source-of-truth and no illegal deletion/retention",
       "no accepted business policy inferred from future passing tests"
     ],
-    "prDag": "Explicit dependencies of 21 independent PR cuts; CI fails cycles or orphan refs",
+    "prDag": "Explicit dependencies of 26 independent PR cuts, verified by CI for unknown refs and cycles",
     "findingAdded": "AUD-RD-13: PR-level DAG absent in original v1.1 first cut, now enforced",
     "findingsAdded": [
       "14 RFQ draft versus submit authorization must be separate; PR-04 draft-safe, PR-05 explicit submit decision",
