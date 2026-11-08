@@ -147,6 +147,24 @@ class PlatformOutboxDeliveryIntegrationTest {
     }
 
     @Test
+    void refusesToSendExternalEventInsideAnOpenBusinessTransaction() {
+        UUID event = seed();
+        int[] sends = {0};
+        assertThatThrownBy(() -> appScope.execute(TENANT, jdbc -> {
+            delivery.dispatchNext(TENANT,"illegal-nested-worker",30,
+                    envelope -> sends[0]++);
+            return null;
+        })).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("must not run in an active transaction");
+
+        assertThat(sends[0]).isZero();
+        String state = appScope.execute(TENANT, jdbc -> jdbc.queryForObject(
+                "SELECT delivery_state FROM platform.outbox_event WHERE event_id=?",
+                String.class,event));
+        assertThat(state).isEqualTo("PENDING");
+    }
+
+    @Test
     void emptyTenantQueueCannotSendForeignTenantEvents() {
         UUID event=seed();
         int[] sends={0};
