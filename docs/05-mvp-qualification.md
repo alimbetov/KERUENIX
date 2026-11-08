@@ -1,5 +1,7 @@
 # 05 — MVP Roadmap & Qualification Gates
 
+**Продуктовое изменение:** [38 — EDS / No Payments](38-r0-eds-signing-no-payments.md), [39 — Technical + Business Review](39-r0-technical-business-review.md). **R0 не включает платежи, бухгалтерский реестр, ЭСФ и банковские API.** 11 исторических банковских TDD-кейсов RETIRED, текущие испытания `PAY-ABS-01..06` и `SIG-01..18`. Реальные бизнес-модули, NCA SDK и Testcontainers ещё не квалифицированы.
+
 **Статус:** DRAFT v0.2. Это последовательность разработки и приёмки, а не обещание сроков.
 
 **Модульный implementation blueprint:** [docs/14](14-modular-delivery-blueprint.md). Для R0 рекомендуется один Spring Boot business runtime со Spring Modulith, PostgreSQL/Flyway, отдельными логическими контекстами с verified API и CI architecture checks; не требуется 10 отдельный deployable services. Изоляцию GPS bulk/optimizer worker вводить по результатам нагрузки.
@@ -41,7 +43,7 @@ The implementation entry point is [35 — R0 Developer Handbook](35-r0-developer
 
 ## Negative/failure readiness gate (design only)
 
-[30 — Negative/Failure Scenario Bank](30-negative-and-failure-scenario-bank.md) supplements [28 — TDD Bank](28-r0-tdd-acceptance-bank.md): **84 + 48 = 132** planned cases (8 `MIX-*` compound sequences outside this count). No tests have yet run. First pilot must prove negative outcomes at **database state + Outbox/Inbox + UI projection**, not only deny HTTP requests; high-risk intersections include stale JWT/customer grants, capacity expiry/parallel holds, offline custody replay, 8/10 POD, bank callback/reversal, SaaS continuity and supplier withdrawal. Business/legal approvals remain gatekeepers before confirming irreversible transitions.
+[30 — Negative/Failure Scenario Bank](30-negative-and-failure-scenario-bank.md) supplements [28 — TDD Bank](28-r0-tdd-acceptance-bank.md): **84 + 48 = 132** planned cases (8 `MIX-*` compound sequences outside this count). No tests have yet run. First pilot must prove negative outcomes at **database state + Outbox/Inbox + UI projection**, not only deny HTTP requests; high-risk intersections include stale JWT/customer grants, capacity expiry/parallel holds, offline custody replay, 8/10 POD, signature revocation/authority and replay, PAY-ABS payment-function absence, SaaS continuity and supplier withdrawal. Business/legal approvals remain gatekeepers before confirming irreversible transitions.
 
 ## R0 Blocker and TDD acceptance gate (design only)
 
@@ -59,7 +61,7 @@ Prior to R0 code and release qualification, select and review the critical verti
 
 Новый проектный стандарт [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) разделяет 12 агрегатных state machines и ресурсную/договорную/финансовую ответственность. В Release 0 должны быть реализованы основные happy path и безопасные error branches **RFQ → QuoteVersion → CarrierOffer/own capacity → Reservation → Booking → Trip → Shipment/POD → DocumentPackage → Invoice/AR/AP reconciliation**. Отдельные предложения подрядчика допускается заменить own-fleet сценарием, но при этом тест **CarrierOffer vs Booking** всё равно должен быть проверен на pilot fixture.
 
-**Блокирующие проверки:** просроченная цена не принимается; нет подтверждённой машины — нет Booking.CONFIRMED; рейс не доказывает pickup; частичная доставка не закрывает всё; документы не отмечаются complete без проверки; платёж не ставится paid без доказанного поступления; отмена после старта не удаляет custody. Дополнительная матрица: [11 — Lifecycle Acceptance](11-commercial-execution-acceptance-v1.md).
+**Блокирующие проверки:** просроченная цена не принимается; нет подтверждённой машины — нет Booking.CONFIRMED; рейс не доказывает pickup; частичная доставка не закрывает всё; документы не отмечаются complete без проверки; платёжных механизмов и статусов PAID/SETTLED нет в KERUENIX; проверяется ЭЦП и документ; отмена после старта не удаляет custody. Дополнительная матрица: [11 — Lifecycle Acceptance](11-commercial-execution-acceptance-v1.md).
 
 До sign-off реальными владельцами процессов это **проектная база тестов**, не утверждённое бизнес-ТЗ.
 
