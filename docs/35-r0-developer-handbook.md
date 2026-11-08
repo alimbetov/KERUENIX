@@ -8,7 +8,7 @@
 
 ## 1. Цель и строгие границы R0
 
-Одна **реальная перевозка**: внешний заказчик создаёт заявку → поставщик/экспедитор обрабатывает её → уполномоченный представитель клиента принимает неизменяемые условия → свой или внешний перевозчик подтверждает ресурс → Booking → водитель принимает груз с доказательством → получатель принимает 8/10 грузовых единиц, остаток сохраняет custodian → подтверждённый POD → документы → точный счёт и верифицированный денежный факт → частный отзыв, только когда услуга стала eligible. Каждый актёр видит только принадлежащие ему сведения.
+Одна **реальная перевозка**: внешний заказчик создаёт заявку → поставщик/экспедитор обрабатывает её → уполномоченный представитель клиента принимает неизменяемые условия → свой или внешний перевозчик подтверждает ресурс → Booking → водитель принимает груз с доказательством → получатель принимает 8/10 грузовых единиц, остаток сохраняет custodian → подтверждённый POD → документы → точный счёт и верифицированный денежный факт → частный отзыв **только по отдельно подтверждённой завершённой услуге**. Частичный POD 8/10 сам по себе не разрешает отзыв о завершённой услуге. Каждый актёр видит только принадлежащие ему сведения.
 
 **R0 обязательно:** внешний CustomerAccount без автоматического членства в Tenant, входящая очередь провайдера, role/scope authorization, безопасные фильтры/пагинация, актуальный tracking, immutable proof, корректная бухгалтерская правда, негативные и race-тесты, пользовательская приёмка интерфейса и восстановление.
 
@@ -52,7 +52,9 @@
 | 12. Payment | authenticated Bank/ERP adapter + Finance | matching provider transaction, account, currency, allocation and reversal | uncertain/duplicate callback RECONCILE, never silently SETTLED |
 | 13. Feedback | EXC with review grant | fulfilled service + verified proof + separate eligibility policy | private eligible-only review; no provider self-review |
 
-**Required E2E fixture:** `FIX-R0-TRANSPORT-001`: two company tenants + provider Tenant-A, CustomerOrg-X and Y sharing provider Tenant-A, an external carrier or valid own-fleet resource, ten identified CargoUnits, partial POD 8/10, one duplicate bank notification, revoked grant, two concurrent fleet holds. CustomerOrg-Y must not see X's list/count/export even when RLS allows the same provider Tenant: use additional account-grant ABAC predicate.
+**Required E2E fixture:** `FIX-R0-TRANSPORT-001`: two company tenants + provider Tenant-A, CustomerOrg-X and Y sharing provider Tenant-A, an external carrier or valid own-fleet resource, ten identified CargoUnits, partial POD 8/10 **и отдельный полностью подтверждённый eligible completed service fixture для отзыва**, one duplicate bank notification, revoked grant, two concurrent fleet holds. CustomerOrg-Y must not see X's list/count/export even when RLS allows the same provider Tenant: use additional account-grant ABAC predicate.
+
+**Тест развилки:** `PARTIAL_POD_DENIAL`: 8/10 оставляет услугу частичной, `customer:review:submit` отклоняется до реального закрытия/согласованной eligibility. `VERIFIED_COMPLETION`: отдельный пример полностью подтверждённой услуги разрешает только один private review от активного CustomerAccount. Ни один из сценариев не разрешает публичные рейтинги. Для частично оспариваемых услуг вопрос review eligibility остаётся на продуктовом согласовании.
 
 ## 4. TDD implementation pattern — never only HTTP 403
 
