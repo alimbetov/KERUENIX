@@ -1,0 +1,1056 @@
+{
+  "schemaVersion": "1.0.0",
+  "roadmapVersion": "1.7.0",
+  "asOfDate": "2026-11-08",
+  "status": "ACCEPTANCE_FRAMEWORK_ACTIVE_ALL_26_PR_SLICES_UNQUALIFIED",
+  "semantics": {
+    "qualificationIsNotDocumentationCI": true,
+    "statusSequence": [
+      "NOT_QUALIFIED",
+      "CODE_VERIFIED_DENY_ONLY",
+      "QUALIFIED"
+    ],
+    "noAutomaticBusinessApproval": true,
+    "failSafe": "Never promote pending BR/DEC or code-only evidence to business approval",
+    "requiredQualificationEvidence": [
+      "commitSha",
+      "ciRunUrl",
+      "testReportPath",
+      "reviewerAuthorityRef",
+      "approvalEvidenceRef"
+    ],
+    "noPayments": true
+  },
+  "acceptanceSlices": [
+    {
+      "id": "PR-00",
+      "phase": "RD-00",
+      "canonicalOwner": "architecture",
+      "dependsOnPrs": [],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [],
+      "activationGateMode": "DOCUMENTATION_ONLY",
+      "uiRequired": false,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "DOC_CONTRACT_CHECKS_GREEN",
+        "verifiedSha": "1834d1f7337fcf91d3d065d3b80150cf0b7053f4",
+        "ciRuns": [
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42462927932"
+        ],
+        "testRefs": [
+          "scripts/test_validate_tdd_roadmap.py",
+          "scripts/test_decision_readiness.py"
+        ],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Structural signoff ledger, not legal or business approval"
+    },
+    {
+      "id": "PR-01",
+      "phase": "RD-01",
+      "canonicalOwner": "platform",
+      "dependsOnPrs": [],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-041",
+        "NEG-R0-042",
+        "NEG-R0-043"
+      ],
+      "activationGateMode": "FOUNDATION_FAIL_CLOSED",
+      "uiRequired": false,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "PLATFORM_PARTIAL_INTEGRATION_GREEN",
+        "verifiedSha": "1834d1f7337fcf91d3d065d3b80150cf0b7053f4",
+        "ciRuns": [
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42462927942",
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42462927930"
+        ],
+        "testRefs": [
+          "backend/src/test/java/kz/keruenix/platform/persistence/PlatformDatabaseIntegrationTest.java",
+          "scripts/test_pr01_pg_foundation.sh"
+        ],
+        "partialProof": [
+          {
+            "requirementId": "FOUND-01",
+            "coverage": "Database runtime role not superuser and absent tenant context returns zero rows"
+          },
+          {
+            "requirementId": "FOUND-02",
+            "coverage": "Transaction-local RLS A/B isolation and context reset; explicit pool churn not tested"
+          },
+          {
+            "requirementId": "FOUND-04",
+            "coverage": "Atomic rollback of platform Outbox/Audit/Inbox, not a business aggregate"
+          },
+          {
+            "requirementId": "FOUND-06",
+            "coverage": "Inbox duplicate/same event changed digest detection; no durable external consumer"
+          },
+          {
+            "requirementId": "FOUND-12",
+            "coverage": "PostGIS geography meters smoke, no authorized production geo API"
+          }
+        ]
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "SQL+Flyway+JDBC partial; not JWT/PR-02, dispatch fencing or all FOUND tests"
+    },
+    {
+      "id": "PR-02",
+      "phase": "RD-02",
+      "canonicalOwner": "tenancy",
+      "dependsOnPrs": [
+        "PR-00",
+        "PR-01"
+      ],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-001",
+        "NEG-R0-002",
+        "NEG-R0-003",
+        "NEG-R0-004"
+      ],
+      "activationGateMode": "POLICY_SCOPED",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-03C",
+      "phase": "RD-02",
+      "canonicalOwner": "commercial",
+      "dependsOnPrs": [
+        "PR-02"
+      ],
+      "brRefs": [
+        "BR-03"
+      ],
+      "decRefs": [
+        "DEC-R0-02"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-007",
+        "NEG-R0-008"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_OWNER_ADR_AND_RELATED_BR",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-03",
+      "phase": "RD-02",
+      "canonicalOwner": "tenancy",
+      "dependsOnPrs": [
+        "PR-03C"
+      ],
+      "brRefs": [
+        "BR-03"
+      ],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-006",
+        "NEG-R0-007",
+        "NEG-R0-008"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-04",
+      "phase": "RD-03",
+      "canonicalOwner": "commercial",
+      "dependsOnPrs": [
+        "PR-03"
+      ],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-008",
+        "NEG-R0-011"
+      ],
+      "activationGateMode": "SAFE_DRAFT_ONLY",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-05",
+      "phase": "RD-03",
+      "canonicalOwner": "commercial",
+      "dependsOnPrs": [
+        "PR-04"
+      ],
+      "brRefs": [],
+      "decRefs": [
+        "DEC-R0-03"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-009",
+        "NEG-R0-011"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_PERMISSION_APPROVED",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-06",
+      "phase": "RD-04",
+      "canonicalOwner": "commercial",
+      "dependsOnPrs": [
+        "PR-05"
+      ],
+      "brRefs": [
+        "BR-05"
+      ],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-010",
+        "NEG-R0-009"
+      ],
+      "activationGateMode": "FAIL_CLOSED_LEGAL_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-06S",
+      "phase": "RD-04",
+      "canonicalOwner": "platform",
+      "dependsOnPrs": [
+        "PR-01",
+        "PR-02"
+      ],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-006",
+        "NEG-R0-029"
+      ],
+      "activationGateMode": "FOUNDATION_FAIL_CLOSED",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-07",
+      "phase": "RD-04",
+      "canonicalOwner": "commercial",
+      "dependsOnPrs": [
+        "PR-06",
+        "PR-06S"
+      ],
+      "brRefs": [
+        "BR-01",
+        "BR-02",
+        "BR-05"
+      ],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-009",
+        "NEG-R0-010",
+        "NEG-R0-012",
+        "TDD-SIM-13-G01-01"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-08",
+      "phase": "RD-05",
+      "canonicalOwner": "cargo",
+      "dependsOnPrs": [
+        "PR-02"
+      ],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [],
+      "activationGateMode": "PURE_DOMAIN_INPUT",
+      "uiRequired": false,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-09",
+      "phase": "RD-05",
+      "canonicalOwner": "compliance",
+      "dependsOnPrs": [
+        "PR-08"
+      ],
+      "brRefs": [
+        "BR-08"
+      ],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-021",
+        "NEG-R0-022",
+        "NEG-R0-023",
+        "NEG-R0-024"
+      ],
+      "activationGateMode": "FAIL_CLOSED_LEGAL_SIGNOFF",
+      "uiRequired": false,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-10V",
+      "phase": "RD-05",
+      "canonicalOwner": "fleet",
+      "dependsOnPrs": [
+        "PR-02"
+      ],
+      "brRefs": [],
+      "decRefs": [
+        "DEC-R0-06"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-016"
+      ],
+      "activationGateMode": "POLICY_SCOPED",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-10",
+      "phase": "RD-05",
+      "canonicalOwner": "fleet",
+      "dependsOnPrs": [
+        "PR-10V",
+        "PR-08",
+        "PR-09"
+      ],
+      "brRefs": [
+        "BR-07"
+      ],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-017",
+        "NEG-R0-018",
+        "NEG-R0-019"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-11",
+      "phase": "RD-06",
+      "canonicalOwner": "commercial",
+      "dependsOnPrs": [
+        "PR-03",
+        "PR-06",
+        "PR-06S"
+      ],
+      "brRefs": [
+        "BR-06"
+      ],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-013",
+        "NEG-R0-014",
+        "NEG-R0-015",
+        "NEG-R0-016"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-12",
+      "phase": "RD-06",
+      "canonicalOwner": "booking",
+      "dependsOnPrs": [
+        "PR-07",
+        "PR-10",
+        "PR-11"
+      ],
+      "brRefs": [
+        "BR-06",
+        "BR-07"
+      ],
+      "decRefs": [
+        "DEC-R0-01"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-017",
+        "NEG-R0-020",
+        "NEG-R0-045"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-12C",
+      "phase": "RD-06",
+      "canonicalOwner": "booking",
+      "dependsOnPrs": [
+        "PR-12"
+      ],
+      "brRefs": [
+        "BR-11"
+      ],
+      "decRefs": [
+        "DEC-R0-04"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-045",
+        "NEG-R0-046",
+        "TDD-R0-E2E-05"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-13",
+      "phase": "RD-07",
+      "canonicalOwner": "execution",
+      "dependsOnPrs": [
+        "PR-12",
+        "PR-06S"
+      ],
+      "brRefs": [
+        "BR-09"
+      ],
+      "decRefs": [
+        "DEC-R0-08"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-025",
+        "NEG-R0-026",
+        "NEG-R0-027",
+        "NEG-R0-028"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-14",
+      "phase": "RD-07",
+      "canonicalOwner": "execution",
+      "dependsOnPrs": [
+        "PR-13"
+      ],
+      "brRefs": [
+        "BR-10"
+      ],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-029",
+        "NEG-R0-030",
+        "NEG-R0-031"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-15",
+      "phase": "RD-08",
+      "canonicalOwner": "tracking",
+      "dependsOnPrs": [
+        "PR-13"
+      ],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-005",
+        "NEG-R0-006",
+        "NEG-R0-044"
+      ],
+      "activationGateMode": "POLICY_SCOPED",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-16",
+      "phase": "RD-08",
+      "canonicalOwner": "documents",
+      "dependsOnPrs": [
+        "PR-14"
+      ],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-006",
+        "NEG-R0-029",
+        "NEG-R0-031",
+        "NEG-R0-032"
+      ],
+      "activationGateMode": "POLICY_SCOPED",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-16R",
+      "phase": "RD-08",
+      "canonicalOwner": "commercial",
+      "dependsOnPrs": [
+        "PR-14",
+        "PR-16"
+      ],
+      "brRefs": [],
+      "decRefs": [
+        "DEC-R0-05"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-048"
+      ],
+      "activationGateMode": "POLICY_SCOPED",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-17",
+      "phase": "RD-09",
+      "canonicalOwner": "finance",
+      "dependsOnPrs": [
+        "PR-07"
+      ],
+      "brRefs": [],
+      "decRefs": [
+        "DEC-R0-07"
+      ],
+      "criticalCaseIds": [
+        "NEG-R0-008",
+        "NEG-R0-047"
+      ],
+      "activationGateMode": "POLICY_SCOPED",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-18",
+      "phase": "RD-10",
+      "canonicalOwner": "platform",
+      "dependsOnPrs": [
+        "PR-13"
+      ],
+      "brRefs": [
+        "BR-04"
+      ],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "NEG-R0-037",
+        "NEG-R0-038",
+        "NEG-R0-039",
+        "NEG-R0-040",
+        "NEG-R0-041",
+        "NEG-R0-042"
+      ],
+      "activationGateMode": "BLOCKED_UNTIL_BUSINESS_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-19",
+      "phase": "RD-11",
+      "canonicalOwner": "cross-functional",
+      "dependsOnPrs": [
+        "PR-12",
+        "PR-12C",
+        "PR-14",
+        "PR-15",
+        "PR-16",
+        "PR-16R",
+        "PR-18",
+        "PR-17"
+      ],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "TDD-R0-E2E-01",
+        "TDD-R0-E2E-02",
+        "TDD-R0-E2E-03",
+        "TDD-R0-E2E-04",
+        "TDD-R0-E2E-05",
+        "TDD-R0-E2E-07",
+        "TDD-R0-E2E-08",
+        "TDD-R0-E2E-09",
+        "TDD-R0-E2E-10",
+        "NEG-R0-047",
+        "NEG-R0-048",
+        "NEG-R0-045",
+        "NEG-R0-046"
+      ],
+      "activationGateMode": "RELEASE_ACCEPTANCE",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    },
+    {
+      "id": "PR-20",
+      "phase": "RD-12",
+      "canonicalOwner": "release",
+      "dependsOnPrs": [
+        "PR-00",
+        "PR-19"
+      ],
+      "brRefs": [],
+      "decRefs": [],
+      "criticalCaseIds": [
+        "TDD-R0-E2E-01",
+        "TDD-R0-E2E-04"
+      ],
+      "activationGateMode": "RELEASE_SIGNOFF",
+      "uiRequired": true,
+      "qualificationStatus": "NOT_QUALIFIED",
+      "verification": {
+        "level": "NOT_EXECUTED",
+        "verifiedSha": null,
+        "ciRuns": [],
+        "testRefs": [],
+        "partialProof": []
+      },
+      "acceptance": {
+        "moduleBoundary": "NOT_VERIFIED",
+        "securityAuthorization": "NOT_VERIFIED",
+        "realDbRls": "NOT_VERIFIED",
+        "transactionAndReplay": "NOT_VERIFIED",
+        "frontendE2e": "NOT_VERIFIED",
+        "performanceAndRecovery": "NOT_VERIFIED",
+        "releaseArtifacts": "NOT_VERIFIED"
+      },
+      "businessApprovalEvidenceRefs": [],
+      "pendingScopeNotes": "Pending scoped implementation and per-PR evidence"
+    }
+  ]
+}

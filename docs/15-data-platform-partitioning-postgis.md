@@ -49,7 +49,7 @@
 | API/audit request log | Platform/Security | RANGE `recorded_at` (кандидат) | При подтверждённой ретенции и нуждах Compliance |
 | Marketplace listing events | Marketplace | RANGE `created_at` (кандидат) | Позднее, при высокой частоте событий; **не активные объявления** |
 | Tracking projection/event outbox | Tracking/Platform | Не партиционировать автоматически | Сначала DDL/indexes, bounded outbox, TTL/archival после ownership review |
-| Money/AR/AP and capacity reservation | Finance/Fleet | **НЕ ПО УМОЛЧАНИЮ** | Лишь отдельный доказанный дизайн без потери глобальных инвариантов |
+| CommercialCostReport and capacity reservation | Finance/Fleet | **НЕ ПО УМОЛЧАНИЮ** | Лишь отдельный доказанный дизайн без потери глобальных инвариантов; AR/AP/Payments вне продукта |
 
 **Запрет:** создавать отдельную партицию на каждого tenant или на каждый Java-модуль. Это приводит к росту числа partitions без преимуществ для запроса, усложняет migrations, backup/restore и cross-tenant policy. Физическое выделение Dedicated tenant — deployment choice, не таблица-партиция.
 

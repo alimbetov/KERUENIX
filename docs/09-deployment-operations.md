@@ -23,7 +23,7 @@
 
 ## Tenant-aware reliability
 
-- Transactional outbox/at-least-once + idempotency, дедуп webhook/скана/оплаты.
+- Transactional outbox/at-least-once + idempotency, дедуп webhook/сканирования/событий исполнения.
 - Optimistic version + atomic resource availability для VehicleCapacity, WarehouseStock и финансируемых команд.
 - Event and cache keys содержат tenant scope, проверенную membership и resource permission.
 - Для RLS в pooled JDBC проверить корректную установку/сброс контекста в каждом transaction, включая ошибки, pooling и фоновые джобы.

@@ -1,8 +1,8 @@
 # 36 — R0 TDD Start Pack: PR-00 and PR-01 (готовые задания разработчикам)
 
-**Версия:** 1.0.0 · **Дата:** 2026-11-08 · **Статус:** `READY_FOR_ENGINEERING_REVIEW / IMPLEMENTATION NOT STARTED / CI NOT EXECUTED FOR DOMAIN`.
+**Версия:** 1.1.0 · **Дата:** 2026-11-08 · **Статус:** `PR-00 DOCUMENT CI GREEN / PR-01 PARTIAL JAVA+POSTGRES GREEN / R0 DOMAIN NOT QUALIFIED`.
 
-**Execution scope:** [35 — R0 Developer Handbook](35-r0-developer-handbook.md), [33 — Roadmap v1.4](33-tdd-development-roadmap-v1.md), [R0 Decision Contract](contracts/r0-delivery-contract.v1.json).
+**Execution scope:** [35 — R0 Developer Handbook](35-r0-developer-handbook.md), [33 — Roadmap v1.7](33-tdd-development-roadmap-v1.md), [R0 Decision Contract](contracts/r0-delivery-contract.v1.json).
 
 ## 1. PR-00 — Scenario/ADR traceability qualification (owner: architecture)
 
@@ -143,3 +143,16 @@ Required acceptances: Customer X can create a draft and see only own list/count;
 - `FOUND-01..12` are **new proposed test specifications** outside the prior 132 existing R0 named test candidates. They do not increase the historical 132 count until implemented and traced in a separate machine acceptance bank.
 
 **Exit of this start pack:** issue-ready PR-00 and PR-01 scopes, not executed PRs. After the first actual runtime, update test and coverage evidence without changing business truth based on a green mock.
+
+## 6. Unified 26-PR acceptance manifest (v1.7 execution control)
+
+[Machine manifest](contracts/pr-acceptance-manifest.v1.json) mirrors every one of the 26
+R0 PR cuts, its canonical owner, dependencies, BR/DEC blockers, critical test IDs and
+required UI acceptance. It is checked against the Roadmap on every documentation CI.
+
+`NOT_QUALIFIED` is independent of partial code evidence. PR-00 documentation
+tests and PR-01 PostgreSQL SQL/Java tests have exact SHA and CI links but neither
+sets all 12 FOUND requirements to implemented, nor grants permission for signing,
+carrier commitment or POD. Promotion requires an authorized reviewer, SHA-specific
+test evidence, accepted applicable BR/DEC and evidence of any required frontend E2E.
+Do not fabricate approval evidence or mark empty CI outputs as green.
