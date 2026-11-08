@@ -11,7 +11,7 @@ Business truth: [Decision Evidence Ledger](contracts/r0-decision-readiness.v1.js
 A PR can have documented technical progress without being `QUALIFIED`.
 `verification.level=DOC_CONTRACT_CHECKS_GREEN` records structural CI evidence
 for PR-00, not actual stakeholder approval. `PLATFORM_PARTIAL_INTEGRATION_GREEN`
-records the working PR-01 Boot 4.1.2 → Flyway → PostgreSQL JDBC integration.
+records the working PR-01 Boot 4.1.2 → Liquibase → PostgreSQL JDBC integration.
 It does **not** certify FOUND-01..12 in full, authenticated HTTP-to-DB ownership,
 outbox dispatch, e-signature or live carrier obligations.
 

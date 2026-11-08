@@ -30,11 +30,11 @@ backend/
   src/main/java/kz/keruenix/
     platform/errors/           # existing RFC9457
     platform/security/         # verified principal context / denyAll until auth ready
-    platform/persistence/      # Flyway, tenant-scoped RLS connection policy
+    platform/persistence/      # Liquibase, tenant-scoped RLS connection policy
     platform/events/           # atomic Outbox publisher and Inbox dedup contract
     platform/evidence/         # future EvidenceBlobGateway port, no storage engine now
     tenancy/                   # module boundary only; business aggregate later PR-02
-  src/main/resources/db/migration/
+  src/main/resources/db/changelog/   # ordered Liquibase master YAML + formatted SQL changesets
   src/test/java/kz/keruenix/
     architecture/             # Spring Modulith verification
     platform/rls/             # real Testcontainers PostgreSQL/PostGIS
@@ -42,7 +42,7 @@ backend/
     platform/security/        # session/header trust tests
 ```
 
-This is a **proposed package layout**; packages are not existing code. Pick actual Spring Modulith, MapStruct, Flyway, Testcontainers compatibility from compile/run evidence; do not infer from a dependency matrix. Do not choose H2 as substitute for PostgreSQL RLS or exclusion constraints.
+This is a **proposed package layout**; packages are not existing code. Pick actual Spring Modulith, MapStruct, Liquibase, Testcontainers compatibility from compile/run evidence; do not infer from a dependency matrix. Do not choose H2 as substitute for PostgreSQL RLS or exclusion constraints.
 
 ### Mandatory red-first cases
 
@@ -57,7 +57,7 @@ This is a **proposed package layout**; packages are not existing code. Pick actu
 | `FOUND-07` | two worker instances claim same due job | simultaneous claim/reclaim | one fenced lease owner, no stale worker commit |
 | `FOUND-08` | Tenant-A + Customer-X/Y share provider | X/Y queries same provider via app API | account-level ABAC still denies cross-customer; RLS tenant check alone is insufficient |
 | `FOUND-09` | illegal module uses direct imported JPA repository from another module | Modulith `ApplicationModules.verify()` | build/test fails until boundary corrected |
-| `FOUND-10` | schema migrations boot from empty DB, and from known previous schema | run Flyway upgrade | repeatable deterministic schema with no manual application superuser DDL |
+| `FOUND-10` | schema migrations boot from empty DB, and from known previous schema | run Liquibase V1→V2 upgrade + idempotent rerun | repeatable deterministic schema with no manual application superuser DDL |
 | `FOUND-11` | invalid/expired or forged JWT actor and tenant headers | HTTP request | 401/403/404 ProblemDetail, no unverified tenant context or data |
 | `FOUND-12` | PostGIS point proximity in lon/lat | `ST_DWithin` query with meter semantics | trusted SRID/geography units + tenant scope; invalid/foreign coordinate rejected |
 
@@ -78,7 +78,7 @@ This is a **proposed package layout**; packages are not existing code. Pick actu
 PR-01
   ├─ Maven pom + dependency convergence report
   ├─ Spring Modulith verify and @ApplicationModuleTest
-  ├─ Flyway migrations + least-privilege runtime role
+  ├─ Liquibase migrations + least-privilege runtime role
   ├─ Testcontainers PostgreSQL/PostGIS tests FOUND-01..12
   ├─ scoped transaction API + Outbox/Inbox + durable dispatcher
   ├─ Docker Compose local profile, .env.example (no actual secrets)

@@ -27,7 +27,7 @@ Scope is **NO PAYMENTS**. Do not add Invoice/AR/AP, PaymentAllocation, paid stat
 
 ## PR-01 — evidence-backed implementation sequence (not completed)
 
-**First runnable slice:** Java21/Boot build unchanged with security `denyAll`; a standalone PostgreSQL/PostGIS schema and CI integration smoke have now been added. Separate migration/admin and application roles and forced RLS are exercised. **Still required:** wire actual Spring Boot/Flyway migrations and transaction-scoped authorization, rather than claiming the standalone psql script is application qualification. Do not enable trust in `tenantId` headers. Determine Modulith, Flyway and Testcontainers compatible versions using actual compile/execution, not inferred dependencies.
+**First runnable slice:** Java21/Boot build unchanged with security `denyAll`; a standalone PostgreSQL/PostGIS schema and CI integration smoke have now been added. Separate migration/admin and application roles and forced RLS are exercised. **Delivered in PR-01 partial code:** Spring Boot/Liquibase migrations and scoped JDBC transactions have passed PostgreSQL integration CI. **Still required:** trusted JWT → authorized tenant/account, full FOUND test matrix, durable broker adapter and operational recovery. Do not enable trust in `tenantId` headers. Spring Modulith 2.1.2, Liquibase via Boot 4.1.2 starter and PostgreSQL integration have been verified by CI; keep exact-SHA dependency evidence for subsequent upgrades.
 
 **Red-first tests (FOUND-01..12)** are specified in [R0 TDD Start Pack](36-r0-tdd-start-pack.md). Execute in this order:
 

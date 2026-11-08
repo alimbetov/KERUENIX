@@ -11,7 +11,7 @@ KERUENIX prioritizes:
 
 **Guardrail:** first qualify one complete transport between two isolated tenants from RFQ and quote through reservation, pickup, POD and auditable economic outcome. Advanced AI, marketplace, generalized rules engines, universal BPM, Kafka, mandatory Kubernetes and broad microservice decomposition are **not R0 requirements**. Dedicated workers or R2DBC only after evidence-based profiling and architecture review.
 
-Chosen technical baseline: Java 21 LTS, Spring Boot + Spring Modulith, Spring MVC/JDBC + Virtual Threads, PostgreSQL + PostGIS with transaction-scoped RLS, Flyway, Testcontainers; Redis for optional cache/live notifications, never source of truth. Spring Boot release and third-party library versions require compatibility and security lock before code.
+Chosen technical baseline: Java 21 LTS, Spring Boot + Spring Modulith, Spring MVC/JDBC + Virtual Threads, PostgreSQL + PostGIS with transaction-scoped RLS, Liquibase, Testcontainers; Redis for optional cache/live notifications, never source of truth. Spring Boot release and third-party library versions require compatibility and security lock before code.
 
 ## 2. Architecture requirements — Correctness First
 
@@ -32,7 +32,7 @@ Chosen technical baseline: Java 21 LTS, Spring Boot + Spring Modulith, Spring MV
 | KX-ARC-OPS-001 | R0 P0 | PostgreSQL-backed durable Job Engine: enqueue atomic with transaction or via outbox; bounded workers, retry/backoff, attempt fencing, cancellation and recovery | JOB-001..008 from [18](18-platform-jobs-state-machines-workflows.md) |
 | KX-ARC-OPS-002 | R0 P0 | Timeout, bulkhead, retry classification and circuit breakers on external I/O; no unbounded virtual-thread fan-out | Fault injection: slow GPS/ERP, no API starvation or duplicate effect |
 | KX-ARC-OPS-003 | R0 P0 | Structured logs + correlation, tenant-safe redaction, Micrometer metrics/traces, JDBC pool/queue/worker saturation; JFR for VT pinning | Observable end-to-end correlation and alert exercises |
-| KX-ARC-OPS-004 | R0 P0 | Schema/event/OpenAPI contract versioning; Flyway forward-only migration checks and compatibility tests | N and N-1 event consumer/migration smoke, no unowned DB writes |
+| KX-ARC-OPS-004 | R0 P0 | Schema/event/OpenAPI contract versioning; Liquibase forward-only migration checks and compatibility tests | N and N-1 event consumer/migration smoke, no unowned DB writes |
 | KX-ARC-OPS-005 | R0 P0 | Repeatable two-tenant fixture and negative security cases; exact-SHA CI with PostgreSQL/PostGIS Testcontainers and architecture verification | Reproducible complete freight scenario and isolation suite |
 | KX-ARC-OPS-006 | R0 P0 | Resource budget baseline: HikariCP limits, query plans/indexes, memory/CPU, job concurrency, external quota | Measured p95/p99/error and resource utilization, not invented SLA |
 | KX-ARC-OPS-007 | R0 P0 | Backup/restore drills for PostgreSQL and referenced evidence; replay recovery for outbox/jobs; RPO/RTO agreed by deployment | Restore into isolated environment, verify business state/artifact hashes |
@@ -56,7 +56,7 @@ Original facts are not moved to Intelligence; no cross-tenant model training by 
 | Gate | Scope | Exit criterion |
 |---|---|---|
 | A0 — Design coherence | Catalog of 17 modules, ownership, ADRs, R0/P1 boundary, explicit command/event/time contracts | No unresolved owner for critical writes; traceability IDs linked |
-| A1 — Tenant foundation | Java/Maven bootstrap, Flyway/PostGIS, 2-tenant identity/permissions, PostgreSQL RLS, JDBC+VT test profile | `mvn verify` + negative tenant isolation on exact SHA |
+| A1 — Tenant foundation | Java/Maven bootstrap, Liquibase/PostGIS, 2-tenant identity/permissions, PostgreSQL RLS, JDBC+VT test profile | `mvn verify` + negative tenant isolation on exact SHA |
 | A2 — Commercial & Booking | RFQ/quote + Fleet hold, idempotency, concurrency, state transitions, outbox and expiry job | Repeated and competing operations deterministic; no false confirmation |
 | A3 — Execution & Finance-lite | Pickup/custody, Shipment, POD, documents, accounting evidence and tracking | One real E2E carriage, no GPS=POD or delivered=paid shortcut |
 | A4 — Operational qualification | Failure injection, backup/restore, resource budgets, traceability, optional Redis outage | Exact-SHA CI evidence and agreed performance/restore thresholds |

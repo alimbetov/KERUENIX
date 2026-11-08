@@ -119,7 +119,7 @@ Do **not** sign approvals in GitHub code as personal information or legal certif
 | Handoff | Must be accepted, not just described |
 |---|---|
 | RD-00 → RD-01 | IDs/owner ADR ledger, actual pending BR statuses, negative case mapping; technical foundation may proceed without all 12 signatures |
-| RD-01 → RD-02 | Java21/Maven/Modulith verify, Flyway/PostGIS migrations, **real PG RLS** under non-BYPASSRLS role, Outbox/Inbox atomicity and replay, fail-closed JWT boundary |
+| RD-01 → RD-02 | Java21/Maven/Modulith verify, Liquibase/PostGIS migrations, **real PG RLS** under non-BYPASSRLS role, Outbox/Inbox atomicity and replay, fail-closed JWT boundary |
 | RD-02 → RD-03 | EXC identity and active customer grant, scoped provider/account queries, no same-provider Customer-X/Y leakage |
 | RD-03 → RD-04 | authorized draft+submit, provider assignment and idempotent outbox, list/count/filter/index and stale/inaccessible UI state |
 | RD-04+05 → RD-06 | signed immutable Quote version, approved Compliance and single exclusive capacity reservation |
@@ -129,12 +129,12 @@ Do **not** sign approvals in GitHub code as personal information or legal certif
 | RD-09+10 → RD-11 | correct price/margin, NCA EDS evidence for binding documents, replay/recovery and subscription safety; payment path outside KERUENIX |
 | RD-11 → RD-12 | actual browser/offline E2E + data restoration/retention/security/no P0; release SHA, image digest, stakeholder signoff |
 
-**Current truthful status:** only the backend RFC 9457 error-handler bootstrap and its tests are implemented/CI-checked. R0 business implementation, real PostgreSQL migration/RLS, and actual user E2E are **NOT QUALIFIED**. The roadmap-contract CI validates documents and cannot serve as business/test signoff.
+**Current truthful status:** RFC 9457 error handling and the PR-01 Liquibase/PostgreSQL foundation have passed dedicated exact-SHA CI (migrations, RLS, JDBC and Outbox claim/fencing). The full FOUNDATION FOUND-01..12 suite, verified JWT/Tenant authorization and domain E2E remain **NOT QUALIFIED**; neither docs CI nor partial SQL CI is a business signoff.
 
 ## 9. How to pick the next engineering task
 
 1. **PR-00:** approve or record pending `DEC-R0-01..08` / relevant BRs, confirm owner diagram, map R0 synthetic fixture and acceptance. Documentation may be code-verified with decisions still pending.
-2. **PR-01:** wire Java21/Modulith/Postgres/PostGIS/Flyway/Testcontainers/RLS/Outbox/Inbox with a failing real PG test first.
+2. **PR-01:** wire Java21/Modulith/Postgres/PostGIS/Liquibase/Testcontainers/RLS/Outbox/Inbox with a failing real PG test first.
 3. **PR-02 → PR-03C → PR-03:** verified identities, Commercial account binding, Tenancy access grants.
 4. **PR-04 → PR-05:** first customer RFQ DRAFT→SUBMITTED→Provider Inbox **only after dedicated submit policy is approved**, otherwise demonstrate safe DENY and retain DRAFT.
 5. Then pursue Quote and Fleet in parallel subject to BR/ADR; never merge Booking before signatory, compliance and confirmed capacity evidence.
