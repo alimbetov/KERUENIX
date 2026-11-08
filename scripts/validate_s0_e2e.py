@@ -46,7 +46,9 @@ def validate(plan,bank,allocation):
             continue
         for key in ("actors","given","whenSteps","negativeVariants"):
             x=proposal.get(key)
-            if not isinstance(x,list) or len(x)<2 or any(not isinstance(v,str) or len(v.strip())<12 for v in x):
+            # Actor names such as 'receiver' are meaningful even when short.
+            min_length = 3 if key == "actors" else 12
+            if not isinstance(x,list) or len(x)<2 or any(not isinstance(v,str) or len(v.strip())<min_length for v in x):
                 errors.append(f"{cid}: incomplete actor/precondition/action/failure {key}")
         expected=proposal.get("expected",{})
         if expected.get("canonicalThen")!=orig.get("then"):
