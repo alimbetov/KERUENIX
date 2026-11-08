@@ -2,7 +2,7 @@
 
 **Версия:** 1.0.0 · **Дата:** 2026-11-08 · **Статус:** `DRAFT / DESIGN READY FOR ENGINEERING REVIEW / BR+ADR SIGNOFF PENDING / DOMAIN CODE NOT IMPLEMENTED`.
 
-**С чего начать разработчику:** этот документ → [33 — TDD Roadmap](33-tdd-development-roadmap-v1.md) → [R0 delivery contract](contracts/r0-delivery-contract.v1.json) → [32 — Scenario-driven Backend](32-scenario-driven-backend-design-v1.md) → [24 — Access Governance](24-access-control-tdd-matrix-v2.md) → [28+30 — Acceptance](28-r0-tdd-acceptance-bank.md) + [негативные](30-negative-and-failure-scenario-bank.md).
+**С чего начать разработчику:** этот документ → [36 — PR-00/01 стартовое ТЗ](36-r0-tdd-start-pack.md) → [33 — TDD Roadmap](33-tdd-development-roadmap-v1.md) → [R0 delivery contract](contracts/r0-delivery-contract.v1.json) → [32 — Scenario-driven Backend](32-scenario-driven-backend-design-v1.md) → [24 — Access Governance](24-access-control-tdd-matrix-v2.md) → [28+30 — Acceptance](28-r0-tdd-acceptance-bank.md) + [негативные](30-negative-and-failure-scenario-bank.md).
 
 **Разделение документов:** данный документ объясняет **что строить, в каком порядке и как принять**. [33](33-tdd-development-roadmap-v1.md) управляет PR-этапами и зависимостями. [JSON](contracts/r0-delivery-contract.v1.json) фиксирует открытые решения без подмены их согласованием. [34](34-tdd-roadmap-technical-audit.md) — журнал найденных проблем, не источник разрешений на юридически значимые действия. Если источник противоречит принятому BR/ADR, остановить затронутую команду и согласовать изменение; CI на документах не подписывает договор.
 
