@@ -91,7 +91,7 @@ kz.keruenix.booking/
 
 | Slice | Что реализовать | Блокирующее доказательство |
 |---|---|---|
-| P0 — Bootstrap | Maven/Spring Boot, Modulith, Testcontainers, Flyway, docker compose, config, health | `mvn verify`, архитектурная проверка, startup smoke |
+| P0 — Bootstrap | Maven/Spring Boot, Modulith, Testcontainers, Liquibase, docker compose, config, health | `mvn verify`, архитектурная проверка, startup smoke |
 | P1 — Tenant Foundation | Tenant/LegalEntity/membership, RBAC/ABAC, DB RLS и audit | Полная отрицательная матрица 2 tenant по HTTP и DB |
 | P2 — Commercial & Fleet | RFQ, immutable QuoteVersion, Vehicle, atomic hold, Booking workflow | Expired quote, competing reservations, partner-scope denial |
 | P3 — Cargo & Execution | Cargo profile, Trip, Shipment, Pickup/Custody, POD | GPS != delivery, partial POD and replay, safety constraints |
@@ -137,7 +137,7 @@ P0–P5 — **порядок задач**, не длительности. Не �
 - **Architecture:** Spring Modulith verify + package import checks + no circular dependency.
 - **Unit:** QuoteVersion immutable, booking guards, cargo/vehicle suitability.
 - **Module integration:** `@ApplicationModuleTest` with legitimate mocks/fixtures for exported APIs.
-- **Postgres integration:** Flyway on real PostgreSQL Testcontainers; RLS bypass, pool session leaks, concurrency, unique constraints, timestamps.
+- **Postgres integration:** Liquibase on real PostgreSQL Testcontainers; RLS bypass, pool session leaks, concurrency, unique constraints, timestamps.
 - **Event processing:** outbox retry, duplicate events, stale ordering, rollback after failed publish.
 - **Security:** two independent tenants, partner grants, customer tracking, S3 evidence, negative authorization.
 - **E2E:** R0a as in [docs/11](11-commercial-execution-acceptance-v1.md), exact SHA; no claims about real data from mocks.
@@ -183,7 +183,7 @@ Follow [19 — Architecture Hardening Priorities](19-architecture-hardening-prio
 
 ## Engineering baseline — MapStruct and test-driven development
 
-Apply [20 — MapStruct + TDD Engineering Standard](20-mapstruct-tdd-engineering-standard.md) for all 17 existing modules. MapStruct is the default for nontrivial module-owned DTO mappings, with explicit sensitive fields and strict compile-time unmapped-target checking; simple constructor mapping is acceptable. Test new high-risk domain rules with Red → Green → Refactor and real PostgreSQL/Testcontainers for JDBC/RLS/concurrency. Foundation CI must include JUnit 5, Spring Modulith verification, Flyway integration tests, JaCoCo reports, and exact-SHA qualification. Do not conflate mapped DTOs with authorized domain commands or promise correctness based on coverage alone.
+Apply [20 — MapStruct + TDD Engineering Standard](20-mapstruct-tdd-engineering-standard.md) for all 17 existing modules. MapStruct is the default for nontrivial module-owned DTO mappings, with explicit sensitive fields and strict compile-time unmapped-target checking; simple constructor mapping is acceptable. Test new high-risk domain rules with Red → Green → Refactor and real PostgreSQL/Testcontainers for JDBC/RLS/concurrency. Foundation CI must include JUnit 5, Spring Modulith verification, Liquibase integration tests, JaCoCo reports, and exact-SHA qualification. Do not conflate mapped DTOs with authorized domain commands or promise correctness based on coverage alone.
 
 ## Role-based User Story Book adoption
 

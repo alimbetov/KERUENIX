@@ -16,7 +16,7 @@
 
 **Выбор:** scenario-driven DDD + Spring Modulith + CQRS-light в **одном Spring Boot бизнес-приложении** и одном PostgreSQL/PostGIS на инсталляцию. Command- и query-модели разделены в коде, но не требуют отдельных баз, Kafka или полнофункционального event sourcing. Экспортированные Java API и типизированные версии событий обеспечивают межмодульные взаимодействия; прямые обращения к internal packages, репозиториям и таблицам чужого модуля запрещены.
 
-Ориентир на имеющийся backend bootstrap: **Java 21 и Spring Boot 4.1.2**; существующий код реализует только fail-closed REST/security error foundation. Совместимость Spring Modulith, MapStruct, драйверов, Flyway и Testcontainers подлежит проверке в отдельном реальном build/CI PoC. Spring MVC + JDBC/SQL — предпочтительный R0 путь, а не зафиксированная без PoC замена всех ORM-вариантов. Virtual Threads допустимы для ограниченных I/O нагрузок, не отменяют лимиты на JDBC pool и внешние вызовы.
+Инфраструктурный baseline по текущему GitHub CI: **Java 21, Spring Boot 4.1.2, Spring Modulith 2.1.2, JDBC, Liquibase и PostgreSQL/PostGIS**, RFC 9457/denyAll. Реализация полного домена R0 ещё не квалифицирована. Совместимость и полный интеграционный стек MapStruct/Testcontainers требуют самостоятельного PoC и exact-SHA проверки. Spring MVC + JDBC/SQL — предпочтительный R0 путь, а не зафиксированная без PoC замена всех ORM-вариантов. Virtual Threads допустимы для ограниченных I/O нагрузок, не отменяют лимиты на JDBC pool и внешние вызовы.
 
 **Не делать:** Entity-per-table CRUD через общий GenericService/GenericRepository, автоматический экспорт JPA entity, единый универсальный DTO, клиентское управление tenantId/статусом, "soft delete everywhere", динамические SQL имена из query params, N+1 запросы, глобальный search с обходом RLS.
 
@@ -322,7 +322,7 @@ Add **SDB-001..020** design bank (machine companion contains exact identifiers);
 
 **D0 Specification:** align aggregate ownership, BR signoff status, explicit deletion eligibility and role permissions, query standards; document status DESIGN only.
 
-**D1 Foundation PoC:** existing error bootstrap compile/test on exact SHA; choose compatible Spring Modulith/MapStruct/Flyway/Testcontainers; prepare JDBC auth/RLS transaction template, migration owner and SQL/index harness. Add no unsafe public endpoints.
+**D1 Foundation continuation:** existing RFC 9457 + Spring Modulith/Liquibase/PostgreSQL integration verified for partial PR-01; still qualify MapStruct/Testcontainers, trusted JWT→tenant/customer RLS binding, durable Outbox dispatcher and full FOUND-01..12. Add no unsafe public endpoints.
 
 **D2 Tenancy + Commercial RFQ:** implement BSC-001/002 after respective business guards, migration, RLS, owner API, DTO/mapper, offset provider/customer lists, bounded filters, secure Problem Details, and integration tests.
 

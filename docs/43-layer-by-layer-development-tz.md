@@ -6,7 +6,7 @@
 
 ## 1. Обязательная модель поставки
 
-- **R0:** один Java 21 / Spring Boot 4.1.2 / Spring Modulith 2.1.2 modular monolith, 10 активных доменных модулей, Postgres/PostGIS и **Liquibase-only**. Остальные 7 модулей — R1/R2/design, не ранний rollout.
+- **R0:** один Java 21 / Spring Boot 4.1.2 / Spring Modulith 2.1.2 modular monolith, 10 запланированных доменных модулей R0 (полный прикладной код ещё не реализован), Postgres/PostGIS и **Liquibase-only**. Остальные 7 модулей — R1/R2/design, не ранний rollout.
 - **Внутри каждого PR:** требование → доменный инвариант → команда/транзакция → Liquibase/Postgres → REST/DTO → UI (если требуется) → отрицательные тесты → exact-SHA CI → qualification evidence.
 - **Схемы:** один canonical writer на ресурс; ни один модуль не пишет чужую таблицу, public API другого модуля или versioned events — единственные договорные точки зависимости.
 - **Default DENY:** пока JWT, права CustomerAccount и внешние юридические документы не подтверждены — не открывать submit/accept/confirmed/pickup/POD/review.
