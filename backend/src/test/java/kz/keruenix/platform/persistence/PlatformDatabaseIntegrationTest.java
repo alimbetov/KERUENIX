@@ -147,12 +147,12 @@ class PlatformDatabaseIntegrationTest {
     void inboxReplayWithChangedDigestIsRejected() {
         UUID e = UUID.randomUUID();
         PlatformInbox inbox = new PlatformInbox();
-        assertThat(scope.execute(TENANT_A,
-                sql -> inbox.accept(sql,TENANT_A,"ci-consumer",e,DIGEST_A)))
-                .isEqualTo(PlatformInbox.Result.NEW);
-        assertThat(scope.execute(TENANT_A,
-                sql -> inbox.accept(sql,TENANT_A,"ci-consumer",e,DIGEST_A)))
-                .isEqualTo(PlatformInbox.Result.REPLAY_IDENTICAL);
+        PlatformInbox.Result created = scope.execute(TENANT_A,
+                sql -> inbox.accept(sql, TENANT_A, "ci-consumer", e, DIGEST_A));
+        assertThat(created).isEqualTo(PlatformInbox.Result.NEW);
+        PlatformInbox.Result replayed = scope.execute(TENANT_A,
+                sql -> inbox.accept(sql, TENANT_A, "ci-consumer", e, DIGEST_A));
+        assertThat(replayed).isEqualTo(PlatformInbox.Result.REPLAY_IDENTICAL);
         assertThatThrownBy(() -> scope.execute(TENANT_A,
                 sql -> inbox.accept(sql,TENANT_A,"ci-consumer",e,DIGEST_B)))
                 .isInstanceOf(IllegalStateException.class)
