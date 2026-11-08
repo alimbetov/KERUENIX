@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CI contract verification for KERUENIX TDD Roadmap v1.5.
+"""CI contract verification for KERUENIX TDD Roadmap v1.6.
 
 Standard library only; checks documentary consistency, NOT executable-domain
 qualification or real stakeholder signoff.
@@ -20,10 +20,10 @@ def load(rel: str) -> dict:
 
 
 
-def audit_v15_pr_contract(road: dict, known_cases: set[str],
+def audit_v16_pr_contract(road: dict, known_cases: set[str],
                           valid_permissions: dict[str, str],
                           known_br: set[str]) -> list[str]:
-    """Check v1.5 PR risk claims; these are planned contracts, not executed tests."""
+    """Check v1.6 PR risk claims; these are planned contracts, not executed tests."""
     issues: list[str] = []
     required_ui = {
         "PR-02", "PR-03C", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07",
@@ -133,7 +133,7 @@ def audit_v15_pr_contract(road: dict, known_cases: set[str],
     return issues
 
 
-def audit_v15_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
+def audit_v16_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
     """Compare rendered PR DAG table to the machine graph, not just ID presence."""
     issues: list[str] = []
     if "## 16. Executable delivery increments" not in main_doc or "## 17. Mandatory ownership" not in main_doc:
@@ -166,7 +166,7 @@ def audit_v15_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
     return issues
 
 
-def audit_v15_delivery_approvals(delivery: dict) -> list[str]:
+def audit_v16_delivery_approvals(delivery: dict) -> list[str]:
     """Allow legitimate future decisions only with verifiable reviewer evidence."""
     problems: list[str] = []
     allowed = {
@@ -189,6 +189,61 @@ def audit_v15_delivery_approvals(delivery: dict) -> list[str]:
     return problems
 
 
+def audit_v16_current_product_scope(road: dict, access: dict, signing: dict,
+                                    base_tests: dict, neg_tests: dict) -> list[str]:
+    """Fail changes that recreate payments or bypass EDS legal controls."""
+    errors: list[str] = []
+    by = {p["id"]: p for p in road["r0Prcuts"]}
+    finance = {e["id"]: e for e in access["entries"] if e["id"].startswith("FIN-")}
+    if (finance.get("FIN-01", {}).get("permission") != "commercial:cost:read"
+            or finance.get("FIN-01", {}).get("accessAction") != "READ"):
+        errors.append("FIN-01 must be read-only commercial costs, not invoice issue")
+    for pid in ("FIN-02", "FIN-03", "FIN-04"):
+        entry = finance.get(pid, {})
+        if (entry.get("priority") != "RETIRED_OUT_OF_PRODUCT_SCOPE"
+                or entry.get("decision") != "DENY_UNCONDITIONALLY"):
+            errors.append(f"{pid} payment permission reactivated")
+    if (by.get("PR-17", {}).get("owner") != "finance" or
+            "margin" not in by.get("PR-17", {}).get("outcome", "").lower()):
+        errors.append("PR-17 cannot implement payment or invoice settlement")
+    if "PR-17S" in by:
+        errors.append("Bank settlement PR-17S must not exist")
+    if by.get("PR-11") and "PR-06S" not in by["PR-11"].get("dependsOnPrs", []):
+        errors.append("PR-11 binding carrier commitment must depend on PR-06S EDS")
+    p9 = next((p for p in road["phases"] if p["id"] == "RD-09"), {})
+    if p9.get("dependsOn") != ["RD-04"]:
+        errors.append("RD-09 commercial costing must not wait for Delivery/POD/Payments")
+    if signing.get("schemaVersion") != "1.1.0":
+        errors.append("Signing scope v1.1 is required")
+    if signing.get("productBoundary", {}).get("mode") != "TRANSPORT_AND_CONTRACT_MANAGEMENT_NO_PAYMENTS":
+        errors.append("Product must exclude bank and payment mechanics globally")
+    sigs = signing.get("signing", {})
+    if set(sigs.get("tests", [])) != {f"SIG-{i:02d}" for i in range(1, 19)}:
+        errors.append("Signing contract must define SIG-01..18")
+    actual_sig_extension = {v.get("id") for v in sigs.get("tddAcceptanceExtension", [])}
+    if actual_sig_extension != {f"SIG-{i:02d}" for i in range(14, 19)}:
+        errors.append("Article 50/61/62 EDS test extensions not fully defined")
+    q = by.get("PR-06S", {})
+    if "SIG-01..18" not in q.get("testGate", ""):
+        errors.append("PR-06S must gate all 18 signature tests")
+    historic = set(road["testSelection"]["r0OutOfScopeHistory"]["caseIds"])
+    required = {"TDD-R0-E2E-06","TDD-SIM-32-G22-01","TDD-SIM-32-G22-02",
+                "TDD-SIM-32-G22-03","TDD-SIM-32-G22-04","TDD-SIM-32-G22-05",
+                "TDD-SIM-31-S23-01","NEG-R0-033","NEG-R0-034","NEG-R0-035","NEG-R0-036"}
+    if not required.issubset(historic):
+        errors.append("Retired payment TDD IDs missing from scope ledger")
+    test_items = (base_tests["blockerCases"] + base_tests["r0SafetyCases"]
+                  + base_tests["crossRoleCases"] + neg_tests["cases"])
+    case_map = {c["id"]: c for c in test_items}
+    for cid in required:
+        case = case_map.get(cid, {})
+        if case.get("r0Applicability") != "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE":
+            errors.append(f"Payment test {cid} incorrectly active in R0")
+    if not {"PR-12C", "PR-16R"}.issubset(set(by.get("PR-19", {}).get("dependsOnPrs", []))):
+        errors.append("R0 E2E must include cancellation and eligible private review")
+    return errors
+
+
 def main() -> int:
     problems: list[str] = []
     road = load("docs/contracts/tdd-development-roadmap.v1.json")
@@ -198,6 +253,8 @@ def main() -> int:
     neg_tests = load("docs/contracts/r0-negative-scenarios.v1.json")
     sdb = load("docs/contracts/backend-query-soft-delete.v1.json")
     access = load("docs/contracts/access-policy-matrix.v2.json")
+    signing_for_review = load("docs/contracts/r0-scope-eds-signing.v1.json")
+    problems.extend(audit_v16_current_product_scope(road, access, signing_for_review, base_tests, neg_tests))
     bsc_text = (ROOT / "docs/25-business-scenario-book.md").read_text(encoding="utf-8")
     main_doc = (ROOT / road["roadmapRef"]).read_text(encoding="utf-8")
 
@@ -210,8 +267,8 @@ def main() -> int:
         check(len(values) == len(set(values)), f"Duplicate {label} ID")
         return set(values)
 
-    check(road["schemaVersion"] == "1.5.0", "Roadmap schema version must be 1.5.0")
-    check("v1.5" in main_doc[:400], "Roadmap Markdown version and JSON must match")
+    check(road["schemaVersion"] == "1.6.0", "Roadmap schema version must be 1.6.0")
+    check("v1.6" in main_doc[:400], "Roadmap Markdown version and JSON must match")
     module_ids = unique(modules["modules"], "id", "business module")
     check(len(module_ids) == 17, f"Expected 17 business module IDs, got {len(module_ids)}")
     phase_ids = unique(road["phases"], "id", "phase")
@@ -338,7 +395,7 @@ def main() -> int:
         check(d["mustDecideBy"] in pr_ids, f"{d['id']}: unknown before-PR gate")
         check(bool(d.get("owner")) and bool(d.get("failSafe")) and bool(d.get("checks")),
               f"{d['id']}: missing owner/failSafe/acceptance checks")
-    problems.extend(audit_v15_delivery_approvals(delivery))
+    problems.extend(audit_v16_delivery_approvals(delivery))
     check(all(new_id in pr_ids for new_id in ["PR-10V", "PR-12C", "PR-16R"]),
           "Three previously missing R0 PRs must have named gates")
     check("PR-10V" in pr_map["PR-10"]["dependsOnPrs"],
@@ -465,9 +522,9 @@ def main() -> int:
         check(bool(pr.get("caseCoverageNote")) or pr["id"] in {"PR-00", "PR-01", "PR-08"},
               f"{pr['id']}: test case-selection rationale missing")
 
-    problems.extend(audit_v15_pr_contract(
+    problems.extend(audit_v16_pr_contract(
         road, full_case_ids, {e["id"]: e["permission"] for e in access["entries"]}, br_ids))
-    problems.extend(audit_v15_markdown_pr_table(road, main_doc))
+    problems.extend(audit_v16_markdown_pr_table(road, main_doc))
     for path in road["testBanks"]:
         check((ROOT / path).is_file(), f"Missing linked test source {path}")
     for item in road["r0Prcuts"]:
@@ -488,14 +545,14 @@ def main() -> int:
           "PR-06S" in pr_map["PR-13"]["dependsOnPrs"],
           "Binding legal actions must require EDS adapter and signature verification")
     signing = load("docs/contracts/r0-scope-eds-signing.v1.json")
-    check(signing["schemaVersion"] == "1.0.0",
+    check(signing["schemaVersion"] == "1.1.0",
           "No-payments/EDS signing scope schema mismatch")
     check(signing["productBoundary"]["mode"] == "TRANSPORT_AND_CONTRACT_MANAGEMENT_NO_PAYMENTS",
           "User-directed no-payment product scope must be preserved")
     check(signing["signing"]["adapters"][0]["id"] == "NCALAYER",
           "R0 EDS signing uses NCALayer as initial design adapter")
-    check(len(signing["signing"]["tests"]) == 13,
-          "Expected 13 EDS test specifications; implementation pending")
+    check(len(signing["signing"]["tests"]) == 18,
+          "Expected 18 EDS test specifications; implementation pending")
     check("PR-06S" == signing["roadmap"]["addPr"]["id"] and
           signing["roadmap"]["removePr"] == "PR-17S",
           "Signing contract and roadmap replacement do not match")
