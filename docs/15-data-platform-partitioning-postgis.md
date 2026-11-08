@@ -15,6 +15,8 @@
 
 **R0 decision:** включить PostGIS в провижининг и тесты; `fleet_current_position` как snapshot (если поставщик GPS выбран); `vehicle_position_event` как append-only история с RANGE-партициями по `observed_at`, когда в R0 включён реальный ingestion. Сложная автоматизация партиций может начинаться с idempotent maintenance job, `pg_partman` — только после подтверждения совместимости/доступности в каждом профиле.
 
+**v1.7 product boundary:** `finance` contains no Invoice/Receivable/Payable/PaymentAllocation tables. External fiscal/payment data remains outside KERUENIX; older design examples are non-normative.
+
 ## 2. Модель данных и схематические примеры
 
 ### 2.1. Горячие данные / актуальное чтение
@@ -24,7 +26,7 @@
 - `execution.trip_route_version` содержит `geometry(LineString/MultiLineString,4326)` **при наличии фактической геометрии** и provenance/provider; `booking` не редактирует маршрут напрямую.
 - `execution/warehouse` имеет подтверждённые геоточки отправки/доставки, терминалов и геозоны; indoor WMS rack/bin coordinates — **локальная система координат склада**, не фиктивный WGS84.
 
-**Не партиционировать в R0:** `RFQ`, `QuoteVersion`, `Booking`, `CapacityReservation`, `HandlingUnit`, `Invoice`, `Receivable`, `Payable`, `DocumentPackage`, `customer_shipment_snapshot`, `vehicle_current_position`, `warehouse_current_stock`. Для них важнее PK/unique constraints, конкурентные блокировки, rollback, audit и быстрый доступ по tenant/resource.
+**Не партиционировать в R0:** `RFQ`, `QuoteVersion`, `Booking`, `CapacityReservation`, `HandlingUnit`, `DocumentPackage`, `customer_shipment_snapshot`, `vehicle_current_position`, `warehouse_current_stock`. Для них важнее PK/unique constraints, конкурентные блокировки, rollback, audit и быстрый доступ по tenant/resource.
 
 ### 2.2. История GPS / append-only
 

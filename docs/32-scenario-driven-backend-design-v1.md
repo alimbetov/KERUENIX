@@ -10,6 +10,8 @@
 
 **Нормативные источники:** [21 — User Story Book](21-user-story-book.md), [25 — Business Scenario Book](25-business-scenario-book.md), [26 — Role Process Simulation](26-role-process-simulation-and-gap-audit.md), [27 — BR-01..12 proposed decisions](27-r0-blocker-policy-decisions.md), [28 — TDD Bank](28-r0-tdd-acceptance-bank.md), [29 — Business Sign-off](29-r0-business-acceptance-workshop-kit.md), [30 — Negative Scenarios](30-negative-and-failure-scenario-bank.md), [31 — Unified Error Standard](31-unified-error-handling-standard.md), [13 — Modular Architecture](13-modular-architecture-options-v1.md), [15 — Data/GIS](15-data-platform-partitioning-postgis.md), [20 — MapStruct/TDD](20-mapstruct-tdd-engineering-standard.md), [24 — Access Governance](24-access-control-tdd-matrix-v2.md), [module boundaries](contracts/module-boundaries.v1.json), [error catalog](contracts/api-error-catalog.v1.json).
 
+**v1.7 ownership correction:** `finance` only owns commercial costing and an external accounting reference. Internal Invoice/AR/AP/PaymentAllocation are prohibited. Commercial's CustomerAccount/ServiceReview ownership is a proposal pending ADR, not an approved binding rule.
+
 ## 1. Архитектурное решение
 
 **Выбор:** scenario-driven DDD + Spring Modulith + CQRS-light в **одном Spring Boot бизнес-приложении** и одном PostgreSQL/PostGIS на инсталляцию. Command- и query-модели разделены в коде, но не требуют отдельных баз, Kafka или полнофункционального event sourcing. Экспортированные Java API и типизированные версии событий обеспечивают межмодульные взаимодействия; прямые обращения к internal packages, репозиториям и таблицам чужого модуля запрещены.
@@ -334,7 +336,7 @@ A slice is **DONE** only if accepted invariants, model/API/read/security/query/d
 
 ## 15. Open architectural/business decisions
 
-1. Owner of Order, CustomerAccount and Invoice ownership corrections in canonical module machine contract.
+1. Owner of Order and CustomerAccount ownership corrections in canonical module machine contract.
 2. Actual R0 role permission for optional RFQ draft discard and separate restore; what legal/customer submission timestamp starts immutable retention.
 3. Whether external RFQ can ever be erased after submission; default fail-closed = no; confirmed obligations survive account offboarding.
 4. Query/number of data rows/performance SLO from pilot, including max offset window and total-count behavior.

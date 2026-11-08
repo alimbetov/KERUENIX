@@ -75,7 +75,7 @@ kz.keruenix.booking/
 
 **Допустимые прямые связи** приведены в [JSON](contracts/module-boundaries.v1.json). Это **проектные ограничения**, не исполняемый plugin policy; при реализации нужно транслировать их в `@ApplicationModule(allowedDependencies=...)` и contract tests.
 
-`booking` может вызвать `commercial`/ `fleet` через API и согласовать резервирование; `commercial` не зависит от `booking`. `tracking` потребляет подтверждённые события `execution`, но не управляет рейсом. `finance` слушает события коммерции и исполнения и ведёт собственные обязательства.
+`booking` может вызвать `commercial`/ `fleet` через API и согласовать резервирование; `commercial` не зависит от `booking`. `tracking` потребляет подтверждённые события `execution`, но не управляет рейсом. `finance` публикует только разрешённый отчёт sell/buy/margin и opaque external-accounting reference по экспортированным фактам; бухгалтерских обязательств не ведёт.
 
 ## 4. Модель транзакций и публикаций
 
@@ -83,7 +83,7 @@ kz.keruenix.booking/
 **Cross module action:** command orchestration в application layer; direct DB write в чужие агрегаты запрещён даже в одном JDBC connection.  
 **External Carrier/ERP:** idempotency + timeout + durable inbox/outbox and compensating actions.  
 **Tracking:** eventual projection с watermark/source timestamp; не обещать строгую синхронность с GPS.  
-**Payments/stock/reservations:** только проверенные атомарные ledger/constraints, асинхронный replay без double effect.
+**Stock/reservations:** проверенные атомарные constraints и outbox с защитой от replay. Payments/AR/AP/Invoice вне KERUENIX.
 
 Для Event Publication Registry важны тесты сбоя listener/restart; для внешней доставки нужен проверенный outbox mechanism. Не включать Kafka только потому, что существуют события.
 
@@ -95,7 +95,7 @@ kz.keruenix.booking/
 | P1 — Tenant Foundation | Tenant/LegalEntity/membership, RBAC/ABAC, DB RLS и audit | Полная отрицательная матрица 2 tenant по HTTP и DB |
 | P2 — Commercial & Fleet | RFQ, immutable QuoteVersion, Vehicle, atomic hold, Booking workflow | Expired quote, competing reservations, partner-scope denial |
 | P3 — Cargo & Execution | Cargo profile, Trip, Shipment, Pickup/Custody, POD | GPS != delivery, partial POD and replay, safety constraints |
-| P4 — Customer & Finance-lite | Tracking timeline + ETA freshness, document package, AR/AP/evidence | Customer scope, stale GPS, delivered != paid |
+| P4 — Customer & Finance-lite | Tracking timeline + ETA freshness, document package, commercial costing/external reference | Customer scope, stale GPS, delivered != paid |
 | P5 — R0a E2E | End-to-end one carriage with customer and carrier, failure injection | Exact SHA CI, own+partner fixtures, backup/restore smoke |
 | P6 — Optional modules | Rescue, WMS, backhaul private board, optimizer | Domain-specific boundary, contract and acceptance suites |
 
@@ -116,8 +116,8 @@ P0–P5 — **порядок задач**, не длительности. Не �
     Tracking page      -> tracking read model, no other customer's trip data
     POD confirmed      -> execution validates cargo units/signatures
 [Finance Tenant A]
-    Invoice            -> finance own ledger, no fake PAID before payment
-    Order summary      -> operational vs financial result separately
+    Commercial Cost    -> cost/margin report and external accounting reference only
+    Order summary      -> operational result and commercial estimate separately
 ```
 
 Все команды проверяют tenant/partner authorization. Даже если `Tenant B` — владелец груза, его роль не даёт доступ к закупочной цене `Tenant A`.

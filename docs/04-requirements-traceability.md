@@ -38,7 +38,7 @@ The [R0 technical/business review](39-r0-technical-business-review.md) and [scop
 | KX-TRK-001 | Клиентский Shipment timeline + ETA provenance | P0 | Клиент видит только свою отправку и допустимые события | [19](../idea/19-customer-shipment-tracking.md) |
 | KX-TRK-002 | Карта/уведомления/гостевые ссылки c privacy и expiry | P1 | Ссылка с истёкшим сроком ничего не выдаёт | [19](../idea/19-customer-shipment-tracking.md) |
 | KX-FIN-001 | Расчёт цены, затрат, план/факт, отдельные buy/sell ставки | P0 | Quote воспроизводим по тарифной версии | [06](../idea/06-pricing-fuel-and-settlements.md) |
-| KX-FIN-002 | AR/AP, предоплата, credit exposure и статус документов | P0 | Deliver не превращает Invoice в Paid | [16](../idea/16-system-needs-gap-analysis.md) |
+| KX-FIN-002 | **RETIRED_OUT_OF_PRODUCT_SCOPE** — AR/AP, предоплата, paid status отменены; действуют только коммерческие cost/margin и opaque reference | ARCHIVED | No payment/invoice source-of-truth may be generated | [40](40-r0-contract-consistency-business-readiness-v1-7.md) |
 | KX-FIN-003 | Спорные суммы и претензии с доказательствами | P1 | Счёт субподрядчика не оплачивается вслепую | [06](../idea/06-pricing-fuel-and-settlements.md) |
 | KX-WMS-001 | Stock ledger, резервы и owner/custody | P1 | Нет double-pick, нет выдачи customs HOLD | [15](../idea/15-logistics-hub-wms-automation.md) |
 | KX-WMS-002 | Dock slots, ASN, cross-dock и задания | P1 | Поздняя машина не создает фиктивную приёмку | [15](../idea/15-logistics-hub-wms-automation.md) |
@@ -70,7 +70,7 @@ The [R0 technical/business review](39-r0-technical-business-review.md) and [scop
 | KX-LFC-005 | Trip.STARTED не подтверждает pickup Shipment | P0 | LFC-011,012 |
 | KX-LFC-006 | DeliveryAttempt/POD по каждой CargoUnit, включая partial/rejected | P0 | LFC-013,014,035 |
 | KX-LFC-007 | DocumentPackageVersion отдельно от Shipment и Invoice | P0 | LFC-020,027 |
-| KX-LFC-008 | Invoice, AR, AP, payment/advance и финансовое закрытие раздельны | P0 | LFC-021…026,028 |
+| KX-LFC-008 | **RETIRED_OUT_OF_PRODUCT_SCOPE** — внутренние invoice, AR/AP, payment не являются возможностями KERUENIX | ARCHIVED | LFC-021…026,028 remain historical only |
 | KX-LFC-009 | Отмена, сбой перевозки и смена перевозчика через exception/compensation | P0 contract / P1 Rescue automation | LFC-016,018,019,034 |
 | KX-LFC-010 | Tenant/role protection, expectedVersion, idempotency and event replay | P0 | LFC-007,008,014,017,022,029,032,033,036 |
 
