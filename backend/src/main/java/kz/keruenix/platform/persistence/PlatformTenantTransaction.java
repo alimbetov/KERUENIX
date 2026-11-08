@@ -30,10 +30,24 @@ final class PlatformTenantTransaction {
         Objects.requireNonNull(verifiedTenantId, "verifiedTenantId");
         Objects.requireNonNull(work, "work");
         return transactions.execute(status -> {
-            // set_config(..., true) applies for this exact physical transaction
-            // and is not a JDBC session-level "SET" that can leak through a pool.
-            jdbc.queryForObject("SELECT set_config('keruenix.tenant_id', ?, true)",
-                    String.class, verifiedTenantId.toString());
+            // REQUIRED propagation joins the existing physical transaction.
+            // Never allow an inner operation to replace the active tenant's
+            // PostgreSQL RLS context: SET LOCAL would otherwise permit B reads
+            // and writes from inside an A-scoped command.
+            String currentTenant = jdbc.queryForObject("""
+                    SELECT NULLIF(current_setting('keruenix.tenant_id', true), '')
+                    """, String.class);
+            String requestedTenant = verifiedTenantId.toString();
+            if (currentTenant != null && !currentTenant.equals(requestedTenant)) {
+                throw new SecurityException(
+                        "Cannot switch tenant inside an active transaction");
+            }
+            // set_config(..., true) is local to this physical transaction,
+            // unlike a session-level SET that may persist in a JDBC pool.
+            if (currentTenant == null) {
+                jdbc.queryForObject("SELECT set_config('keruenix.tenant_id', ?, true)",
+                        String.class, requestedTenant);
+            }
             return work.apply(jdbc);
         });
     }
