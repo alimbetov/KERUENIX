@@ -47,3 +47,17 @@ Outstanding acceptance:
 - legitimate idempotent application-level retry headers and job failure classification.
 
 The repo workflow also checks Java ErrorCode parity with the JSON catalog before running Maven tests. No new business endpoints are available in this bootstrap.
+
+## Spring Boot database profile (PR-01 work in progress)
+
+Profile `platform-db` configures an application-only PostgreSQL JDBC connection
+and a distinct privileged Flyway migration connection; all secrets are supplied by
+`KERUENIX_DB_*` environment variables. The base error test excludes JDBC/Flyway
+startup and keeps `denyAll` security unchanged. A dedicated GitHub Action creates
+a disposable **second database**, applies V1 through Spring Boot/Flyway and checks
+the runtime user is not superuser, FORCE RLS, A/B tenant transaction reset, same
+cross-tenant UUIDs, atomic rollback, Inbox changed-digest rejection and PostGIS.
+
+`PlatformTenantTransaction` remains package-private: there is **no trusted
+JWT → TenantAuthority bridge** yet and no REST business API. These tests cannot
+be used to claim PR-02 or the complete PR-01 FOUND-01..12 suite is ready.

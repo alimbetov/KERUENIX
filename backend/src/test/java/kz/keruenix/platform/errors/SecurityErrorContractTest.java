@@ -14,7 +14,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.security.test.context.support.WithMockUser;
 
 /** Runs against the actual fail-closed servlet SecurityFilterChain. */
-@SpringBootTest
+@SpringBootTest(properties = {
+    "spring.autoconfigure.exclude=" +
+    "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration," +
+    "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration"
+})
 @AutoConfigureMockMvc
 class SecurityErrorContractTest {
     @Autowired MockMvc mvc;
