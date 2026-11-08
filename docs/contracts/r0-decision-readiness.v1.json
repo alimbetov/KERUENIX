@@ -1,0 +1,546 @@
+{
+  "schemaVersion": "1.0.0",
+  "effectiveDate": "2026-11-08",
+  "status": "DESIGN_TRACKING_ONLY_NO_APPROVALS",
+  "sourceOfTruth": {
+    "businessDecisionStatuses": "docs/contracts/r0-blocker-decisions.v1.json",
+    "deliveryDecisionStatuses": "docs/contracts/r0-delivery-contract.v1.json",
+    "roadmap": "docs/contracts/tdd-development-roadmap.v1.json",
+    "legal": "docs/contracts/legal-decision-review.v1.json"
+  },
+  "semantics": {
+    "scope": "PR-00: record documentary evidence without authorizing operational business transitions",
+    "approvalMeaning": "External identity/authority and applicable law must be validated by an independent authorized reviewer; presence of a URL is not proof",
+    "approvalRecordsCannotSelfAuthorize": true,
+    "noRetroactiveApproval": true,
+    "productBoundary": "NO_PAYMENTS",
+    "failSafe": "All PENDING/REJECTED/DEFERRED remain DENY or applicable safe DRAFT; workshop attendance or CI does not approve actions"
+  },
+  "workshops": [
+    {
+      "id": "W1",
+      "name": "Customer, forwarder and Quote authorization",
+      "brIds": [
+        "BR-01",
+        "BR-02",
+        "BR-03",
+        "BR-05"
+      ],
+      "decIds": [
+        "DEC-R0-01",
+        "DEC-R0-02",
+        "DEC-R0-03"
+      ],
+      "requiredParticipantRoles": [
+        "Customer legal representative",
+        "Forwarder commercial owner",
+        "Legal",
+        "Security"
+      ],
+      "status": "NOT_CONDUCTED",
+      "heldAtUtc": null,
+      "meetingEvidenceRef": null,
+      "participantAuthorityEvidenceRef": null,
+      "facilitatorAuthorityRef": null,
+      "signoffRecordRef": null
+    },
+    {
+      "id": "W2",
+      "name": "Carrier, capacity and compliance",
+      "brIds": [
+        "BR-06",
+        "BR-07",
+        "BR-08"
+      ],
+      "decIds": [
+        "DEC-R0-06"
+      ],
+      "requiredParticipantRoles": [
+        "Carrier legal representative",
+        "Fleet planner",
+        "Compliance",
+        "Legal"
+      ],
+      "status": "NOT_CONDUCTED",
+      "heldAtUtc": null,
+      "meetingEvidenceRef": null,
+      "participantAuthorityEvidenceRef": null,
+      "facilitatorAuthorityRef": null,
+      "signoffRecordRef": null
+    },
+    {
+      "id": "W3",
+      "name": "Custody, POD, verified private review",
+      "brIds": [
+        "BR-09",
+        "BR-10"
+      ],
+      "decIds": [
+        "DEC-R0-05",
+        "DEC-R0-08"
+      ],
+      "requiredParticipantRoles": [
+        "Operations",
+        "Driver",
+        "Consignee",
+        "Legal",
+        "Security"
+      ],
+      "status": "NOT_CONDUCTED",
+      "heldAtUtc": null,
+      "meetingEvidenceRef": null,
+      "participantAuthorityEvidenceRef": null,
+      "facilitatorAuthorityRef": null,
+      "signoffRecordRef": null
+    },
+    {
+      "id": "W4",
+      "name": "Cancellation and external accounting boundary",
+      "brIds": [
+        "BR-11",
+        "BR-12"
+      ],
+      "decIds": [
+        "DEC-R0-04",
+        "DEC-R0-07"
+      ],
+      "requiredParticipantRoles": [
+        "Commercial",
+        "Accounting",
+        "Operations",
+        "Legal"
+      ],
+      "status": "NOT_CONDUCTED",
+      "heldAtUtc": null,
+      "meetingEvidenceRef": null,
+      "participantAuthorityEvidenceRef": null,
+      "facilitatorAuthorityRef": null,
+      "signoffRecordRef": null
+    },
+    {
+      "id": "W5",
+      "name": "Subscription safety continuity",
+      "brIds": [
+        "BR-04"
+      ],
+      "decIds": [],
+      "requiredParticipantRoles": [
+        "Tenant owner",
+        "SaaS platform owner",
+        "Operations",
+        "Legal",
+        "Security"
+      ],
+      "status": "NOT_CONDUCTED",
+      "heldAtUtc": null,
+      "meetingEvidenceRef": null,
+      "participantAuthorityEvidenceRef": null,
+      "facilitatorAuthorityRef": null,
+      "signoffRecordRef": null
+    }
+  ],
+  "decisions": [
+    {
+      "decisionId": "BR-01",
+      "kind": "BR",
+      "workshopId": "W1",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-07"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-02",
+      "kind": "BR",
+      "workshopId": "W1",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-07"
+      ],
+      "requiredLegalReview": false,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-03",
+      "kind": "BR",
+      "workshopId": "W1",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-03C",
+        "PR-03"
+      ],
+      "requiredLegalReview": false,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-04",
+      "kind": "BR",
+      "workshopId": "W5",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-18"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-05",
+      "kind": "BR",
+      "workshopId": "W1",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-06",
+        "PR-07"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-06",
+      "kind": "BR",
+      "workshopId": "W2",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-11",
+        "PR-12"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-07",
+      "kind": "BR",
+      "workshopId": "W2",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-10",
+        "PR-12"
+      ],
+      "requiredLegalReview": false,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-08",
+      "kind": "BR",
+      "workshopId": "W2",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-09"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-09",
+      "kind": "BR",
+      "workshopId": "W3",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-13"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-10",
+      "kind": "BR",
+      "workshopId": "W3",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-14"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-11",
+      "kind": "BR",
+      "workshopId": "W4",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-12C"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "BR-12",
+      "kind": "BR",
+      "workshopId": "W4",
+      "sourceContract": "docs/contracts/r0-blocker-decisions.v1.json",
+      "sourceStatus": "PENDING_REAL_STAKEHOLDER",
+      "readiness": "PENDING",
+      "activationGatePrIds": [],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "DEC-R0-01",
+      "kind": "DEC",
+      "workshopId": "W1",
+      "sourceContract": "docs/contracts/r0-delivery-contract.v1.json",
+      "sourceStatus": "PROPOSED_ADR_PENDING",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-12"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "DEC-R0-02",
+      "kind": "DEC",
+      "workshopId": "W1",
+      "sourceContract": "docs/contracts/r0-delivery-contract.v1.json",
+      "sourceStatus": "PROPOSED_ADR_PENDING",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-03C"
+      ],
+      "requiredLegalReview": false,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "DEC-R0-03",
+      "kind": "DEC",
+      "workshopId": "W1",
+      "sourceContract": "docs/contracts/r0-delivery-contract.v1.json",
+      "sourceStatus": "PERMISSION_POLICY_PENDING",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-05"
+      ],
+      "requiredLegalReview": false,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "DEC-R0-04",
+      "kind": "DEC",
+      "workshopId": "W4",
+      "sourceContract": "docs/contracts/r0-delivery-contract.v1.json",
+      "sourceStatus": "BR_11_PENDING",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-12C"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "DEC-R0-05",
+      "kind": "DEC",
+      "workshopId": "W3",
+      "sourceContract": "docs/contracts/r0-delivery-contract.v1.json",
+      "sourceStatus": "PRODUCT_POLICY_PENDING",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-16R"
+      ],
+      "requiredLegalReview": false,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "DEC-R0-06",
+      "kind": "DEC",
+      "workshopId": "W2",
+      "sourceContract": "docs/contracts/r0-delivery-contract.v1.json",
+      "sourceStatus": "TECHNICAL_ARCHITECTURE_PROPOSAL",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-10V"
+      ],
+      "requiredLegalReview": false,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "DEC-R0-07",
+      "kind": "DEC",
+      "workshopId": "W4",
+      "sourceContract": "docs/contracts/r0-delivery-contract.v1.json",
+      "sourceStatus": "BUSINESS_SCOPE_ACKNOWLEDGMENT_PENDING",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-17"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    },
+    {
+      "decisionId": "DEC-R0-08",
+      "kind": "DEC",
+      "workshopId": "W3",
+      "sourceContract": "docs/contracts/r0-delivery-contract.v1.json",
+      "sourceStatus": "ADR_QUALITY_PENDING",
+      "readiness": "PENDING",
+      "activationGatePrIds": [
+        "PR-13"
+      ],
+      "requiredLegalReview": true,
+      "approvalEvidenceRef": null,
+      "approverAuthorityRef": null,
+      "approvedVersion": null,
+      "approvedAtUtc": null,
+      "applicableLegalProfileRef": null,
+      "independentVerificationEvidenceRef": null,
+      "evidenceVerification": "NOT_VERIFIED",
+      "dispositionRationale": null
+    }
+  ]
+}

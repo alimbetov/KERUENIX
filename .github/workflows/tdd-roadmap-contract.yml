@@ -6,6 +6,8 @@ on:
       - 'docs/**'
       - 'scripts/validate_tdd_roadmap.py'
       - 'scripts/test_validate_tdd_roadmap.py'
+      - 'scripts/validate_decision_readiness.py'
+      - 'scripts/test_decision_readiness.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
   push:
     branches: [main, docs/idea-multitenant-foundation]
@@ -13,6 +15,8 @@ on:
       - 'docs/**'
       - 'scripts/validate_tdd_roadmap.py'
       - 'scripts/test_validate_tdd_roadmap.py'
+      - 'scripts/validate_decision_readiness.py'
+      - 'scripts/test_decision_readiness.py'
       - '.github/workflows/tdd-roadmap-contract.yml'
   workflow_dispatch:
 
@@ -26,6 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Test roadmap validator failure detection
-        run: python3 -m unittest discover -s scripts -p 'test_validate_tdd_roadmap.py' -v
+        run: python3 -m unittest discover -s scripts -p 'test_*.py' -v
       - name: Validate roadmap graph, per-PR test/permission/UI and Markdown parity
-        run: python3 scripts/validate_tdd_roadmap.py
+        run: |
+          python3 scripts/validate_tdd_roadmap.py
+          python3 scripts/validate_decision_readiness.py
