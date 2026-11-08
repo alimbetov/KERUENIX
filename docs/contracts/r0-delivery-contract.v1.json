@@ -1,10 +1,11 @@
 {
-  "schemaVersion": "1.0.0",
-  "status": "DRAFT_DESIGN_REVIEW_ONLY_NO_STAKEHOLDER_APPROVAL",
+  "schemaVersion": "1.1.0",
+  "status": "USER_REQUESTED_NO_PAYMENTS_WITH_EXTERNAL_EDS_PROPOSAL_SIGNOFF_PENDING",
   "roadmap": "docs/33-tdd-development-roadmap-v1.md",
   "handbook": "docs/35-r0-developer-handbook.md",
   "date": "2026-11-08",
   "normativeTruthHierarchy": [
+    "R0 product scope: NO payment mechanism, external accounting solely for fiscal settlement; NCA EDS as optional external signer adapter",
     "actual applicable signed business/legal decisions and real contract evidence",
     "machine-readable authoritative lifecycle/role/module contracts with explicit versions",
     "doc 35 R0 developer handbook and roadmap PR cuts",
@@ -20,8 +21,8 @@
       "Carrier Manager or own-fleet planner",
       "Driver",
       "Receiver",
-      "Finance Officer",
-      "Independent Finance Approver"
+      "Commercial Price Analyst",
+      "Authorized EDS Signatory"
     ],
     "chain": [
       "verified customer relationship and grant",
@@ -33,7 +34,7 @@
       "pickup and proof-backed custody",
       "partial delivery 8/10 with residual custodian",
       "Documents verified POD package",
-      "Finance invoice then verified bank allocation",
+      "commercial sell/buy costs and margin report; optional reference to accounting document issued outside KERUENIX; NO payments",
       "private eligible review ONLY on separate verified completed/uncontested service branch; 8/10 partial case remains INELIGIBLE unless explicit accepted policy says otherwise"
     ],
     "noGo": [
@@ -41,7 +42,9 @@
       "CarrierOffer SELECTED is not Capacity CONFIRMED",
       "GPS arrival is not POD",
       "8/10 accepted is not all delivered",
-      "Invoice approved is not PAID"
+      "Invoice approved is not PAID",
+      "No payment transaction, PaymentAllocation, refund, paid/settled state or bank API inside KERUENIX",
+      "Signature existence does not prove legal entity authority without server verification"
     ],
     "branches": [
       {
@@ -159,18 +162,17 @@
     },
     {
       "id": "DEC-R0-07",
-      "topic": "Invoice trigger and advance",
-      "status": "BR_11_12_PENDING",
-      "owner": "Finance + Commercial + Customer + Accounting",
-      "proposal": "IssueKind=ADVANCE/POST_SERVICE/ADJUSTMENT with separate verified triggers; ADVANCE may precede POD only with accepted contract; PAID always requires verified bank/ERP proof",
+      "topic": "Commercial contract costing and external accounting boundary",
+      "status": "BUSINESS_SCOPE_ACKNOWLEDGMENT_PENDING",
+      "owner": "Commercial + Finance/Accounting + Product Owner",
+      "proposal": "KERUENIX owns versioned sell/buy price, cost estimate, margin and opaque external accounting document reference only. External business/accounting systems issue invoices/ESF, receive payments, perform reconciliation and refunds. Online EDS signs legal documents but is not a payment facility.",
       "mustDecideBy": "PR-17",
-      "failSafe": "No fiscal invoice or payment status inferred from POD/customer toggle or unapproved tax/FX assumptions",
+      "failSafe": "No internal invoice issuance, PAID/SETTLED/REFUNDED state, banking connection, PaymentAllocation, tax ESF generation or payment endpoint.",
       "checks": [
-        "invoice trigger matrix approved by Finance/legal",
-        "Money currency/tax rounding documented",
-        "advance != revenue recognized",
-        "document hash preserved",
-        "reversal is compensating ledger record"
+        "commercial price version and currency precise",
+        "external accounting document reference is not payment proof",
+        "no bank/ERP settlement adapters or payment tables",
+        "no fiscal invoice/ESF claiming KERUENIX as issuer"
       ]
     },
     {
@@ -201,13 +203,14 @@
   "deliveryDefinition": {
     "codeReady": "typed command/DTO/schema/API/event/negative-case names approved for affected slice",
     "testReady": "real JUnit red→green→refactor, Modulith verify, Testcontainers PostgreSQL+RLS+concurrency/outbox, HTTP+UI if applicable",
-    "done": "green exact SHA CI, no P0, no silent skips, signed relevant BR/ADR before irreversible command",
+    "done": "green exact SHA CI, no P0, no silent skips, signed relevant BR/ADR before irreversible command Payment scope cannot be implicitly expanded from accounting document reference.",
     "partialDone": "safe DENY/pending or API-QUALIFIED but not business journey certified"
   },
   "releaseMinimum": {
     "backend": "single runtime, no unapproved service split",
     "realData": "two providers/tenants, two separate customer accounts on same provider, real carrier and guest receiver; plus a distinct completed/verified service fixture for private review (8/10 partial alone is not complete)",
     "failure": "restart/crash/replay/permission revoke/tenant context reuse/partial delivery/finance reversal",
-    "ops": "secrets, SBOM, container smoke, backup/restore, runbook and measurement profile"
-  }
+    "ops": "secrets, SBOM, container smoke, backup/restore, runbook and measurement profile; legal EDS qualified where binding contract needs it, no payment operations in runtime"
+  },
+  "edsSigningContract": "docs/contracts/r0-scope-eds-signing.v1.json"
 }
