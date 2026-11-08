@@ -1066,12 +1066,21 @@
       "testLayer": "Finance JUnit + PostgreSQL",
       "fixtureRef": "FIX-R0-TRANSPORT-001",
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
-      "implementationStatus": "NOT_IMPLEMENTED",
+      "implementationStatus": "RETIRED_DESIGN_SPEC_NOT_TO_IMPLEMENT",
       "execution": "NOT_EXECUTED",
       "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
-      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
-      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "r0Applicability": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "releaseGate": "NOT_APPLICABLE_IN_CURRENT_PRODUCT",
       "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ],
+      "productScope": "NO_PAYMENT_BANKING_OR_LEDGER_EVER_UNLESS_NEW_SCOPE_CHANGE_REQUEST",
+      "legacySupersededBy": [
         "PAY-ABS-01",
         "PAY-ABS-02",
         "PAY-ABS-03",
@@ -1093,9 +1102,20 @@
       "testLayer": "HTTP + domain policy",
       "fixtureRef": "FIX-R0-TRANSPORT-001",
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
-      "implementationStatus": "NOT_IMPLEMENTED",
+      "implementationStatus": "RETIRED_DESIGN_SPEC_NOT_TO_IMPLEMENT",
       "execution": "NOT_EXECUTED",
-      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE"
+      "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
+      "r0Applicability": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "productScope": "NO_PAYMENT_BANKING_OR_LEDGER_EVER_UNLESS_NEW_SCOPE_CHANGE_REQUEST",
+      "releaseGate": "NOT_APPLICABLE_IN_CURRENT_PRODUCT",
+      "legacySupersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "TDD-SIM-32-G22-03",
@@ -1110,12 +1130,21 @@
       "testLayer": "PostgreSQL concurrency/unique constraint",
       "fixtureRef": "FIX-R0-TRANSPORT-001",
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
-      "implementationStatus": "NOT_IMPLEMENTED",
+      "implementationStatus": "RETIRED_DESIGN_SPEC_NOT_TO_IMPLEMENT",
       "execution": "NOT_EXECUTED",
       "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
-      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
-      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "r0Applicability": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "releaseGate": "NOT_APPLICABLE_IN_CURRENT_PRODUCT",
       "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ],
+      "productScope": "NO_PAYMENT_BANKING_OR_LEDGER_EVER_UNLESS_NEW_SCOPE_CHANGE_REQUEST",
+      "legacySupersededBy": [
         "PAY-ABS-01",
         "PAY-ABS-02",
         "PAY-ABS-03",
@@ -1137,12 +1166,21 @@
       "testLayer": "Finance Outbox/Inbox + PostgreSQL",
       "fixtureRef": "FIX-R0-TRANSPORT-001",
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
-      "implementationStatus": "NOT_IMPLEMENTED",
+      "implementationStatus": "RETIRED_DESIGN_SPEC_NOT_TO_IMPLEMENT",
       "execution": "NOT_EXECUTED",
       "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
-      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
-      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "r0Applicability": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "releaseGate": "NOT_APPLICABLE_IN_CURRENT_PRODUCT",
       "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ],
+      "productScope": "NO_PAYMENT_BANKING_OR_LEDGER_EVER_UNLESS_NEW_SCOPE_CHANGE_REQUEST",
+      "legacySupersededBy": [
         "PAY-ABS-01",
         "PAY-ABS-02",
         "PAY-ABS-03",
@@ -1164,12 +1202,21 @@
       "testLayer": "HTTP + RLS",
       "fixtureRef": "FIX-R0-TRANSPORT-001",
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
-      "implementationStatus": "NOT_IMPLEMENTED",
+      "implementationStatus": "RETIRED_DESIGN_SPEC_NOT_TO_IMPLEMENT",
       "execution": "NOT_EXECUTED",
       "criticalAssertion": "NO_UNAUTHORIZED_OR_FALSE_BUSINESS_STATE",
-      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
-      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "r0Applicability": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "releaseGate": "NOT_APPLICABLE_IN_CURRENT_PRODUCT",
       "supersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ],
+      "productScope": "NO_PAYMENT_BANKING_OR_LEDGER_EVER_UNLESS_NEW_SCOPE_CHANGE_REQUEST",
+      "legacySupersededBy": [
         "PAY-ABS-01",
         "PAY-ABS-02",
         "PAY-ABS-03",
@@ -1262,8 +1309,8 @@
       ],
       "status": "PLANNED_NOT_IMPLEMENTED",
       "realStakeholderApproval": "PENDING",
-      "r0Applicability": "OUT_OF_SCOPE_R0_NO_PAYMENT_MECHANISM",
-      "releaseGate": "NOT_REQUIRED_FOR_R0",
+      "r0Applicability": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "releaseGate": "NOT_APPLICABLE_IN_CURRENT_PRODUCT",
       "supersededBy": [
         "PAY-ABS-01",
         "PAY-ABS-02",
@@ -1271,7 +1318,17 @@
         "PAY-ABS-04",
         "PAY-ABS-05",
         "PAY-ABS-06"
-      ]
+      ],
+      "productScope": "NO_PAYMENT_BANKING_OR_LEDGER_EVER_UNLESS_NEW_SCOPE_CHANGE_REQUEST",
+      "legacySupersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ],
+      "implementationStatus": "RETIRED_DESIGN_SPEC_NOT_TO_IMPLEMENT"
     },
     {
       "id": "TDD-R0-E2E-07",
@@ -1486,8 +1543,19 @@
       "testLayer": "Finance + PG",
       "priority": "R0_SAFETY",
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
-      "implementationStatus": "NOT_IMPLEMENTED",
-      "execution": "NOT_EXECUTED"
+      "implementationStatus": "RETIRED_DESIGN_SPEC_NOT_TO_IMPLEMENT",
+      "execution": "NOT_EXECUTED",
+      "r0Applicability": "RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE",
+      "productScope": "NO_PAYMENT_BANKING_OR_LEDGER_EVER_UNLESS_NEW_SCOPE_CHANGE_REQUEST",
+      "releaseGate": "NOT_APPLICABLE_IN_CURRENT_PRODUCT",
+      "legacySupersededBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ]
     },
     {
       "id": "TDD-SIM-26-S24-01",
@@ -1531,5 +1599,10 @@
       "implementationStatus": "NOT_IMPLEMENTED",
       "execution": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "scopeOverlay": {
+    "source": "docs/contracts/r0-scope-eds-signing.v1.json",
+    "effective": "2026-11-08",
+    "rules": "Historical payment and accounting cases are retired rather than deferred to R1/R2. Case IDs kept to retain audit lineage. Six new PAY-ABS negative cases are current product tests."
+  }
 }
