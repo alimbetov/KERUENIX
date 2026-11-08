@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "status": "LEGAL_DESIGN_RECOMMENDATIONS_ONLY_NOT_LEGAL_OPINION_NOT_APPROVED",
   "asOf": "2026-11-08",
   "jurisdiction": "Republic of Kazakhstan",
@@ -50,7 +50,7 @@
       "id": "LEG-X-05",
       "title": "External accounting and ESF boundary",
       "owner": "Tax + Accounting + Finance",
-      "gateBefore": "PR-17/PR-17S",
+      "gateBefore": "PR-17 (commercial costing/external reference only)",
       "finding": "KERUENIX is not a bank, payer, payment service provider or ESF issuer. Keep only contract sell/buy/margin and external document link; the external accounting provider owns tax ESF and payment evidence.",
       "default": "No payment/paid/settled/refund state or APIs; no bank callback and no official ESF issuance"
     },
@@ -843,5 +843,11 @@
         "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
       }
     }
-  ]
+  ],
+  "scopeOverlayV17": {
+    "version": "1.7.0",
+    "source": "docs/40-r0-contract-consistency-business-readiness-v1-7.md",
+    "rule": "PR-17S was retired; no bank/payment-related legal release gate or financial operation exists in KERUENIX.",
+    "businessAndLegalApproval": "PENDING_REAL_STAKEHOLDER"
+  }
 }
