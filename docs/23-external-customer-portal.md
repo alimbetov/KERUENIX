@@ -161,3 +161,9 @@ The historical machine contract [v1.1](contracts/role-permission-scope-approval.
 **Ownership:** CustomerPortalApi is the **web/application composition facade**, consumes exported Commercial/Booking/Execution/Tracking/Documents interfaces and has **no independent canonical writable Order table**. Customer cancellation request belongs to Booking. Customer self-revoke removes **only their access**, not the customer organization or other personnel. Provider owner can consider business relationship suspension separately in R1.
 
 **Additional TDD acceptance:** `AUTH-EXT-014..017`, `AUTH-COM-018..019`, `AUTH-TEN-013..014`, `AUTH-BKG-003`, `AUTH-FIN-004`, and `AUTH-X-019..027`. See [machine contract v2.1](contracts/access-policy-matrix.v2.json). All tests are planned, not executed.
+
+## 10. R0 customer journey delivery responsibility (Roadmap v1.4)
+
+[35 — R0 Developer Handbook](35-r0-developer-handbook.md) assigns source-of-truth owners: Commercial `CustomerAccount` proposal (`PR-03C`), Tenancy external grants (`PR-03`), Commercial RFQ DRAFT/SUBMIT permission split (`PR-04/05`), Booking cancellation REQUEST (`PR-12C`), and **Commercial-owned PRIVATE post-service feedback** (`PR-16R`). Review submit uses existing `EXT-09 customer:review:submit` with customer account grant recheck, eligible verified service, idempotent one review constraint and `NEG-R0-048` provider self-review denial. Carrier/finance evidence never becomes visible merely because an external user sees My Orders.
+
+Customer `Order` is **proposed to be an account-scoped read-only projection**, not a newly approved aggregate. No private reviews are public marketplace ratings. Pending policy/legal questions remain in [DEC-R0-01..08](contracts/r0-delivery-contract.v1.json); a roadmap PR entry does not authorize the write.
