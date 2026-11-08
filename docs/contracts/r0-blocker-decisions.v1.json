@@ -469,7 +469,7 @@
     {
       "decisionId": "BR-12",
       "gapId": "GAP-22",
-      "title": "Payment approval vs bank/ERP settlement",
+      "title": "External payment boundary — KERUENIX does not process settlement",
       "moduleOwner": "Finance",
       "signoffActors": [
         "Finance controller",
@@ -477,18 +477,17 @@
         "accounting"
       ],
       "priority": "P0",
-      "recommendedFailSafeContract": "Payment PREPARED/APPROVED are internal authorization not actual settlement. Only verified bank/ERP transaction and unique allocation(s), currency/amount/FX/taxes, matched legal entity/source may reduce receivable/payable. Duplicate callbacks/idempotency never create second allocation; reconcile partial advances, disputes and credit corrections separately. Paid status derived from confirmed allocation not UI command.",
-      "requiredEvidence": "paymentTransaction reference, source/issuer, hash, amount/currency, exchange snapshot, allocation unique key, approver and initiator IDs.",
+      "recommendedFailSafeContract": "Commercial cost/sell/buy/margin reports and external accounting document references only. Payment initiation, bank/ERP settlement ingestion, allocations, AR/AP ledger, refunds, PAID/SETTLED states and tax ESF issuance belong outside KERUENIX. No external payment status should be inferred from internal commercial approval.",
+      "requiredEvidence": "Product owner signed scope change and Finance/Accounting acknowledgment of external accounting ownership, contract-price and cost reporting fields; no banking integration credentials.",
       "scenarioVariants": [
-        "same operator initiates/approves",
-        "paid partially",
-        "duplicate callback",
-        "bank outage",
-        "wrong currency",
-        "forged payment",
-        "disputed surcharge."
+        "User attempts mark Paid",
+        "Bank provider attempts callback to nonexistent route",
+        "Cross-tenant external accounting reference",
+        "Finance export contains other customer's margin",
+        "Customer cancellation claims automatic refund",
+        "Signed contract has external invoice reference but no payment processing"
       ],
-      "outstandingSignoff": "Which bank/ERP is authoritative, ledger of record, legal payment evidence, timing/reversal policy need finance/accounting signoff.",
+      "outstandingSignoff": "Confirm narrow commercial-price/reporting scope and responsibility of external accounting operator; payment processing explicitly excluded unless future change request.",
       "storyIds": [
         "USB-FIN-001",
         "USB-FIN-003",
@@ -505,11 +504,11 @@
         "AUTH-FIN-003",
         "AUTH-FIN-004"
       ],
-      "technicalStatus": "DESIGN_SPECIFIED",
+      "technicalStatus": "PRODUCT_SCOPE_REDEFINED_DESIGN_ONLY",
       "businessApproval": "PENDING_REAL_STAKEHOLDER",
       "legalApproval": "PENDING",
       "operationalAcceptance": "NOT_EXECUTED",
-      "policyActivation": "DISABLED_UNTIL_ACCEPTANCE"
+      "policyActivation": "PAYMENT_FEATURES_ALWAYS_DISABLED_IN_R0"
     }
   ]
 }
