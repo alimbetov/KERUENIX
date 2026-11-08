@@ -35,4 +35,4 @@ RLS alone is not application authorization. This test used the CI PostgreSQL/Pos
 
 ## 5. Next TDD gate under current ТЗ
 
-`FOUND-05` is a candidate for the next RED→GREEN cycle: committed Outbox event, crash after consumer effect but before publisher ack, replay through Inbox without duplicate logical side effect. This requires a real producer/consumer path, not merely a SQL claim helper. Alternatively the prerequisite `FOUND-03` trusted JWT→Tenant binding must be proven before activating HTTP business commands.
+`FOUND-05` was subsequently exercised in the [review checkpoint](45-pr01-found03-found05-found08-review-checkpoint.md): committed Outbox event, crash after consumer effect but before publisher ack, replay through Inbox without duplicate logical side effect. This requires a real producer/consumer path, not merely a SQL claim helper. Alternatively the prerequisite `FOUND-03` trusted JWT→Tenant binding must be proven before activating HTTP business commands.

@@ -74,15 +74,17 @@
       "qualificationStatus": "NOT_QUALIFIED",
       "verification": {
         "level": "PLATFORM_PARTIAL_INTEGRATION_GREEN",
-        "verifiedSha": "1613180b277bcf365a0790da9204bb4373b7fa58",
+        "verifiedSha": "2d9de65c680bae7dfc3a5cfd5ddf1b45a74ac9ee",
         "ciRuns": [
-          "https://github.com/alimbetov/KERUENIX/actions/runs/42467668385",
-          "https://github.com/alimbetov/KERUENIX/actions/runs/42467668374",
-          "https://github.com/alimbetov/KERUENIX/actions/runs/42467668422"
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42472548203",
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42472548163",
+          "https://github.com/alimbetov/KERUENIX/actions/runs/42472548420"
         ],
         "testRefs": [
           "backend/src/test/java/kz/keruenix/platform/persistence/PlatformDatabaseIntegrationTest.java",
           "backend/src/test/java/kz/keruenix/platform/persistence/PlatformOutboxClaimIntegrationTest.java",
+          "backend/src/test/java/kz/keruenix/platform/persistence/PlatformOutboxDeliveryIntegrationTest.java",
+          "backend/src/test/java/kz/keruenix/platform/persistence/TrustedTenantHttpIntegrationTest.java",
           "backend/src/test/java/kz/keruenix/platform/persistence/RuntimeDatabaseProfileTest.java",
           "backend/src/test/java/kz/keruenix/platform/persistence/LiquibaseMigrationStateTest.java",
           "backend/src/test/java/kz/keruenix/platform/persistence/LiquibaseFlywayHistoryGuardTest.java",
@@ -99,8 +101,16 @@
             "coverage": "TDD RED/GREEN: nested A→B REQUIRED transaction rejected before set_config and rolls back; A→A allowed; Hikari maximumPoolSize=1 confirms same pg_backend_pid A→B→A and transaction-local RLS reset. Auth→tenant still absent."
           },
           {
+            "requirementId": "FOUND-03",
+            "coverage": "TEST-ONLY HTTP route: signed RS256 JWT verified through Spring Security with issuer/audience/expiry and server-side grant; attacker tenant in header/body denied before PostgreSQL write. Production still denyAll; persistent member store absent."
+          },
+          {
             "requirementId": "FOUND-04",
             "coverage": "Platform Outbox/Audit/Inbox write rollback in one DB transaction. Business aggregate not yet implemented."
+          },
+          {
+            "requirementId": "FOUND-05",
+            "coverage": "REAL PG: scoped committed Outbox -> fenced worker claim -> transport sender outside transaction -> Inbox+Audit consumer effect commits -> simulated crash before ACK -> lease takeover -> replay: 2 sends, 1 durable logical effect. No real broker/scheduler/DLQ."
           },
           {
             "requirementId": "FOUND-06",
@@ -111,12 +121,20 @@
             "coverage": "Concurrent PostgreSQL Outbox claim and stale-worker fencing tested; no production broker dispatcher or end-to-end job lease."
           },
           {
+            "requirementId": "FOUND-08",
+            "coverage": "TEST-ONLY verified grant policy: Tenant-A Customer X/Y separation at HTTP→DB, revoked customer grant immediately denied even with same signed/unexpired JWT; independent Customer Y continues. In-memory fixture only, not persistent PR-03 membership."
+          },
+          {
             "requirementId": "FOUND-09",
             "coverage": "Current Spring Modulith graph verified; negative forbidden inter-module dependency fixture not yet present."
           },
           {
             "requirementId": "FOUND-10",
             "coverage": "Liquibase clean install, idempotent rerun and V1→V2 upgrade on disposable PostgreSQL; no production snapshot restore qualification."
+          },
+          {
+            "requirementId": "FOUND-11",
+            "coverage": "TEST-ONLY RS256 request filter returns 401 on forged signature, wrong issuer, wrong audience, expired and missing token; scoped grant denials 403. Real external IdP config, authorization mapping and complete HTTP ProblemDetails contract need separate qualification."
           },
           {
             "requirementId": "FOUND-12",
@@ -134,7 +152,7 @@
         "releaseArtifacts": "NOT_VERIFIED"
       },
       "businessApprovalEvidenceRefs": [],
-      "pendingScopeNotes": "Liquibase/PostgreSQL and FOUND-02 nested-tenant fail-closed TDD proven at prior green SHA; full FOUND-01..12, verified JWT→tenant+CustomerAccount, business aggregate rollback, broker dispatcher+consumer, restore and real business E2E remain pending. PR-01 NOT_QUALIFIED."
+      "pendingScopeNotes": "TDD checkpoints FOUND-02, FOUND-03/08/11 test-only JWT+grant, FOUND-05 Outbox crash/replay transport and Liquibase/PG all green on exact prior SHA. No production authorized business route, persistent Membership/PartnerGrant, live broker/scheduler, dead-letter policy, backup/restore or full Testcontainers FOUND suite. Entire PR-01 remains NOT_QUALIFIED."
     },
     {
       "id": "PR-02",

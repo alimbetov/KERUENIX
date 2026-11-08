@@ -1,4 +1,4 @@
-# KERUENIX Backend — error-handling bootstrap
+# KERUENIX Backend — platform foundation (in progress)
 
 This is **a minimal Java 21 / Spring Boot 4.1.2 bootstrap only**, not a working logistics backend or R0 release.
 
@@ -8,7 +8,7 @@ Includes:
 - `SecurityProblemHandler`: 401/403 before MVC, using the same public code registry and JSON contract.
 - `ApiFallbackErrorController`: servlet `/error` dispatch when MVC/Security advice cannot handle an error.
 - `RequestIdFilter`: server-generated UUID requestId, header and MDC.
-- `SecurityConfig`: **fail-closed** `anyRequest().denyAll()`. No JWT/real user login, no Tenancy, no domain endpoints, no accidental public business route.
+- `SecurityConfig`: **fail-closed** `anyRequest().denyAll()`. No production JWT issuer/grant configuration or live user login, no Tenancy aggregates or domain endpoints. JWT verification is exercised through a test-only route; production remains denyAll.
 - `ErrorContractTest`, `SecurityErrorContractTest`, `ErrorCodeCatalogTest` and `FallbackErrorControllerTest`: **written; 15 error contract tests and the JSON/Java parity gate passed on commit `ac459923` (GitHub Actions #22); further revisions require exact-SHA verification**.
 
 ## Local build
@@ -24,11 +24,11 @@ mvn -f backend/pom.xml verify
 
 ## PR-01 first PostgreSQL foundation slice (partial)
 
-The repository now contains `src/main/resources/db/migration/V1__platform_outbox_inbox_rls.sql` and `db/admin/bootstrap_roles.sql`, plus a real PostGIS service job `PR-01 PostgreSQL Platform Foundation`. The SQL provides tenant-first compound keys for Outbox/Audit, a tenant-scoped Inbox, `FORCE ROW LEVEL SECURITY`, transaction-local tenant context and distinct NOLOGIN runtime/dispatcher capability roles. It does **not** create operational user credentials or enable application DB connectivity.
+The repository now contains `src/main/resources/db/changelog/db.changelog-master.yaml` with PostgreSQL V1/V2 Liquibase changesets and `db/admin/bootstrap_roles.sql`, plus a real PostGIS integration job. This provides tenant-first compound keys for Outbox/Audit, tenant-scoped Inbox, `FORCE ROW LEVEL SECURITY`, transaction-local tenant context and separate NOLOGIN runtime/dispatcher capability roles. The application JDBC integration is tested under restricted credentials, but operational user provisioning and actual domain routes are not implemented.
 
 The GitHub Action runs `bash scripts/test_pr01_pg_foundation.sh` against PostgreSQL 16/PostGIS 3.7 with disposable credentials, checking absent tenant context, A→B connection reuse, forbidden foreign writes, same-UUID cross-tenant independence, audit/outbox/inbox rollback, Inbox uniqueness and geographic distances in meters. The runtime role has no superuser/DDL privileges; migration and role provisioning require a separate privileged step.
 
-**This is only an initial SQL/CI slice**, not qualified PR-01: Spring JDBC and Liquibase migrations are tested, but JWT binding, customer-account ABAC, real broker delivery, backup restore and all `FOUND-01..12` remain unimplemented. The custom session parameter is untrusted unless exclusively set by server code after authenticated authorization within a database transaction. Do not expose any business endpoint on the basis of this smoke.
+**This is still PARTIAL PR-01**, not qualified: Spring JDBC, Liquibase, JWT signature tests with an isolated in-memory grant fixture, customer scope denial, Outbox transport replay, and RLS are tested. Persistent verified membership, real broker delivery, backup/restore and the entire `FOUND-01..12` suite remain incomplete. The custom session parameter is untrusted unless exclusively set by server code after authenticated authorization within a database transaction. Do not expose any business endpoint on the basis of this smoke.
 
 ## Integration rules
 
@@ -100,3 +100,22 @@ Long-running profile `platform-db` explicitly has `spring.liquibase.enabled=fals
 **Legacy Flyway databases:** do not auto-run Liquibase on an existing populated Flyway schema, drop `flyway_schema_history` or blindly call `changelogSync`. A separate approved cutover must inventory schema and grants, snapshot/restore, map historical versions and verify each new changeSet against actual catalog state before formally recording a baseline. No such production cutover is claimed here.
 
 RLS, tenant-first primary keys, deferred no-payments scope and separation of migration/runtime roles remain mandatory. All 26 PR acceptance entries remain `NOT_QUALIFIED`.
+
+## TDD review checkpoint — FOUND-03/05/08/11
+
+[Detailed RED → GREEN review record](../docs/45-pr01-found03-found05-found08-review-checkpoint.md).
+The test-only `/__qualification/**` HTTP controller and RSA private test key are NOT
+included in the production JAR. The production servlet `SecurityConfig` still
+uses `denyAll`. `TenantScopeAuthorization` enforces that only a Spring Security
+verified `JwtAuthenticationToken` plus a server-side grant source can select
+Tenant+CustomerAccount; JWT tenant claims and attacker-supplied selectors alone
+never grant access. No persistent source is shipped yet.
+
+`PlatformOutboxDelivery` is a narrowly scoped at-least-once transport port:
+an Outbox event may be re-sent after crash; the test consumer proves one logical
+Inbox+Audit effect. There is still NO external broker adapter, lifecycle
+scheduler, tenant discovery controller or operational DLQ. A sender is forbidden
+inside an open business transaction.
+
+All three milestones are evidenced by exact-SHA CI and the PR acceptance
+manifest; PR-01 and all domain modules remain `NOT_QUALIFIED`.
