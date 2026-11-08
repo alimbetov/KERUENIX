@@ -243,18 +243,24 @@ class TrustedTenantHttpIntegrationTest {
     }
 
     static final class QualificationGrantRegistry {
+        record GrantKey(String subject, UUID tenant, UUID account) {}
+
+        private final java.util.Set<GrantKey> revoked =
+                java.util.concurrent.ConcurrentHashMap.newKeySet();
+
         boolean canAccess(String subject, UUID tenant, UUID account) {
-            return tenant.equals(TENANT_A) &&
+            boolean originallyGranted = tenant.equals(TENANT_A) &&
                     (("alice".equals(subject) && ACCOUNT_X.equals(account))
                       || ("bob".equals(subject) && ACCOUNT_Y.equals(account)));
+            return originallyGranted && !revoked.contains(new GrantKey(subject,tenant,account));
         }
 
         void revoke(String subject, UUID tenant, UUID account) {
-            // RED: missing invalidation of previously issued access.
+            revoked.add(new GrantKey(subject,tenant,account));
         }
 
         void reset() {
-            // RED: nothing persisted in the fixture yet.
+            revoked.clear(); // test fixture reset; NOT production revocation storage
         }
     }
 
