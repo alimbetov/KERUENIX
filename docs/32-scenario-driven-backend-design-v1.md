@@ -2,6 +2,8 @@
 
 **Версия:** 1.0.0 · **Дата:** 2026-11-07 · **Статус:** PROPOSED / ARCHITECTURE REVIEW / NOT BUSINESS-SIGNED / NOT IMPLEMENTED.
 
+**Обязательное актуальное ограничение:** после изменения продукта KERUENIX **не содержит платежей, AR/AP бухгалтерского реестра, PaymentAllocation и официальной ЭСФ**, даже если они упоминаются ниже как архивный материал. Финансовый контекст — коммерческие затраты и маржа, внешняя бухгалтерия — отдельная система. Подписанные документы интегрируются через `platform.signing`, не через внутренний платежный сервис. См. [39 — Technical/Business Review](39-r0-technical-business-review.md) и [38 — EDS/No Payments](38-r0-eds-signing-no-payments.md). `Order` как read-only composition и `CustomerAccount` как Commercial owner остаются ADR-кандидатами, не одобрены автоматически.
+
 **Назначение:** обязательный проектный стандарт преобразования принятых User Stories и бизнес-сценариев в модули, доменные агрегаты, репозитории, application services, DTO, MapStruct, REST controllers, запросы/фильтры/пагинацию, модель данных, безопасность, Soft Delete и проверяемые тесты. Документ не утверждает готовность реализации.
 
 **Машинно-читаемый контракт:** [backend-query-soft-delete.v1.json](contracts/backend-query-soft-delete.v1.json). Он фиксирует предлагаемые умолчания, а не развёрнутый API.
@@ -61,7 +63,7 @@ USB-* + BSC-* + BR-* + AUTH-* + LFC-* + NEG-R0-*
 | execution | Trip, TransportLeg, Shipment, CustodyHandover, DeliveryAttempt | shipment/trip dashboards | immutable lifecycle and corrections |
 | tracking | TrackingSnapshot, CustomerTrackingGrant | timeline/ETA | derived projection tombstone, rebuild |
 | documents | DocumentPackageVersion, ProofDocument | document list/status | version/retention/legal hold |
-| finance | CostEstimate, Receivable, Payable, PaymentAllocation | AR/AP, invoice, reconciliation | reversal/correction, no soft delete |
+| finance (R0 commercial costing only) | ContractCost, BuySellSnapshot, MarginReadModel, ExternalAccountingDocumentRef | scope-filtered read-only cost/margin and external reference, no payment system | No PaymentAllocation, AR/AP ledger, paid or tax invoice generation |
 | intelligence | ML dataset/model/job ownership as in 17 | versioned predictions and audits | retention/withdrawal per ML policy |
 | optimization | OptimizationJob/Result | optimization runs | job expiry/retention, not booking truth |
 | recovery | RecoveryCase, ReplacementOffer | rescue cases | terminal state, not cargo truth deletion |
