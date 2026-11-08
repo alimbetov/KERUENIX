@@ -41,11 +41,11 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         )
 
     def check_risk(self, road: dict) -> list[str]:
-        return module.audit_v14_pr_contract(
+        return module.audit_v15_pr_contract(
             road, self.case_ids, self.permissions, self.br_ids
         )
 
-    def test_current_contract_has_no_v14_risk_errors(self) -> None:
+    def test_current_contract_has_no_v15_risk_errors(self) -> None:
         self.assertEqual([], self.check_risk(self.roadmap))
 
     def test_unknown_critical_case_fails(self) -> None:
@@ -77,14 +77,14 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         self.assertTrue(any("CustomerAccount owner/grant split" in p
                             for p in self.check_risk(road)))
 
-    def test_paid_cannot_be_defined_by_mock(self) -> None:
+    def test_payment_mechanisms_cannot_be_silently_enabled(self) -> None:
         road = copy.deepcopy(self.roadmap)
-        road["financeSettlementGate"]["mockRule"] = "Any mock callback marks PAID"
-        self.assertTrue(any("false production PAID" in p
+        road["financeBoundaryGate"]["paymentMechanismsEnabled"] = True
+        self.assertTrue(any("Payment mechanisms must remain EXCLUDED" in p
                             for p in self.check_risk(road)))
 
     def test_current_markdown_pr_dag_matches_machine(self) -> None:
-        self.assertEqual([], module.audit_v14_markdown_pr_table(
+        self.assertEqual([], module.audit_v15_markdown_pr_table(
             self.roadmap, self.markdown
         ))
 
@@ -95,12 +95,12 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         ]["required"] = False
         self.assertTrue(any("PR-03C" in p for p in self.check_risk(road)))
 
-    def test_bank_settlement_requires_business_gate(self) -> None:
+    def test_removed_bank_pr_cannot_be_restored_as_dependency(self) -> None:
         road = copy.deepcopy(self.roadmap)
-        next(p for p in road["r0Prcuts"] if p["id"] == "PR-17S")[
-            "activationGate"
-        ]["mode"] = "NOT_A_REAL_GATE"
-        self.assertTrue(any("PR-17S" in p for p in self.check_risk(road)))
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-19")[
+            "dependsOnPrs"
+        ].append("PR-17S")
+        self.assertTrue(any("Removed PR-17S" in p for p in self.check_risk(road)))
 
     def test_suffixed_commercial_account_pr_dependency_is_checked(self) -> None:
         q = chr(96)
@@ -112,7 +112,7 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         )
         self.assertNotEqual(changed, self.markdown)
         self.assertTrue(any("PR-03: Markdown prerequisites differ" in p
-                            for p in module.audit_v14_markdown_pr_table(
+                            for p in module.audit_v15_markdown_pr_table(
                                 self.roadmap, changed
                             )))
 
@@ -149,14 +149,14 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         next(p for p in road["r0Prcuts"] if p["id"] == "PR-17")[
             "dependsOnPrs"
         ].append("PR-16")
-        self.assertTrue(any("PR-17 blanket-POD" in p for p in self.check_risk(road)))
+        self.assertTrue(any("PR-17 must not depend on bank/payment/official invoice" in p for p in self.check_risk(road)))
 
     def test_decision_approval_requires_real_reviewer_evidence(self) -> None:
         doc = module.load("docs/contracts/r0-delivery-contract.v1.json")
         decision = next(d for d in doc["decisions"] if d["id"] == "DEC-R0-01")
         decision["status"] = "APPROVED"
         self.assertTrue(any("DEC-R0-01: APPROVED without" in error
-                            for error in module.audit_v14_delivery_approvals(doc)))
+                            for error in module.audit_v15_delivery_approvals(doc)))
 
     def test_decision_approval_with_evidence_can_be_recorded(self) -> None:
         doc = module.load("docs/contracts/r0-delivery-contract.v1.json")
@@ -164,7 +164,31 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         decision.update(status="APPROVED", approvalEvidenceRef="restricted://adr/1",
                         approverAuthorityRef="role:approved-decision-owner",
                         approvedVersion="1", approvedAtUtc="2026-11-08T09:00:00Z")
-        self.assertFalse(module.audit_v14_delivery_approvals(doc))
+        self.assertFalse(module.audit_v15_delivery_approvals(doc))
+
+    def test_eds_signing_must_gate_quote_acceptance(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-07")[
+            "dependsOnPrs"
+        ].remove("PR-06S")
+        self.assertTrue(any("Signed Quote must depend" in p
+                            for p in self.check_risk(road)))
+
+    def test_eds_signer_has_no_integration_shortcut(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-06S")[
+            "outcome"
+        ] = "Sign arbitrary document without verification"
+        self.assertTrue(any("Signed Quote must depend" in p
+                            for p in self.check_risk(road)))
+
+    def test_cost_reporting_must_not_implement_payments(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-17")[
+            "testGate"
+        ] = "Payment settlement success"
+        self.assertTrue(any("PR-17 must be commercial margin report" in p
+                            for p in self.check_risk(road)))
 
     def test_wrong_markdown_pr_prerequisite_fails(self) -> None:
         q = chr(96)
@@ -175,7 +199,7 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         )
         self.assertNotEqual(changed, self.markdown)
         self.assertTrue(any("PR-05: Markdown prerequisites differ" in p
-                            for p in module.audit_v14_markdown_pr_table(
+                            for p in module.audit_v15_markdown_pr_table(
                                 self.roadmap, changed
                             )))
 
