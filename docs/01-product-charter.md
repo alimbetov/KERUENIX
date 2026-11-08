@@ -20,14 +20,14 @@ KERUENIX — **Logistics Operating Platform** для перевозчиков и
 
 ## Что покрывает полный коммерческий цикл
 
-`RFQ → Qualification → Negotiation/Quote → CarrierConfirmation → Booking → Loading → Transport/Tracking → Hub/Handover → Delivery/POD → Documents → Invoices → Reconciliation → Settlement`.
+`RFQ → Qualification → Quote/ЭЦП при необходимости → CarrierConfirmation → Booking → Loading → Transport/Tracking → Delivery/POD → Documents → Commercial Cost Report → External Accounting Document Reference`.
 
-При этом `Delivered`, `DocumentsComplete`, `Invoiced`, `Paid` и `Closed` — разные состояния. Если нет документов или денежных средств, это не мешает физическому факту доставки, но препятствует корректному финансовому закрытию.
+`Delivered`, `DocumentsComplete` и `OperationallyClosed` — разные состояния. Сведения о фактической оплате ведутся вне KERUENIX; коммерческая маржа не равна денежному поступлению. Внутренние статусы `PAID/SETTLED` запрещены.
 
 ## Принципы продукта
 
 1. Shipment-centric tracking: клиент видит свой груз, не весь автомобиль.
-2. Договор, перевозка, транспорт, склад и финансовый учёт раздельны.
+2. Договор, перевозка, транспорт, склад и коммерческая стоимость раздельны; бухгалтерский и платёжный учёт находятся вне KERUENIX.
 3. Multi-tenancy работает и в одной общей системе, и в Dedicated/On-Prem.
 4. Подрядчики и склады обмениваются данными по scoped grants.
 5. Груз и техника классифицируются по реальным свойствам: безопасность, масса, объём, отсеки, ADR, температура, санитария.
@@ -43,7 +43,7 @@ Cloud: базовая подписка/количество активных м�
 
 **Не обещать тарифы и SLA до пилота:** картографические вызовы, GPS, SMS, транзакционные файлы и хранение могут иметь большую переменную себестоимость.
 
-Детальный разбор принятия предложений, подтверждения ресурса, доставки и оплаты: **[Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md)**. Состояния коммерческих, грузовых и финансовых агрегатов не объединяются в один общий `Order.status`.
+Детальный разбор принятия предложений, подтверждения ресурса, доставки и коммерческой стоимости: **[Commercial & Execution Lifecycle v1](10-commercial-execution-lifecycle-v1.md)**. Состояния коммерческих, грузовых и финансовых агрегатов не объединяются в один общий `Order.status`.
 
 ## Что не является MVP
 

@@ -65,7 +65,7 @@
 | DEC-06 | Документы и POD для конкретной страны/груза | Legal + Operations | Сроки, статус и closure |
 | DEC-07 | Подключаемый routing/GPS provider, покрытие KZ | Integration lead | ETA/ограничения и цена API |
 | DEC-08 | Фактические Vehicle/Trailer/Cargo attributes | Fleet + Quality | Невозможен безопасный подбор |
-| DEC-09 | Source of truth for invoices/AR/AP/ERP | Finance | Нельзя оценить cash gap и margin |
+| DEC-09 | External accounting document reference and commercial margin source of truth; NO PAYMENTS | Product + Finance | Не смешивать margin и фактический платёж |
 | DEC-10 | Ответственность за правовые RuleSet и частоту обновления | Legal + Compliance | Нельзя объявлять опасные грузы разрешёнными |
 | DEC-11 | Модель тарифов SaaS и usage caps | Product + Finance | Риск отрицательной юнит-экономики |
 | DEC-12 | Поддерживаемые Cloud/On-Prem профили и SLA | Platform + Security | Разные операционные риски |
@@ -81,7 +81,7 @@
 | LFC-DEC-03 | Подтверждение ресурсов: машина, водитель, прицеп, складские окна, сроки холда | Логист + fleet |
 | LFC-DEC-04 | Кто подтверждает pickup/POD и юридическая сила доказательств | Operations + юридический представитель |
 | LFC-DEC-05 | Физическое закрытие при partial delivery/return и claim | Экспедитор + клиент + финансы |
-| LFC-DEC-06 | Source of truth и процесс Posting для invoice, AR/AP, advances и payments | Главный бухгалтер/финансовый контролёр |
+| LFC-DEC-06 | Внешняя бухгалтерия владеет Invoice/AR/AP/payments; KERUENIX хранит только opaque reference | Главный бухгалтер/финансовый контролёр |
 | LFC-DEC-07 | Credit limits, скидки, дотации, approvals и separation of duties | Finance + Security |
 | LFC-DEC-08 | Права раскрытия заказчику информации о подрядчике, маршруте и задержке | Security + коммерческий отдел |
 
@@ -109,7 +109,7 @@
 | R-03 | Ошибочная безопасность груза/транспорта | Критическое | Approved rules + hard DENY + expert review |
 | R-04 | Неверная/устаревшая геодорожная информация | Высокое | Provenance + manual review + provider benchmark |
 | R-05 | Ложная отгрузка или lost custody | Высокое | HandlingUnit scan + explicit transfer |
-| R-06 | Cash gap несмотря на «положительную прибыль» | Высокое | AR/AP, advances, credit policy |
+| R-06 | Коммерческую маржу принимают за уже полученную оплату | Высокое | Сравнение цен/затрат, отдельная внешняя бухгалтерия; без финансовых статусов |
 | R-07 | Зависимость от одного платного provider | Среднее/высокое | Ports/adapters + quotas |
 | R-08 | Пустое/недостаточное качество данных ML | Среднее | Baseline first, no legal ML decisions |
 | R-09 | Enterprise отличается от Cloud по поведению | Высокое | Same release, contract suites, config |

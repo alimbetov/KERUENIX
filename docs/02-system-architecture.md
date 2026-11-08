@@ -42,10 +42,10 @@ flowchart TB
 | Warehouse Hub | ASN, stock ledger, holds, docks, tasks, handover | Warehouse inventory ledger |
 | Compliance | Cargo classification, adjacency, vehicle legality, docs, rules | Approved RegulatoryRuleSets + evidence |
 | Identifiers | SSCC/GTIN/GLN/ISO6346/HS/TNVED namespace and label registry | Typed external IDs + issuer evidence |
-| Finance | Sale/buy prices, cost snapshots, AR/AP status, disputes | Reconciliation + ERP if designated |
+| Finance (commercial costing only) | Sell/buy price, cost snapshots, margin and opaque external accounting-document reference | KERUENIX commercial pricing; external accounting is sole invoice/payment truth |
 | Rescue | Incident, offers, replacement leg, custody and recovery costs | Recovery workflow |
 | Intelligence | Constraint optimization and optional predictions | Suggestions; **never** legal truth |
-| Integrations | GPS, map, routing, EDI, warehouse, customs and payments APIs | Source provenance |
+| Integrations | GPS, map, routing, EDI, warehouse, customs and document-reference adapters; no banking/payment APIs | Source provenance |
 | Platform Management | Onboarding, provisioning, quotas and commercial SaaS billing | Platform-specific DB/config |
 
 ## Trust boundaries

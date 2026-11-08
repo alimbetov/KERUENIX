@@ -29,12 +29,12 @@
                                       │
                       DocumentPackageVersion
                                       │
-               Invoice / Receivable / Payable / Payments
+         CommercialCostReport / ExternalAccountingDocRef
                                       │
-                       Operational & financial close
+                   Operational close / cost visibility
 ```
 
-Схема показывает связи, а не строгую синхронную последовательность: водитель может ещё ехать, когда уже возникли аванс и payable; документы, оплата, инциденты и претензии могут идти параллельно. **Customer Quote accepted** не равно **Carrier confirmed** и не равно **CapacityReservation confirmed**.
+Схема показывает связи, а не строгую синхронную последовательность: коммерческая стоимость может быть известна до завершения перевозки; документы, инциденты и претензии могут идти параллельно. **Customer Quote accepted** не равно **Carrier confirmed** и не равно **CapacityReservation confirmed**.
 
 ## 2. Четыре независимые границы ответственности
 
@@ -43,7 +43,7 @@
 | Коммерческое обещание | RFQ / QuoteVersion / Order terms | Версия подписанных/принятых условий | Прайс провайдера не заменяет договор |
 | Физическое исполнение | Booking / Trip / Shipment / TransportLeg / Custody | Подтверждённые ресурсные и грузовые события | GPS/ETA не заменяет принятие груза |
 | Документы | DocumentPackage / DeliveryEvidence / POD | Проверенные исходные документы, их версии и подписи | Фото/QR не означает юридическую комплектность |
-| Денежные обязательства | Invoice / Receivable / Payable / PaymentAllocation | ERP или локальный финансовый реестр, указанный в политике | Доставка не равна оплате, маржа не равна cash balance |
+| Коммерческая стоимость, без платежей | CostEstimate / CommercialCostReport / ExternalAccountingDocRef | KERUENIX владеет sell/buy ценой; внешняя бухгалтерия — Invoice/AR/AP/payments | Доставка и маржа не свидетельствуют об оплате |
 
 `Order` связывает эти контуры и показывает агрегированную бизнес-картину. `Order.customerStatus` и `Order.progress` — **производные проекции**, не авторитетная глобальная state machine.
 
@@ -146,20 +146,13 @@
 - Подтверждённый POD не равен пакету бухгалтерских/таможенных документов.
 - Неполный пакет влияет на возможность фин.закрытия, а в регулируемой перевозке — на возможность release, если документ обязателен для данной операции.
 
-### 3.10. Invoice, Receivable, Payable и фактические Payments
+### 3.10. Commercial Cost Report и External Accounting Handoff — NO PAYMENTS
 
-**Invoice:** `DRAFT → ISSUED` или `VOIDED` (только невыпущенный черновик). Выпущенный документ **не редактируется**; изменения через корректирующие документы, credit note/новую версию по применимым правилам.
+**Внутренний R0:** согласованные версии sell/buy цен, коммерческие затраты и маржа. Cost report создаётся из подтверждённых договорных условий и может быть доступен до POD. Необязательный `ExternalAccountingDocRef` представляет opaque-ссылку на документ, оформленный внешней бухгалтерской системой.
 
-**Receivable:** `OPEN → PARTIALLY_SETTLED → SETTLED` или `WRITTEN_OFF` с отдельным finance approval.
+**Внешняя бухгалтерия/банк:** Invoice/ЭСФ, Receivable, Payable, PaymentTransaction, PaymentAllocation, refunds и PAID/SETTLED. Эти объекты и статусы не реализуются KERUENIX. Факт наличия внешнего документа не меняет статус перевозки, договора или денежного расчёта.
 
-**Payable:** `PENDING_VERIFICATION → APPROVAL_REQUIRED/APPROVED → OPEN → PARTIALLY_SETTLED → SETTLED` либо `REJECTED` при проверке.
-
-- `PaymentTransaction`, `PaymentAllocation`, `Advance`, `CreditNote`, `Claim`, `Dispute` — **отдельные объекты/операции**, а не «статусы доставки».
-- `OVERDUE` и `DISPUTED` для AR/AP — **ортогональные признаки**, вычисляются по due date и claim; не разрушать основной автомат.
-- Платежи сверяются с подтверждённым банковским/учётным фактом; смена `Paid` вручную без доказательства не означает поступившие деньги.
-- Сумма проведённых аллокаций не может превышать допустимую непогашенную сумму с учётом подтверждённых корректировок и переплат; валюта, курс, копейки и налоги явно определены.
-- **Advance** подрядчику до перевозки не означает, что услуга исполнена; это финансовое обязательство/предоплата с отдельной сверкой.
-- В R0 допустим локальный упрощённый финансовый статус с evidence или проверенный ERP adapter; **не требуется создавать всю бухгалтерию**.
+**Инварианты:** Decimal/Money точность, currency и округление; tenant/account/legal-entity scope; изменение цены только через версионированный договорный amendment; подписанный документ не равен оплате. Исторические платежные схемы прежних версий не являются требованиями к коду.
 
 ## 4. Роли, полномочия и SoD
 
@@ -202,13 +195,13 @@
 
 `Trip.STARTED` не переводит `Shipment` в `IN_CUSTODY`: нужен подтверждённый `CargoHandover/Pickup`. Грузы могут идти несколькими Trip и через Hub. Клиент видит статус своего Shipment, разрешённые milestones, ETA и свежесть источника; GPS автомобиля после выгрузки **не** означает перемещение груза.
 
-### Delivery → Documents → Finance → Closure
+### Delivery → Documents → Commercial Cost Visibility → Operational Closure
 
 - `Shipment.DELIVERED` наступает при доказанной доставке; `DeliveryAttempt.ACCEPTED` может относиться лишь к части CargoUnit.
 - `DocumentPackageVersion.COMPLETE` оценивается независимо, иногда позже.
-- `Invoice.ISSUED` фиксирует документ/обязательство, а `Receivable.SETTLED` — проверенные аллокации платежей.
+- `ExternalAccountingDocRef` — необязательная ссылка на внешний документ; внутри платформы нет состояния оплаты.
 - `Order.operationalComplete` определяется по disposition всех Shipment и обязательных exceptions.
-- `Order.financiallyClosed` требует утверждённой сверки AR/AP, корректировок и claim policy. Если договор допускает закрытие с открытой претензией, отображается исключение и отдельный claim lifecycle.
+- `Order.commercialCostStatus` — производный статус коммерческой оценки, **не** финансовое закрытие. Claim/dispute отображаются независимо от факта внешней оплаты.
 
 ## 6. Исключения и компенсации
 
@@ -222,9 +215,9 @@
 | EX-06 | Частичная доставка | Per-unit POD, outstanding balance of units, new attempt/return | Пометить весь Shipment delivered |
 | EX-07 | Получатель отказался | DeliveryException + storage/return, approvals | Автоматически возвращать без юридического поручения |
 | EX-08 | Документы отклонены | REJECTED → COLLECTING, новую ревизию | Удалять старый подписанный документ |
-| EX-09 | От клиента нет оплаты | AR overdue + collection, credit policy | Менять операционный статус доставки |
-| EX-10 | Спорный invoice подрядчика | AP approval withheld, Dispute/ClaimCase | Автоматически оплачивать по GPS/счёту |
-| EX-11 | Повторный webhook/POD/scanner | Один эффект по идемпотентности и версиям | Дублировать custody/финансовую проводку |
+| EX-09 | Внешний бухгалтерский документ не зарегистрирован | Оставить ExternalAccountingDocRef пустым/ожидающим | Изменять Booking/Shipment или придумывать статус оплаты |
+| EX-10 | Спорная доплата перевозчику | Commercial change proposal и новая утверждённая версия цены | Молча менять cost snapshot либо создавать Payable |
+| EX-11 | Повторный webhook/POD/scanner | Один эффект по идемпотентности и версиям | Дублировать custody/коммерческий event |
 | EX-12 | Таможенный/quality HOLD | Hard block release; документальное подтверждение | Снять блокировку через сервисный backdoor |
 
 **Cancellation после начала рейса** — не просто `Booking.CANCELLED`: требуется `TERMINATED_WITH_EXCEPTION` и документированный disposition груза, компенсация затрат, обязательства перед клиентом и подрядчиком.
@@ -242,7 +235,7 @@
 
 ### Ключевые доменные события
 
-`RfqSubmitted`, `RfqNeedsClarification`, `RfqQualified`, `CustomerQuoteIssued`, `CustomerQuoteAccepted`, `CarrierOfferSelected`, `CapacityHeld`, `CapacityConfirmed`, `BookingConfirmed`, `TripStarted`, `CargoPickedUp`, `CustodyTransferred`, `TripInterrupted`, `ShipmentPartiallyDelivered`, `ShipmentDelivered`, `PodAccepted`, `DocumentPackageCompleted`, `InvoiceIssued`, `CustomerPaymentAllocated`, `SupplierPayableApproved`, `SupplierPaymentAllocated`.
+`RfqSubmitted`, `RfqNeedsClarification`, `RfqQualified`, `CustomerQuoteIssued`, `CustomerQuoteAccepted`, `CarrierOfferSelected`, `CapacityHeld`, `CapacityConfirmed`, `BookingConfirmed`, `TripStarted`, `CargoPickedUp`, `CustodyTransferred`, `TripInterrupted`, `ShipmentPartiallyDelivered`, `ShipmentDelivered`, `PodAccepted`, `DocumentPackageCompleted`, `CommercialCostSnapshotUpdated`, `ExternalAccountingDocumentReferenced`.
 
 Названия events — проектные. Договориться о `eventType`, schema/version, causation и partner projection до публикации публичного API.
 
@@ -250,14 +243,14 @@
 
 ### Release 0 — только необходимый вертикальный процесс
 
-- 2 tenants, own/one external carrier, RFQ, quote version, accept, hold/confirm capacity, booking confirmation, Trip + single Shipment с CargoUnit, pickup custody evidence, simple route/ETA, basic delivery attempt/POD, document checklist, customer Invoice + payment status, supplier cost, closure checklist.
+- 2 tenants, own/one external carrier, RFQ, quote version, accept, hold/confirm capacity, booking confirmation, Trip + single Shipment с CargoUnit, pickup custody evidence, simple route/ETA, basic delivery attempt/POD, document checklist, sell/buy cost/margin report, optional external accounting reference and operational closure checklist.
 - Аварии/погрузочные расхождения/частичная выдача поддерживаются **как безопасная ветка exceptional flow**, но полноценный автоматический Rescue/claims/ERP не обязателен.
-- Допустима ручная финансовая сверка с учётной ссылкой; запрещена фиктивная банковская оплата.
+- Допустима необязательная ссылка на внешний бухгалтерский документ, но нет внутренних платежей, сверки, ЭСФ или AR/AP.
 - Опасные/таможенные операции не включаются в пилот без утверждённого regulatory dataset.
 
 ### Later releases
 
-Contract negotiation cockpit, сложные скидки и тендеры, consolidated loads, backhaul, Rescue партнёрская сеть, WMS ledger/cross-dock, eCMR/eTIR/KEDEN по официальной интеграции, сложные AR/AP matching и Tribuo ML.
+Contract negotiation cockpit, сложные скидки и тендеры, consolidated loads, backhaul, Rescue партнёрская сеть, WMS ledger/cross-dock, eCMR/eTIR/KEDEN по официальной интеграции, ограниченные внешние справочные ссылки по новому ADR и Tribuo ML.
 
 **Не путать:** P0-доменная безопасность обязательна с начала, но P0 не означает полнофункциональный UI для всех будущих модулей в R0.
 
@@ -269,7 +262,7 @@ Contract negotiation cockpit, сложные скидки и тендеры, con
 4. Что фактически означает `CarrierOffer.SELECTED` в договорной модели и когда возникает purchase order?
 5. Что считается ресурсом: собственная машина, связка тягач+прицеп, водитель, субподрядный лот, слот склада?
 6. Какие документы позволяют начать рейс, сдать груз, выставить счёт и закрыть заказ?
-7. Какой источник истины у Invoice, Receivable, Payable, Payment? Встроенная упрощённая система или ERP?
+7. Как внешняя бухгалтерия выдаёт opaque document reference, без передачи KERUENIX статусов оплаты и права формировать ЭСФ?
 8. Как закрывается Shipment при смешанном `частично доставлен + остаток возвращён`? Зафиксировать external customer status и экономическую ответственность.
 9. Можно ли закрыть Order с открытой претензией, и при каких делегированных правах?
 10. Какие сведения о партнёре/водителе/договоре видит заказчик и получатель?
