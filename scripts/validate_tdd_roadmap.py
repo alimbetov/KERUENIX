@@ -95,6 +95,28 @@ def audit_v14_pr_contract(road: dict, known_cases: set[str],
         issues.append("Finance settlement gate permits false production PAID")
     if not road.get("tddExecutableSelection", {}).get("requiredManifestFields"):
         issues.append("Missing per-PR actual TDD applicability evidence schema")
+    fleet = cuts.get("PR-10V", {})
+    if (fleet.get("owner") != "fleet" or "PR-02" not in fleet.get("dependsOnPrs", [])
+            or "NO capacity commitment" not in fleet.get("outcome", "")):
+        issues.append("PR-10V Fleet registry must not imply a binding capacity hold")
+    cancellation = cuts.get("PR-12C", {})
+    if (cancellation.get("owner") != "booking"
+            or cancellation.get("activationGate", {}).get("br") != ["BR-11"]
+            or "NEG-R0-046" not in cancellation.get("criticalCaseIds", [])):
+        issues.append("PR-12C cancellation requires BR-11, custody race and Booking ownership")
+    review = cuts.get("PR-16R", {})
+    if (review.get("owner") != "commercial"
+            or "private" not in review.get("outcome", "").lower()
+            or "NEG-R0-048" not in review.get("criticalCaseIds", [])
+            or not review.get("uiAcceptance", {}).get("required")):
+        issues.append("PR-16R must remain Commercial-owned, private, proof-verified feedback")
+    e2e_deps = cuts.get("PR-19", {}).get("dependsOnPrs", [])
+    if not {"PR-12C", "PR-16R"}.issubset(set(e2e_deps)):
+        issues.append("PR-19 R0 E2E missing cancellation/review dependency")
+    if cuts.get("PR-13", {}).get("dependsOnPrs") != ["PR-12"]:
+        issues.append("PR-13 must not wait for optional cancellation BR")
+    if cuts.get("PR-17", {}).get("dependsOnPrs") != ["PR-07"]:
+        issues.append("PR-17 blanket-POD prerequisite blocks valid advance-invoice design")
     return issues
 
 
