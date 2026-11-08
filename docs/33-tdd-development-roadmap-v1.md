@@ -1,6 +1,6 @@
-# 33 — KERUENIX TDD Development Roadmap v1.6
+# 33 — KERUENIX TDD Development Roadmap v1.7
 
-**Дата:** 2026-11-07 · **Версия:** 1.6.0 · **Статус:** PROPOSED DELIVERY ROADMAP / BUSINESS SIGNOFF PENDING / ROADMAP NOT EXECUTED.
+**Дата:** 2026-11-07 · **Версия:** 1.7.0 · **Статус:** PROPOSED DELIVERY ROADMAP / BUSINESS SIGNOFF PENDING / ROADMAP NOT EXECUTED.
 
 **Цель:** поэтапно реализовать KERUENIX как один надёжный Spring Modulith modular monolith в Java 21, от имеющегося error bootstrap до полной, безопасной и воспроизводимой автомобильной перевозки между независимыми компаниями. Технические решения и бизнес-требования должны квалифицироваться через TDD, реальные PostgreSQL/PostGIS транзакции, RLS, API и cross-role E2E. Не заявлять готовность по наличию документации, mock-тестов или единичного happy path.
 
@@ -80,7 +80,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 | `RD-06` | Booking Process + External Carrier | `RD-04`, `RD-05` | booking, fleet, commercial |
 | `RD-07` | Execution + Custody + Partial POD | `RD-06` | execution, cargo, compliance |
 | `RD-08` | Tracking + Documents + Query/Soft Delete Qualification | `RD-07` | tracking, documents, fleet, execution |
-| `RD-09` | Commercial Cost & External Accounting Handoff (**1 PR, NO PAYMENTS**) | `RD-06`, `RD-07`, `RD-08` | finance only writes ledger; other modules via exported facts |
+| `RD-09` | Commercial Cost & External Accounting Handoff (**1 PR, NO PAYMENTS**) | `RD-04` | finance owns only versioned commercial costing and external document reference, never payment ledger |
 | `RD-10` | **Jobs Resilience Hardening** + Subscription Safety | `RD-02`, `RD-06`, `RD-07`, `RD-09` | platform jobs + scoped tenancy/execution/finance; not first Outbox deployment |
 | `RD-11` | R0 Full E2E + Recovery + Performance | `RD-03`, `RD-04`, `RD-05`, `RD-06`, `RD-07`, `RD-08`, `RD-09`, `RD-10` | tenancy, commercial, fleet, cargo, compliance, booking, execution, tracking, documents, finance |
 | `RD-12` | Pilot Acceptance + Release Qualification | `RD-11`, `RD-00` | tenancy, commercial, fleet, booking, execution, tracking, documents, finance |
@@ -496,7 +496,7 @@ For **every query endpoint** agree typed allowlisted `filter`, `sort`, paginatio
 | `RD-06` | Provider/Carrier Booking workflow: hold, pending, confirmation, rejection/cancel request; при конфликте UI показывает актуальную версию после повторного чтения. |
 | `RD-07` | Driver offline pickup/POD draft queue + receiver evidence; после устаревшей роли/assignment показать requires reconciliation, не silently delivered. |
 | `RD-08` | Customer Tracking + POD/documents, явная свежесть ETA, строгий customer-visible field allowlist, истекшая ссылка не открывает чужой документ. |
-| `RD-09` | Finance office AR/AP + evidence status; approval и posting отделены, paid не доступен как произвольный ручной переключатель. |
+| `RD-09` | Scoped sell/buy/margin report and optional external accounting-document reference; no Invoice/AR/AP/payment UI or status. |
 | `RD-10` | Состояния долгой операции, retry/failed, graceful degradation и безопасная операционная непрерывность при недоступности внешних сервисов. |
 | `RD-11` | Сквозная browser/UI и при необходимости offline device simulation: customer→provider→carrier→driver→receiver→finance, все негативные видимые состояния. |
 | `RD-12` | User acceptance workshop, accessibility/responsive baseline и документирование наблюдаемых ограничений перед публикацией. |
@@ -840,9 +840,9 @@ All 17 existing business modules remain in the architecture map. This version is
 
 `PR-13` calls an infrastructure-level `EvidenceBlobGateway` through an exported/own port (not a new business module), stages/uploads original proof bytes, checks object presence, MIME/scan policy, SHA-256, byte size and actor authority. Execution commits verified `ProofReceipt` + custody transition + Outbox atomically *after* externally stored evidence is validated; orphan blobs and uncertain cleanup have explicit reconciliation. `PR-16` Documents consumes Execution's published proof receipt or exported API and assembles versioned immutable `DocumentPackage`. **No Execution→Documents direct module import**, which would contradict the allowed `documents → execution` dependency. An arbitrary signed URL is not legal/operational proof of POD.
 
-### 24.3 Invoice ≠ settled payment — split the finance slice
+### 24.3 Historical invoice/settlement proposal — RETIRED (no implementation)
 
-`PR-17` delivers accurate Finance-owned Invoice, AR/AP, payable approvals, outstanding/partial amounts and immutable originals; `PR-17S` delivers verified bank/ERP transaction ingestion, unique allocation, replay/reversal handling and guarded `SETTLED`. PR-17 may be qualified with no live bank integration **only as an invoicing slice**, while PR-17S and R0 finance E2E may not be qualified by mock/sandbox callback claiming real production payment. Actual payment source, currency/legal-entity matching and independent approver remain business/legal/operational gates.
+Earlier versions proposed PR-17 Invoice/AR/AP and PR-17S bank settlement. These are **retired and non-normative**. In v1.7 PR-17 is exclusively sell/buy commercial costs, versioned margin and an opaque reference to an externally issued document; neither payment nor invoicing APIs, tables, events or authorizations may be generated.
 
 ### 24.4 Workflow/approval status are not global blockers
 
@@ -879,3 +879,8 @@ No private NCA keys are stored in KERUENIX. NCALayer is initial web design, eGov
 ## 27. v1.6 technical/business second review gate
 
 [39 — Technical and Business Re-review](39-r0-technical-business-review.md) details remaining 2026 user scope conflicts and source ownership. **RD-09** depends on **RD-04**, *not* on full custody/Documents, because commercial cost reports can operate before the POD. **PR-11** carrier legal undertaking depends on `PR-06S` signing evidence in addition to Commercial business approval. For legally binding owner actions, `SIG-01..18` are design-only checks; Articles 50,61,62 demand exact-document signer preview/explicit confirmation, verifiable legal entity authority, public verification mechanism and portable original with validated long-term proof. `FIN-02..04` payment permissions are retired; `FIN-01` is scoped `commercial:cost:read` only. Historical positive bank cases are **RETIRED_OUT_OF_PRODUCT_SCOPE**; six PAY-ABS absence cases are the applicable negative gates. The first release is transport+document+commercial-price **without payment or accounting execution**.
+
+
+## 28. v1.7 — Contract Consistency & Business Readiness (2026-11-08)
+
+Authoritative reconciliation: [40 — R0 Contract Consistency & Business Readiness](40-r0-contract-consistency-business-readiness-v1-7.md). The module ownership manifest, Roadmap machine JSON, product-scope JSON and validator must agree on **NO PAYMENTS**, eleven retired historical test IDs and `RD-09 → RD-04` only. Legally binding Quote/Carrier/POD transitions are HOLD until actor, legal form and real stakeholder approval evidence are validated. Documentation CI success never means domain implementation or legal readiness.
