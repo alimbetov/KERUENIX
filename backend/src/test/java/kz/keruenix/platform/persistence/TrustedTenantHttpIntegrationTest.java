@@ -151,9 +151,10 @@ class TrustedTenantHttpIntegrationTest {
                 .andExpect(status().isAccepted());
 
         var scope = new PlatformTenantTransaction(dataSource);
-        assertThat(scope.execute(TENANT_A, jdbc -> jdbc.queryForObject(
+        Integer committed = scope.execute(TENANT_A, jdbc -> jdbc.queryForObject(
                 "SELECT count(*) FROM platform.audit_fact WHERE audit_id=?",
-                Integer.class, event))).isEqualTo(1);
+                Integer.class, event));
+        assertThat(committed).isEqualTo(1);
         assertAuditAbsent(TENANT_B, event);
     }
 
