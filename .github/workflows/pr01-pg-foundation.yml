@@ -8,7 +8,7 @@ on:
       - 'backend/src/main/java/kz/keruenix/platform/persistence/**'
       - 'backend/src/test/java/kz/keruenix/platform/persistence/**'
       - 'backend/src/main/resources/application-platform-db.yml'
-      - 'backend/src/main/resources/application-platform-db-migrate-test.yml'
+      - 'backend/src/test/resources/application-platform-db-migrate-test.yml'
       - 'backend/src/main/resources/db/**'
       - 'scripts/test_pr01_pg_foundation.sh'
       - '.github/workflows/pr01-pg-foundation.yml'
