@@ -23,7 +23,7 @@ The earlier audit found **12 blocking decision gaps**, not 12 already-implemente
 | `BR-11` / `GAP-21` | Booking cancellation and financial impact | Booking | DESIGN_SPECIFIED | PENDING_REAL_STAKEHOLDER |
 | `BR-12` / `GAP-22` | Payment approval vs bank/ERP settlement | Finance | DESIGN_SPECIFIED | PENDING_REAL_STAKEHOLDER |
 
-**Fail-closed rule:** if a legal signing method, carrier authority, approved amount threshold, compliance decision, cargo evidence or bank settlement source is unavailable, the system must not pretend the irreversible state transition succeeded. Draft/pending/hold/reconciliation records remain available; no imaginary acceptance/capacity/POD/paid events.
+**Fail-closed rule:** if a legal signing method, carrier authority, approved amount threshold, compliance decision, cargo evidence or valid signature/verification source is unavailable, the system must not pretend the irreversible state transition succeeded. Draft/pending/hold/reconciliation records remain available; no imaginary acceptance/capacity/POD/paid events.
 
 ## 2. Concrete recommendations for the 12 blockers
 
@@ -214,23 +214,19 @@ The earlier audit found **12 blocking decision gaps**, not 12 already-implemente
 **Current decision state:** `DESIGN_SPECIFIED` · business `PENDING_REAL_STAKEHOLDER` · policy `DISABLED_UNTIL_ACCEPTANCE` · executed test `NO`.
 
 
-### BR-12 — Payment approval vs bank/ERP settlement (GAP-22)
+### BR-12 — Граница продукта: внешняя бухгалтерия, без платежей в KERUENIX (GAP-22)
 
-**Owner of business rule:** Finance. **Review stakeholders:** Finance controller, independent approver, accounting.
+**Владелец бизнес-решения:** Product Owner с представителем бухгалтерии/коммерции и юристом. **Статус:** PENDING_REAL_STAKEHOLDER; продуктовая директива пользователя **NO PAYMENTS** уже отражена в scope, но не подменяет фактическое согласование договора и внешних обязанностей.
 
-**Proposed safe operational contract:** Payment PREPARED/APPROVED are internal authorization not actual settlement. Only verified bank/ERP transaction and unique allocation(s), currency/amount/FX/taxes, matched legal entity/source may reduce receivable/payable. Duplicate callbacks/idempotency never create second allocation; reconcile partial advances, disputes and credit corrections separately. Paid status derived from confirmed allocation not UI command.
+**Предлагаемое правило:** KERUENIX ведёт стоимость перевозки, покупную/продажную цену, версию коммерческих условий, маржу и может ссылаться на документ внешней бухгалтерии. **НЕ** выставляет официальный ЭСФ, не проводит платежи, не интегрируется с банком, не распределяет поступления, не ведёт AR/AP ledger, не хранит статусы `PAID/SETTLED/REFUNDED`, не инициирует возвраты. Факт ЭЦП на Quote/акте подтверждает подписанный документ — не оплату.
 
-**Mandatory evidence:** paymentTransaction reference, source/issuer, hash, amount/currency, exchange snapshot, allocation unique key, approver and initiator IDs.
+**Сценарии:** (1) carrier видит лишь разрешённый cost, не маржу экспедитора; (2) CustomerOrg-Y не читает чужие commercial references; (3) внешний бухгалтер оформляет документ в отдельной системе, KERUENIX хранит только безопасную ссылку; (4) фальшивый bank callback/markPaid/refund не поддерживается; (5) спорная доплата остаётся предложением к новым договорным условиям, не платёжным обязательством платформы.
 
-**Must cover variants:** `same operator initiates/approves`; `paid partially`; `duplicate callback`; `bank outage`; `wrong currency`; `forged payment`; `disputed surcharge.`.
+**Рекомендованные TDD:** `PAY-ABS-01..06` и реальная PostgreSQL+HTTP изоляция pricing данных, отсутствие платёжных CRUD и опасных секретов. Исторические тесты `TDD-R0-E2E-06`, `TDD-SIM-32-G22-01..05`, `NEG-R0-033..036` **архивированы, не переносятся автоматически в R1/R2**.
 
-**Signoff still required:** Which bank/ERP is authoritative, ledger of record, legal payment evidence, timing/reversal policy need finance/accounting signoff.
+**Нужное утверждение:** кто ведёт внешнюю бухгалтерию, какие идентификаторы/ссылки можно сохранять, кто вправе видеть buy/sell/margin, договорные документы и место хранения. Истинность `paid` не является предметом KERUENIX.
 
-**Trace:** `USB-FIN-001`, `USB-FIN-003`, `USB-FAP-001`; `SIM-31`, `SIM-32`; existing planned test IDs `LFC-021`, `LFC-022`, `LFC-025`, `AUTH-FIN-003`, `AUTH-FIN-004`.
-
-**Current decision state:** `DESIGN_SPECIFIED` · business `PENDING_REAL_STAKEHOLDER` · policy `DISABLED_UNTIL_ACCEPTANCE` · executed test `NO`.
-
-
+**State:** BUSINESS_PENDING / DOMAIN_NOT_IMPLEMENTED / NO_PAYMENT_SCOPE_ACTIVE.
 
 ## 3. Cross-role business review protocol — cannot be simulated as acceptance
 
