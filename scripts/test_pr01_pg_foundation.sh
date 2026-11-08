@@ -110,6 +110,30 @@ BEGIN
     END IF;
 END
 $assert$;
+-- Identical UUIDs under different tenants must not trigger a cross-tenant
+-- uniqueness oracle. A global event_id/audit_id PK would reject these.
+INSERT INTO platform.outbox_event(
+    event_id, tenant_id, event_type, aggregate_ref, payload_schema_version,
+    payload, payload_sha256
+) VALUES (
+    '11111111-1111-1111-1111-111111111111',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'FoundationProbe', 'test-only:B', 1, '{"test":"B"}', repeat('b',64)
+);
+INSERT INTO platform.audit_fact(audit_id, tenant_id, actor_ref, action_type, subject_ref)
+VALUES ('11111111-2222-2222-2222-222222222222',
+        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb','ci:actor-B',
+        'FoundationProbe', 'test-only:B');
+DO $assert$
+BEGIN
+    IF (SELECT count(*) FROM platform.outbox_event
+        WHERE event_id = '11111111-1111-1111-1111-111111111111') <> 1
+        OR (SELECT count(*) FROM platform.audit_fact
+            WHERE audit_id = '11111111-2222-2222-2222-222222222222') <> 1 THEN
+        RAISE EXCEPTION 'same UUID cross-tenant write or scope failed';
+    END IF;
+END
+$assert$;
 COMMIT;
 
 -- Three distinct tables must roll back as one unit.

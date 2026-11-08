@@ -1,12 +1,15 @@
 -- V1: PR-01 platform persistence only. Admin/Flyway migrator role required.
+-- Composite tenant-first PKs avoid cross-tenant ID-collision oracle via UNIQUE checks
+-- (unique/foreign key checks bypass PostgreSQL RLS). V1 is not production-deployed.
 -- Not an enabled application datasource. No business tables or runtime auth are introduced.
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE SCHEMA IF NOT EXISTS platform;
 REVOKE ALL ON SCHEMA platform FROM PUBLIC;
 
 CREATE TABLE platform.outbox_event (
-    event_id uuid PRIMARY KEY,
+    event_id uuid NOT NULL,
     tenant_id uuid NOT NULL,
+    PRIMARY KEY (tenant_id, event_id),
     event_type varchar(120) NOT NULL CHECK (length(btrim(event_type)) > 0),
     aggregate_ref varchar(160) NOT NULL CHECK (length(btrim(aggregate_ref)) > 0),
     payload_schema_version integer NOT NULL CHECK (payload_schema_version > 0),
@@ -30,8 +33,9 @@ CREATE TABLE platform.inbox_receipt (
 );
 
 CREATE TABLE platform.audit_fact (
-    audit_id uuid PRIMARY KEY,
+    audit_id uuid NOT NULL,
     tenant_id uuid NOT NULL,
+    PRIMARY KEY (tenant_id, audit_id),
     actor_ref varchar(160) NOT NULL CHECK (length(btrim(actor_ref)) > 0),
     action_type varchar(120) NOT NULL CHECK (length(btrim(action_type)) > 0),
     subject_ref varchar(160) NOT NULL CHECK (length(btrim(subject_ref)) > 0),

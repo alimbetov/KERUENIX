@@ -27,7 +27,7 @@ Scope is **NO PAYMENTS**. Do not add Invoice/AR/AP, PaymentAllocation, paid stat
 
 ## PR-01 — evidence-backed implementation sequence (not completed)
 
-**First runnable slice:** Java21/Boot build unchanged with security `denyAll`; confirm real PostgreSQL/PostGIS, separate migration/admin and application roles, and a `Flyway` migration/rollback smoke before exposing any endpoint. Do not enable trust in `tenantId` headers. Determine Modulith, Flyway and Testcontainers compatible versions using actual compile/execution, not inferred dependencies.
+**First runnable slice:** Java21/Boot build unchanged with security `denyAll`; a standalone PostgreSQL/PostGIS schema and CI integration smoke have now been added. Separate migration/admin and application roles and forced RLS are exercised. **Still required:** wire actual Spring Boot/Flyway migrations and transaction-scoped authorization, rather than claiming the standalone psql script is application qualification. Do not enable trust in `tenantId` headers. Determine Modulith, Flyway and Testcontainers compatible versions using actual compile/execution, not inferred dependencies.
 
 **Red-first tests (FOUND-01..12)** are specified in [R0 TDD Start Pack](36-r0-tdd-start-pack.md). Execute in this order:
 
@@ -40,3 +40,11 @@ Scope is **NO PAYMENTS**. Do not add Invoice/AR/AP, PaymentAllocation, paid stat
 **Acceptance:** exact-SHA `mvn verify`, PostgreSQL/PostGIS Testcontainers logs, migration versions, non-superuser RLS proof, outbox crash/replay proof, lint/SBOM, CI artifact links. No claim of PR-01 qualification until all FOUND-01..12 executable tests and manual reviews have completed.
 
 **Handoff:** PR-02/03C/03/04 may begin safe implementations only after their applicable PR-00 evidence. The unauthorized `customer:rfq:submit` and any binding Quote/Booking/Carrier/POD remain disabled until explicit policy and verified legal authorization.
+
+## PR-01 partial execution evidence
+
+The first platform SQL migration contains `platform.outbox_event`, `platform.inbox_receipt` and `platform.audit_fact` with `FORCE ROW LEVEL SECURITY` and composite `(tenant_id, event_id/audit_id)` keys. Separate NOLOGIN capability roles are provisioned through an admin-only script. `scripts/test_pr01_pg_foundation.sh` tests real PostgreSQL/PostGIS; GitHub Actions uses an ephemeral test DB and does not expose production passwords.
+
+**Partial coverage only:** `FOUND-01` non-superuser/absent RLS context; `FOUND-02` same-session tenant switch and context reset; `FOUND-04` atomic rollback of platform facts (not yet a true business aggregate); `FOUND-06` Inbox uniqueness (changed-payload rejection must be implemented in consumer code); `FOUND-12` geography meter semantics (spatial account-scoped API still missing). All other `FOUND-03/05/07/08/09/10/11` remain unimplemented. Neither PR-01 nor RD-01 is QUALIFIED until the complete suite runs on the exact artifact SHA.
+
+**Security note:** PostgreSQL RLS does not protect uniqueness checks from potential cross-tenant existence leakage; tenant-first compound PKs are mandatory in this baseline. The custom transaction-local GUC is only defense in depth, never an authentication source or direct client-controlled parameter.
