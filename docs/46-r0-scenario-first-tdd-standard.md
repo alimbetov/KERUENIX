@@ -42,6 +42,8 @@
 
 **Проект расширенных S0-контрактов:** [50 — gaps for PR-00/06S/08/17/20](50-s0-local-gap-test-contracts.md) / [GWT machine catalog](contracts/r0-s0-extension-gwt.v1.json). Этот набор закрывает отсутствие **проектных** позитивных/негативных сценариев, не утверждает их Test Review и не добавляет исполняемый код.
 
+**Первый модульный S0 review checkpoint:** [51 — Platform/Tenancy](51-s0-platform-tenancy-test-design-review.md) / [case contracts](contracts/r0-s0-platform-tenancy-case-contracts.v1.json). 32 источниковых случая имеют три предложенных тестовых оракула, но ещё не прошли Test Review и не дают права на новый доменный код.
+
 ## Пакеты S0 → S1 по порядку рисков
 
 1. **FOUND + Tenancy:** RLS, JWT, CustomerAccount, revoke, module graph, Liquibase migration и recovery (PR-01..03).

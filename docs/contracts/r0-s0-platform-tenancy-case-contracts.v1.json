@@ -1,0 +1,1628 @@
+{
+  "schemaVersion": "1.0.0",
+  "date": "2026-11-08",
+  "stage": "S0_SCENARIO_DESIGN",
+  "reviewStatus": "PROPOSED_NOT_REVIEWED",
+  "sourceAllocation": "docs/contracts/r0-scenario-allocation.v1.json",
+  "sourceFoundation": "docs/contracts/r0-scenario-first-test-plan.v1.json",
+  "sourceDecisions": "docs/contracts/r0-decision-readiness.v1.json",
+  "summary": {
+    "cases": 32,
+    "foundation": 12,
+    "activeR0": 20,
+    "caseIds": [
+      "FOUND-01",
+      "FOUND-02",
+      "FOUND-03",
+      "FOUND-04",
+      "FOUND-05",
+      "FOUND-06",
+      "FOUND-07",
+      "FOUND-08",
+      "FOUND-09",
+      "FOUND-10",
+      "FOUND-11",
+      "FOUND-12",
+      "TDD-SIM-05-G03-01",
+      "TDD-SIM-05-G03-02",
+      "TDD-SIM-05-G03-03",
+      "TDD-SIM-05-G03-04",
+      "TDD-SIM-05-G03-05",
+      "TDD-SIM-34-S06-01",
+      "TDD-R0-E2E-01",
+      "TDD-R0-E2E-09",
+      "NEG-R0-001",
+      "NEG-R0-002",
+      "NEG-R0-003",
+      "NEG-R0-004",
+      "NEG-R0-005",
+      "NEG-R0-006",
+      "NEG-R0-007",
+      "NEG-R0-008",
+      "NEG-R0-040",
+      "NEG-R0-041",
+      "NEG-R0-042",
+      "NEG-R0-043"
+    ],
+    "scopePrs": [
+      "PR-01",
+      "PR-02",
+      "PR-03C",
+      "PR-03"
+    ],
+    "pendingDecisionRefs": [
+      "BR-03",
+      "DEC-R0-02",
+      "BR-05",
+      "BR-01",
+      "BR-02",
+      "DEC-R0-03",
+      "DEC-R0-07",
+      "BR-04"
+    ]
+  },
+  "invariants": {
+    "productionDenyAll": true,
+    "noPayments": true,
+    "tenantRlsInsufficientForCustomerScope": true,
+    "customerAccountSingleWriterProposedPendingAdr": true,
+    "revokeRequiresNewAuthDenial": true,
+    "technicalCiCannotApproveBusinessRules": true
+  },
+  "fixtureContract": {
+    "id": "FIX-R0-PLATFORM-TENANCY-01",
+    "purpose": "synthetic customers X/Y in provider tenant A, independent tenant B; valid/invalid JWT, grant revoke and restricted PostgreSQL roles",
+    "requiresRealDb": [
+      "RLS/transaction",
+      "Inbox/Outbox concurrency",
+      "PostGIS",
+      "Liquibase upgrade"
+    ],
+    "requiresFailureInjection": [
+      "revoke during request",
+      "concurrent owner change",
+      "lease expiry",
+      "rollback before commit"
+    ],
+    "privacy": "synthetic-only"
+  },
+  "caseContracts": [
+    {
+      "id": "FOUND-01",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "app DB principal with no `BYPASSRLS`, tenant context unset",
+        "when": "select protected row",
+        "then": "deny/zero access according to policy, never all tenants"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "SELECT/INSERT across tenant A/B without GUC using non-BYPASSRLS application role",
+        "assertions": {
+          "persistent": "no unscoped select/write, no DDL privilege, FORCE RLS and pool reset; S0 precise check: SELECT/INSERT across tenant A/B without GUC using non-BYPASSRLS application role",
+          "outboxInbox": "no Outbox/Audit/Inbox write or unauthorized publication; S0 specific check: no unscoped select/write, no DDL privilege, FORCE RLS and pool reset",
+          "httpUi": "read empty/denied; no fake success; S0 specific check: no Outbox/Audit/Inbox write or unauthorized publication"
+        },
+        "testMethodCandidate": "S0_FOUND_01Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-02",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "Tenant-A uses pooled Connection-1, then Tenant-B obtains same physical connection",
+        "when": "B queries A row",
+        "then": "no A data; transaction-local tenant context reset proven"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "nest B inside Tenant-A REQUIRED transaction and A→B→A on the same Hikari physical connection",
+        "assertions": {
+          "persistent": "cross-tenant call throws and rolls back outer write, pg_backend_pid unchanged and GUC cleared; S0 precise check: nest B inside Tenant-A REQUIRED transaction and A→B→A on the same Hikari physical connection",
+          "outboxInbox": "no committed Outbox/Audit on rejected nested scope; S0 specific check: cross-tenant call throws and rolls back outer write, pg_backend_pid unchanged and GUC cleared",
+          "httpUi": "DENY tenant change, allow same-tenant nested flow; S0 specific check: no committed Outbox/Audit on rejected nested scope"
+        },
+        "testMethodCandidate": "S0_FOUND_02Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-03",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "trusted authentication context Tenant-A, request body/header claims Tenant-Z",
+        "when": "command is invoked",
+        "then": "request-supplied tenant ignored/rejected, DB write stays A or DENY"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "send signed JWT with forged header/body tenant; test allowed signed JWT plus server grant",
+        "assertions": {
+          "persistent": "server-derived scope controls row access and not raw JWT tenant claim; S0 precise check: send signed JWT with forged header/body tenant; test allowed signed JWT plus server grant",
+          "outboxInbox": "no denied command Outbox/Audit entry; S0 specific check: server-derived scope controls row access and not raw JWT tenant claim",
+          "httpUi": "401 for invalid token, 403 for verified but denied scope; S0 specific check: no denied command Outbox/Audit entry"
+        },
+        "testMethodCandidate": "S0_FOUND_03Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-04",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "app writes aggregate+audit+outbox",
+        "when": "throw before DB commit",
+        "then": "none of the three records persists"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "persist test-only versioned aggregate, Audit, Outbox then throw before commit",
+        "assertions": {
+          "persistent": "all 3 roll back; successful version/hashes consistent; S0 precise check: persist test-only versioned aggregate, Audit, Outbox then throw before commit",
+          "outboxInbox": "no phantom Outbox without committed aggregate; S0 specific check: all 3 roll back; successful version/hashes consistent",
+          "httpUi": "failure must not acknowledge success; S0 specific check: no phantom Outbox without committed aggregate"
+        },
+        "testMethodCandidate": "S0_FOUND_04Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-05",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "DB commit succeeded, outbox dispatch dies before ack",
+        "when": "restart dispatcher twice",
+        "then": "exactly one logical consumer effect, durable event retained until ack"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "consumer commits Inbox+effect then publisher crashes before ACK and reclaims",
+        "assertions": {
+          "persistent": "two deliveries result in one logical effect, fence token needed for ACK; S0 precise check: consumer commits Inbox+effect then publisher crashes before ACK and reclaims",
+          "outboxInbox": "Inbox prevents second downstream event; S0 specific check: two deliveries result in one logical effect, fence token needed for ACK",
+          "httpUi": "one visible completion only; S0 specific check: Inbox prevents second downstream event"
+        },
+        "testMethodCandidate": "S0_FOUND_05Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-06",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "inbox event id E already applied with payload digest H1",
+        "when": "reprocess same E with H2",
+        "then": "conflict/quarantine; no silently accepted mutation"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "replay same event with original digest and then altered digest",
+        "assertions": {
+          "persistent": "same-digest idempotent, changed digest quarantined/conflict without overwrite; S0 precise check: replay same event with original digest and then altered digest",
+          "outboxInbox": "no duplicate domain side effect; S0 specific check: same-digest idempotent, changed digest quarantined/conflict without overwrite",
+          "httpUi": "conflict typed and actionable; S0 specific check: no duplicate domain side effect"
+        },
+        "testMethodCandidate": "S0_FOUND_06Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-07",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "two worker instances claim same due job",
+        "when": "simultaneous claim/reclaim",
+        "then": "one fenced lease owner, no stale worker commit"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "run two parallel claims and stale worker ACK following lease takeover",
+        "assertions": {
+          "persistent": "only active fence owner can publish/ACK, no stolen lease; S0 precise check: run two parallel claims and stale worker ACK following lease takeover",
+          "outboxInbox": "no duplicate downstream success; S0 specific check: only active fence owner can publish/ACK, no stolen lease",
+          "httpUi": "stale worker fail closed; S0 specific check: no duplicate downstream success"
+        },
+        "testMethodCandidate": "S0_FOUND_07Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-08",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "Tenant-A + Customer-X/Y share provider",
+        "when": "X/Y queries same provider via app API",
+        "then": "account-level ABAC still denies cross-customer; RLS tenant check alone is insufficient"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "Customer-X/Y share Tenant-A; test count/list/export and revoke under same valid JWT",
+        "assertions": {
+          "persistent": "Customer-Y records/counts never revealed to X; revoke denies X new access; S0 precise check: Customer-X/Y share Tenant-A; test count/list/export and revoke under same valid JWT",
+          "outboxInbox": "no export or link event after revoke; S0 specific check: Customer-Y records/counts never revealed to X; revoke denies X new access",
+          "httpUi": "403/404 nondisclosing, Y remains authorized; S0 specific check: no export or link event after revoke"
+        },
+        "testMethodCandidate": "S0_FOUND_08Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": [
+          "tenant-only RLS cannot isolate Customer-X and Customer-Y in same provider"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-09",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "illegal module uses direct imported JPA repository from another module",
+        "when": "Modulith `ApplicationModules.verify()`",
+        "then": "build/test fails until boundary corrected"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "run Spring Modulith verify with intentionally forbidden module repository import",
+        "assertions": {
+          "persistent": "negative fixture fails on module boundary, public contract succeeds; S0 precise check: run Spring Modulith verify with intentionally forbidden module repository import",
+          "outboxInbox": "not applicable architecture-only, no DB effect; S0 specific check: negative fixture fails on module boundary, public contract succeeds",
+          "httpUi": "CI points to illegal import, not compile error; S0 specific check: not applicable architecture-only, no DB effect"
+        },
+        "testMethodCandidate": "S0_FOUND_09Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-10",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "schema migrations boot from empty DB, and from known previous schema",
+        "when": "run Liquibase V1→V2 upgrade + idempotent rerun",
+        "then": "repeatable deterministic schema with no manual application superuser DDL"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "upgrade populated Liquibase V1→V2, mutate applied checksum, restore snapshot",
+        "assertions": {
+          "persistent": "data remains, checksum drift HALT, app role no DDL, legacy Flyway baseline guard; S0 precise check: upgrade populated Liquibase V1→V2, mutate applied checksum, restore snapshot",
+          "outboxInbox": "no duplicate migration-created business events; S0 specific check: data remains, checksum drift HALT, app role no DDL, legacy Flyway baseline guard",
+          "httpUi": "restore evidence and explicit NO-GO on drift; S0 specific check: no duplicate migration-created business events"
+        },
+        "testMethodCandidate": "S0_FOUND_10Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-11",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "invalid/expired or forged JWT actor and tenant headers",
+        "when": "HTTP request",
+        "then": "401/403/404 ProblemDetail, no unverified tenant context or data"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "signed JWT forged/expired/issuer-audience mismatch and revoked account authorization",
+        "assertions": {
+          "persistent": "no unauthorized row, scope or response data created; S0 precise check: signed JWT forged/expired/issuer-audience mismatch and revoked account authorization",
+          "outboxInbox": "no unauthorized success Audit/Outbox; S0 specific check: no unauthorized row, scope or response data created",
+          "httpUi": "RFC9457 401/403 typed errors; S0 specific check: no unauthorized success Audit/Outbox"
+        },
+        "testMethodCandidate": "S0_FOUND_11Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "FOUND-12",
+      "group": "FOUNDATION",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "PostGIS point proximity in lon/lat",
+        "when": "`ST_DWithin` query with meter semantics",
+        "then": "trusted SRID/geography units + tenant scope; invalid/foreign coordinate rejected"
+      },
+      "source": "docs/36-r0-tdd-start-pack.md",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "trusted test harness under restricted role",
+        "when": "WGS84 geography meters across tenant and invalid coordinate input",
+        "assertions": {
+          "persistent": "correct meter units, invalid coordinates rejected, foreign scoped geo query empty; S0 precise check: WGS84 geography meters across tenant and invalid coordinate input",
+          "outboxInbox": "no unscoped geo export; S0 specific check: correct meter units, invalid coordinates rejected, foreign scoped geo query empty",
+          "httpUi": "validation failure/nondisclosing scope; S0 specific check: no unscoped geo export"
+        },
+        "testMethodCandidate": "S0_FOUND_12Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "TDD-SIM-05-G03-01",
+      "group": "BLOCKER",
+      "primaryPr": "PR-03C",
+      "primaryOwner": "commercial",
+      "impactedPrs": [
+        "PR-03C"
+      ],
+      "canonical": {
+        "given": "User belongs to Tenant-B and separately to provider Tenant-A's CustomerAccount-X via grant",
+        "when": "User opens permitted Tenant-A order from customer workspace",
+        "then": "Only provider-scoped customer projection returned; no Tenant-A employee Membership"
+      },
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified business actor with reviewed grant",
+        "when": "User opens permitted Tenant-A order from customer workspace",
+        "assertions": {
+          "persistent": "Only the exact lawful version/state transition may be committed after BR approval; S0 precise check: Commercial proposed account writer only; external Tenant-B user never becomes Tenant-A employee",
+          "outboxInbox": "Only one versioned authorized domain event after actual approved transition; S0 specific check: no AccountRegistered without verified binding",
+          "httpUi": "Exact HTTP/error contract pending S2; S0 specific check: pending until BR-03/DEC-R0-02"
+        },
+        "testMethodCandidate": "S0_TDD_SIM_05_G03_01Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "DEC-R0-02"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "Commercial canonical CustomerAccount writer remains proposed pending DEC-R0-02; Tenancy projects verified grant only"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "TDD-SIM-05-G03-02",
+      "group": "BLOCKER",
+      "primaryPr": "PR-03C",
+      "primaryOwner": "commercial",
+      "impactedPrs": [
+        "PR-03C"
+      ],
+      "canonical": {
+        "given": "Same user switches browser context by caller-supplied tenantId header",
+        "when": "Request Tenant-Z data using forged header",
+        "then": "DENY, server-derived trusted context unaffected"
+      },
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified business actor with reviewed grant",
+        "when": "Request Tenant-Z data using forged header",
+        "assertions": {
+          "persistent": "Current immutable state/quantity remains correct; no unauthorized additional committed record; S0 precise check: forged tenant-Z selector never changes verified principal/tenant",
+          "outboxInbox": "No unauthorized domain event; replay/race cannot duplicate logical effects; S0 specific check: no cross-tenant relationship event",
+          "httpUi": "DENY/CONFLICT, verify code in S2; S0 specific check: 403/404 nondisclosing"
+        },
+        "testMethodCandidate": "S0_TDD_SIM_05_G03_02Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "DEC-R0-02"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "Commercial canonical CustomerAccount writer remains proposed pending DEC-R0-02; Tenancy projects verified grant only"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "TDD-SIM-05-G03-03",
+      "group": "BLOCKER",
+      "primaryPr": "PR-03C",
+      "primaryOwner": "commercial",
+      "impactedPrs": [
+        "PR-03C"
+      ],
+      "canonical": {
+        "given": "Grant revocation and concurrent My Orders request",
+        "when": "Provider disables CustomerAccount membership while read is in flight",
+        "then": "New post-revoke authorization denies; in-flight semantics explicitly documented and DB-consistent"
+      },
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified business actor with reviewed grant",
+        "when": "Provider disables CustomerAccount membership while read is in flight",
+        "assertions": {
+          "persistent": "Current immutable state/quantity remains correct; no unauthorized additional committed record; S0 precise check: post-revoke new authorization denied; in-flight semantics documented pending",
+          "outboxInbox": "No unauthorized domain event; replay/race cannot duplicate logical effects; S0 specific check: no post-revoke export event",
+          "httpUi": "DENY/CONFLICT, verify code in S2; S0 specific check: new request 403"
+        },
+        "testMethodCandidate": "S0_TDD_SIM_05_G03_03Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "DEC-R0-02"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "Commercial canonical CustomerAccount writer remains proposed pending DEC-R0-02; Tenancy projects verified grant only"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "TDD-SIM-05-G03-04",
+      "group": "BLOCKER",
+      "primaryPr": "PR-03C",
+      "primaryOwner": "commercial",
+      "impactedPrs": [
+        "PR-03C"
+      ],
+      "canonical": {
+        "given": "Cached customer projection created before revocation",
+        "when": "User refreshes listing with active old JWT",
+        "then": "No stale customer data leakage after authoritative revoke; 401/403 as appropriate"
+      },
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified business actor with reviewed grant",
+        "when": "User refreshes listing with active old JWT",
+        "assertions": {
+          "persistent": "Current immutable state/quantity remains correct; no unauthorized additional committed record; S0 precise check: old JWT and warm cache cannot expose protected account projection after revoke",
+          "outboxInbox": "No unauthorized domain event; replay/race cannot duplicate logical effects; S0 specific check: no new notification/export link",
+          "httpUi": "DENY/CONFLICT, verify code in S2; S0 specific check: 403/404, cache cleared"
+        },
+        "testMethodCandidate": "S0_TDD_SIM_05_G03_04Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "DEC-R0-02"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "Commercial canonical CustomerAccount writer remains proposed pending DEC-R0-02; Tenancy projects verified grant only"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "TDD-SIM-05-G03-05",
+      "group": "BLOCKER",
+      "primaryPr": "PR-03C",
+      "primaryOwner": "commercial",
+      "impactedPrs": [
+        "PR-03C"
+      ],
+      "canonical": {
+        "given": "Two customers X/Y same provider Tenant-A",
+        "when": "Customer X asks list/filter with Y order IDs",
+        "then": "Only X's authorized subset; no count/fields from Y"
+      },
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified business actor with reviewed grant",
+        "when": "Customer X asks list/filter with Y order IDs",
+        "assertions": {
+          "persistent": "Current immutable state/quantity remains correct; no unauthorized additional committed record; S0 precise check: Customer-X count/page/facets exclude Customer-Y despite same Tenant-A",
+          "outboxInbox": "No unauthorized domain event; replay/race cannot duplicate logical effects; S0 specific check: no cross-customer export/cache event",
+          "httpUi": "DENY/CONFLICT, verify code in S2; S0 specific check: only scoped list"
+        },
+        "testMethodCandidate": "S0_TDD_SIM_05_G03_05Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "DEC-R0-02"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "Commercial canonical CustomerAccount writer remains proposed pending DEC-R0-02; Tenancy projects verified grant only",
+          "tenant-only RLS cannot isolate Customer-X and Customer-Y in same provider"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "TDD-SIM-34-S06-01",
+      "group": "SAFETY",
+      "primaryPr": "PR-03",
+      "primaryOwner": "tenancy",
+      "impactedPrs": [
+        "PR-03"
+      ],
+      "canonical": {
+        "given": "External contact revoked but colleagues share CustomerOrg-X",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Target only member grant revocation, keep other active users and audit stale tokens"
+      },
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified business actor with reviewed grant",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "assertions": {
+          "persistent": "Evidence and current custodian/state preserved unless canonical safe transition explicitly permits change; S0 precise check: revoke one member, preserve colleague in same CustomerOrg",
+          "outboxInbox": "Audit safe-continuity action, no false binding/settlement event; S0 specific check: only target member revocation event",
+          "httpUi": "Exact HTTP/error contract pending S2; S0 specific check: target denied, colleague allowed"
+        },
+        "testMethodCandidate": "S0_TDD_SIM_34_S06_01Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "TDD-R0-E2E-01",
+      "group": "E2E",
+      "primaryPr": "PR-19",
+      "primaryOwner": "cross-functional",
+      "impactedPrs": [
+        "PR-02",
+        "PR-03C",
+        "PR-03",
+        "PR-04",
+        "PR-05",
+        "PR-06",
+        "PR-06S",
+        "PR-07",
+        "PR-19",
+        "PR-20"
+      ],
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Customer sees own business objects; provider sees only allowed queue; no Booked until capacity"
+      },
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified business actor with reviewed grant",
+        "when": "immutable RFQ/Quote; capacity required for Booking; never infer employee membership",
+        "assertions": {
+          "persistent": "RFQ, QuoteVersion and actor/customer relationship remain scoped; no Booking without capacity and signer authority; S0 precise check: immutable RFQ/Quote; capacity required for Booking; never infer employee membership",
+          "outboxInbox": "No Customer-X cross-customer visibility, and no BookingConfirmed event before capacity; S0 specific check: no premature QuoteAccepted/BookingConfirmed",
+          "httpUi": "Customer sees own RFQ and quote; provider only authorized inbox; S0 specific check: roles see own queue only"
+        },
+        "testMethodCandidate": "S0_TDD_R0_E2E_01Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong CustomerAccount",
+          "grant revoke",
+          "duplicate/replay/commit failure"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "BR-05",
+          "BR-01",
+          "BR-02",
+          "DEC-R0-02",
+          "DEC-R0-03"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "TDD-R0-E2E-09",
+      "group": "E2E",
+      "primaryPr": "PR-19",
+      "primaryOwner": "cross-functional",
+      "impactedPrs": [
+        "PR-03",
+        "PR-15",
+        "PR-16",
+        "PR-19"
+      ],
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Future protected API denies; signed URL TTL semantics explicit"
+      },
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified business actor with reviewed grant",
+        "when": "new protected calls DENY after revoke; already-issued signed URL has reviewed TTL",
+        "assertions": {
+          "persistent": "Revoked grant blocks Customer-X reads under same signed token; count/export no leakage; S0 precise check: new protected calls DENY after revoke; already-issued signed URL has reviewed TTL",
+          "outboxInbox": "New signed access denied; already-issued URL bounded by documented TTL, no claim of retroactive revocation; S0 specific check: no new links/export or protected stream after revoke",
+          "httpUi": "No previously cached foreign details after grant revoke; S0 specific check: revoked UI no stale protected content"
+        },
+        "testMethodCandidate": "S0_TDD_R0_E2E_09Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong CustomerAccount",
+          "grant revoke",
+          "duplicate/replay/commit failure"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "already issued signed URL has separate TTL/revocation policy, do not claim immediate invalidation"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-001",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-02",
+      "primaryOwner": "tenancy",
+      "impactedPrs": [
+        "PR-02"
+      ],
+      "canonical": {
+        "given": "A pending owner invitation is bound to verified A legal entity and recipient",
+        "when": "Replay the same token on pending Tenant-B or different verified principal",
+        "then": "DENY: no cross-entity initial owner bootstrap"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Replay the same token on pending Tenant-B or different verified principal",
+        "assertions": {
+          "persistent": "Tenant-B has no owner membership from token; Tenant-A invitation still scoped; S0 precise check: must not activate owner for Tenant-B, leave Tenant-A invitation unchanged",
+          "outboxInbox": "No OwnerActivated for Tenant-B; S0 specific check: no OwnerActivated for B",
+          "httpUi": "Invite rejected without tenant-B metadata; S0 specific check: nondisclosing invitation denial"
+        },
+        "testMethodCandidate": "S0_NEG_R0_001Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-002",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-02",
+      "primaryOwner": "tenancy",
+      "impactedPrs": [
+        "PR-02"
+      ],
+      "canonical": {
+        "given": "Tenant-A has one active owner and a not-yet-accepted successor",
+        "when": "Revoke owner concurrently with successor invitation acceptance",
+        "then": "DENY removal unless successor accepted and owner invariant atomically holds"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Revoke owner concurrently with successor invitation acceptance",
+        "assertions": {
+          "persistent": "At least one active verified owner after every commit; S0 precise check: one active owner per commit under concurrent revoke/accept",
+          "outboxInbox": "No orphan-Tenant activation or misleading owner-revoked event; S0 specific check: no orphan OwnerRevoked event",
+          "httpUi": "Owner transfer pending or conflict, never silently ownerless; S0 specific check: 409 pending/conflict"
+        },
+        "testMethodCandidate": "S0_NEG_R0_002Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-003",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-02",
+      "primaryOwner": "tenancy",
+      "impactedPrs": [
+        "PR-02"
+      ],
+      "canonical": {
+        "given": "Admin may grant staff templates but not owners or Finance approval",
+        "when": "Submit composite role template that includes nondelegable permission",
+        "then": "DENY entire unauthorized grant; no partial privilege elevation"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Submit composite role template that includes nondelegable permission",
+        "assertions": {
+          "persistent": "RoleAssignment unchanged; no hidden approval capability granted; S0 precise check: all-or-nothing RoleAssignment, no unauthorized Finance/Owner grant",
+          "outboxInbox": "No RoleGranted event for rejected assignment; S0 specific check: no RoleGranted for rejected template",
+          "httpUi": "Clear permission denied without exposing admin configuration secrets; S0 specific check: 403 without hidden privilege list"
+        },
+        "testMethodCandidate": "S0_NEG_R0_003Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-004",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-02",
+      "primaryOwner": "tenancy",
+      "impactedPrs": [
+        "PR-02"
+      ],
+      "canonical": {
+        "given": "High-risk owner recovery requires independent reviewers",
+        "when": "Initiator approves the request using secondary login identity linked to same principal",
+        "then": "DENY: distinct credential is not distinct approving person"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Initiator approves the request using secondary login identity linked to same principal",
+        "assertions": {
+          "persistent": "Recovery remains pending; approval actor identity distinctness preserved; S0 precise check: same person with two credentials is not two independent approvers",
+          "outboxInbox": "No OwnerRecovered event; S0 specific check: no OwnerRecovered",
+          "httpUi": "Recovery still waiting for independent authorization; S0 specific check: independent review required"
+        },
+        "testMethodCandidate": "S0_NEG_R0_004Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-005",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-03",
+      "primaryOwner": "tenancy",
+      "impactedPrs": [
+        "PR-03C",
+        "PR-03",
+        "PR-04",
+        "PR-05",
+        "PR-15"
+      ],
+      "canonical": {
+        "given": "Customer-X and Y share provider Tenant-A; X has 11 private orders, Y has 0",
+        "when": "Request filtered list/sort/pagination with X ID and cursor",
+        "then": "DENY cross-account data including totals/facets, not only item content"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Request filtered list/sort/pagination with X ID and cursor",
+        "assertions": {
+          "persistent": "No customer-X IDs or counts returned; query scoped before pagination; S0 precise check: scope list/count/cursor/facets before paging; X records not shown to Y",
+          "outboxInbox": "No export or cache entry from X attributed to Y; S0 specific check: no foreign export/cache job",
+          "httpUi": "Y sees empty/unauthorized correctly; no count side-channel; S0 specific check: empty/denied with no count side-channel"
+        },
+        "testMethodCandidate": "S0_NEG_R0_005Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "DEC-R0-02",
+          "DEC-R0-03"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "tenant-only RLS cannot isolate Customer-X and Customer-Y in same provider"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-006",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-03",
+      "primaryOwner": "tenancy",
+      "impactedPrs": [
+        "PR-03",
+        "PR-06S",
+        "PR-15",
+        "PR-16"
+      ],
+      "canonical": {
+        "given": "EXC receives order list but grant is revoked before detail/POD request",
+        "when": "Use previously received orderId and old session for detail/download",
+        "then": "DENY every new protected read after committed revoke"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Use previously received orderId and old session for detail/download",
+        "assertions": {
+          "persistent": "No customer data returned from old cached projection; read-only DB protected; S0 precise check: revoke denies new detail/download using old JWT; old signed URL expiry separate",
+          "outboxInbox": "No document link issuance, no customer-specific notification; S0 specific check: no new link/notification after revoke",
+          "httpUi": "Access revoked state, not stale order data; S0 specific check: 403/404; already-issued URL TTL requires review"
+        },
+        "testMethodCandidate": "S0_NEG_R0_006Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "already issued signed URL has separate TTL/revocation policy, do not claim immediate invalidation"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-007",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-03C",
+      "primaryOwner": "commercial",
+      "impactedPrs": [
+        "PR-03C",
+        "PR-03"
+      ],
+      "canonical": {
+        "given": "CustomerCorp X uses same email domain as unrelated contractor",
+        "when": "Invite unverified mailbox to X account by domain inference",
+        "then": "DENY without explicit verified identity and organization relationship"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Invite unverified mailbox to X account by domain inference",
+        "assertions": {
+          "persistent": "No cross-org membership or provider Tenant employee assignment; S0 precise check: verified legal entity contact required; email domain alone cannot bind CustomerAccount",
+          "outboxInbox": "No invitation accepted/role granted event; S0 specific check: no AccountRegistered/accepted invite",
+          "httpUi": "Verification required; S0 specific check: verification required"
+        },
+        "testMethodCandidate": "S0_NEG_R0_007Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "DEC-R0-02"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "Commercial canonical CustomerAccount writer remains proposed pending DEC-R0-02; Tenancy projects verified grant only"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-008",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-03C",
+      "primaryOwner": "commercial",
+      "impactedPrs": [
+        "PR-03C",
+        "PR-03",
+        "PR-04",
+        "PR-17"
+      ],
+      "canonical": {
+        "given": "Same principal holds multiple explicit customer/provider contexts",
+        "when": "Switch from carrier view to buyer export using stale active context/cache key",
+        "then": "DENY field/context confusion; context derived from verified grant per request"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Switch from carrier view to buyer export using stale active context/cache key",
+        "assertions": {
+          "persistent": "Projection excludes margin, supplier buy rates, foreign shipment and ungranted PII; S0 precise check: supplier buy rates/margin/provider metadata not in customer projection",
+          "outboxInbox": "No unscoped CSV export job created; S0 specific check: no wrong-context CSV export",
+          "httpUi": "Only authorized customer-safe columns; no hidden cross-role data; S0 specific check: only customer-safe fields"
+        },
+        "testMethodCandidate": "S0_NEG_R0_008Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "DEC-R0-02",
+          "DEC-R0-07"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": [
+          "Commercial canonical CustomerAccount writer remains proposed pending DEC-R0-02; Tenancy projects verified grant only"
+        ]
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-040",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-03",
+      "primaryOwner": "tenancy",
+      "impactedPrs": [
+        "PR-03",
+        "PR-18"
+      ],
+      "canonical": {
+        "given": "Grant revoked in DB but old JWT, WS subscription and cached response remain",
+        "when": "Call HTTP, stream and async export after commit",
+        "then": "DENY all newly authorized data operations; close/re-authorize stream and export"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Call HTTP, stream and async export after commit",
+        "assertions": {
+          "persistent": "No new read/export granted by stale token; S0 precise check: new HTTP, stream and async export after revoke denied despite warm cache",
+          "outboxInbox": "No protected stream event or export delivery; S0 specific check: no protected event or export after revoke",
+          "httpUi": "UI shows revoked status; not stale data; S0 specific check: UI clears protected data"
+        },
+        "testMethodCandidate": "S0_NEG_R0_040Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-03",
+          "BR-04"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-041",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01",
+        "PR-18"
+      ],
+      "canonical": {
+        "given": "DB transaction committed and Outbox message delivered, acknowledgement lost",
+        "when": "Retry same message concurrently on two workers",
+        "then": "At-least-once transport, exactly one logical domain effect via inbox uniqueness"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Retry same message concurrently on two workers",
+        "assertions": {
+          "persistent": "No duplicate Booking, invoice, custody or review row; S0 precise check: two workers on same tenant event yield one scoped Inbox business effect",
+          "outboxInbox": "Duplicate delivery acknowledged/dedup; not repeated notification side effect; S0 specific check: duplicate delivery cannot create a second notification",
+          "httpUi": "Only one completed operation is visible; no duplicate notifications or ledger entries; S0 specific check: one visible completion"
+        },
+        "testMethodCandidate": "S0_NEG_R0_041Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-04"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-042",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01",
+        "PR-18"
+      ],
+      "canonical": {
+        "given": "Manual delegated job queued under active role, role revoked before execution",
+        "when": "Use saved JWT/role snapshot to execute privileged operation",
+        "then": "DENY unauthorized new action; service principal only within explicit scoped job contract"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Use saved JWT/role snapshot to execute privileged operation",
+        "assertions": {
+          "persistent": "Business aggregate unchanged, audit of revoked job attempt; S0 precise check: stale saved job grant cannot run post-revoke privileged write",
+          "outboxInbox": "No domain success event; S0 specific check: no success event, denied job audit redacted",
+          "httpUi": "Job marked denied/escalated; no silent success; S0 specific check: job escalated/denied"
+        },
+        "testMethodCandidate": "S0_NEG_R0_042Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [
+          "BR-04"
+        ],
+        "activation": "DENY_OR_HOLD_UNTIL_SIGNOFF",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    },
+    {
+      "id": "NEG-R0-043",
+      "group": "NEGATIVE",
+      "primaryPr": "PR-01",
+      "primaryOwner": "platform",
+      "impactedPrs": [
+        "PR-01"
+      ],
+      "canonical": {
+        "given": "Failed job payload contains customer contact, driver location and finance data",
+        "when": "Inspect job metadata/log trace under support operator",
+        "then": "Redact protected fields, deny raw payload access"
+      },
+      "source": "docs/contracts/r0-negative-scenarios.v1.json",
+      "fixtureIds": [
+        "TENANT_A",
+        "TENANT_B",
+        "CUSTOMER_X",
+        "CUSTOMER_Y",
+        "REVOKED_GRANT",
+        "RESTRICTED_DB_ROLE",
+        "POSTGIS_4326"
+      ],
+      "proposed": {
+        "actor": "verified actor defined by canonical negative case",
+        "when": "Inspect job metadata/log trace under support operator",
+        "assertions": {
+          "persistent": "No unredacted payload in query/export/log for support audience; S0 precise check: support logs/export contain no unredacted contacts, locations, cost data",
+          "outboxInbox": "No raw replay/log artifact attached to support output; S0 specific check: no raw replay payload attached to support trace",
+          "httpUi": "Only redacted reason code and correlation ID; S0 specific check: redacted code+correlation only"
+        },
+        "testMethodCandidate": "S0_NEG_R0_043Test#verifyInvariant",
+        "negativeOrConcurrency": [
+          "wrong tenant/account",
+          "replay or revoke where applicable"
+        ],
+        "legalOrBusinessGates": [],
+        "activation": "TECHNICAL_FAIL_CLOSED_PROPOSAL",
+        "caveats": []
+      },
+      "evidenceStatus": "NOT_EXECUTED_BY_S0",
+      "s0Status": "PROPOSED_PENDING_TECH_REVIEW",
+      "reviewerAuthority": null,
+      "reviewRef": null
+    }
+  ]
+}
