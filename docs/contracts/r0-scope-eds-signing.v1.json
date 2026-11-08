@@ -20,7 +20,33 @@
       "official ESF issue inside KERUENIX"
     ],
     "safeRule": "No PAID, SETTLED, REFUNDED or bank evidence command; external accounting handles financial settlement.",
-    "financeModule": "Keep named finance module within 17 modules but scope it to commercial pricing analytics and external accounting handoff only."
+    "financeModule": "Keep named finance module within 17 modules but scope it to commercial pricing analytics and external accounting handoff only.",
+    "tddCases": [
+      {
+        "id": "PAY-ABS-01",
+        "test": "POST/PUT /payments or markPaid routes do not exist and cannot mutate commercial state"
+      },
+      {
+        "id": "PAY-ABS-02",
+        "test": "External bank callback with fake signed payload cannot create PaymentAllocation, refund or PAID"
+      },
+      {
+        "id": "PAY-ABS-03",
+        "test": "No payments, refunds, allocation, AR/AP ledger tables in R0 Flyway migrations"
+      },
+      {
+        "id": "PAY-ABS-04",
+        "test": "Customer/provider screens do not have pay, refund or mark-as-paid affordances"
+      },
+      {
+        "id": "PAY-ABS-05",
+        "test": "External accounting document reference never changes transportation or settlement state"
+      },
+      {
+        "id": "PAY-ABS-06",
+        "test": "No bank API secrets, payment gateway SDK, webhook or private financial payload in logs/telemetry"
+      }
+    ]
   },
   "signing": {
     "kind": "TECHNICAL_PLATFORM_PORT_NOT_BUSINESS_MODULE",
@@ -133,7 +159,7 @@
       "NEG-R0-035",
       "NEG-R0-036"
     ],
-    "historicTreatment": "Preserve in original case bank for traceability; out-of-scope payment success tests DEFERRED_NOT_R0; add negative HTTP tests ensuring no payment endpoints or state."
+    "historicTreatment": "Payment positive cases tagged OUT_OF_SCOPE_R0 in historical acceptance bank, kept for traceability but not pilot release gate. Security absence tests PAY-ABS-01..06 mandatory."
   },
   "approvals": {
     "userScope": "REQUIREMENTS_INPUT",
