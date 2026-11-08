@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CI contract verification for KERUENIX TDD Roadmap v1.3.
+"""CI contract verification for KERUENIX TDD Roadmap v1.4.
 
 Standard library only; checks documentary consistency, NOT executable-domain
 qualification or real stakeholder signoff.
@@ -20,15 +20,15 @@ def load(rel: str) -> dict:
 
 
 
-def audit_v13_pr_contract(road: dict, known_cases: set[str],
+def audit_v14_pr_contract(road: dict, known_cases: set[str],
                           valid_permissions: dict[str, str],
                           known_br: set[str]) -> list[str]:
-    """Check v1.3 PR risk claims; these are planned contracts, not executed tests."""
+    """Check v1.4 PR risk claims; these are planned contracts, not executed tests."""
     issues: list[str] = []
     required_ui = {
         "PR-02", "PR-03C", "PR-03", "PR-04", "PR-05", "PR-06", "PR-07",
-        "PR-10", "PR-11", "PR-12", "PR-13", "PR-14", "PR-15",
-        "PR-16", "PR-17", "PR-17S", "PR-18", "PR-19", "PR-20",
+        "PR-10V", "PR-10", "PR-11", "PR-12", "PR-12C", "PR-13", "PR-14", "PR-15",
+        "PR-16", "PR-16R", "PR-17", "PR-17S", "PR-18", "PR-19", "PR-20",
     }
     valid_modes = {
         "DOCUMENTATION_ONLY", "FOUNDATION_FAIL_CLOSED", "POLICY_SCOPED",
@@ -98,7 +98,7 @@ def audit_v13_pr_contract(road: dict, known_cases: set[str],
     return issues
 
 
-def audit_v13_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
+def audit_v14_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
     """Compare rendered PR DAG table to the machine graph, not just ID presence."""
     issues: list[str] = []
     if "## 16. Executable delivery increments" not in main_doc or "## 17. Mandatory ownership" not in main_doc:
@@ -152,8 +152,8 @@ def main() -> int:
         check(len(values) == len(set(values)), f"Duplicate {label} ID")
         return set(values)
 
-    check(road["schemaVersion"] == "1.3.0", "Roadmap schema version must be 1.3.0")
-    check("v1.3" in main_doc[:400], "Roadmap Markdown version and JSON must match")
+    check(road["schemaVersion"] == "1.4.0", "Roadmap schema version must be 1.4.0")
+    check("v1.4" in main_doc[:400], "Roadmap Markdown version and JSON must match")
     module_ids = unique(modules["modules"], "id", "business module")
     check(len(module_ids) == 17, f"Expected 17 business module IDs, got {len(module_ids)}")
     phase_ids = unique(road["phases"], "id", "phase")
@@ -260,10 +260,42 @@ def main() -> int:
 
     cuts = road["r0Prcuts"]
     pr_ids = unique(cuts, "id", "PR cut")
-    check(len(cuts) == 23, f"Expected 23 slices, got {len(cuts)}")
-    check(pr_ids == ({f"PR-{i:02d}" for i in range(21)} | {"PR-03C", "PR-17S"}), "PR IDs missing or reused")
+    check(len(cuts) == 26, f"Expected 26 slices, got {len(cuts)}")
+    check(pr_ids == ({f"PR-{i:02d}" for i in range(21)} | {"PR-03C", "PR-10V", "PR-12C", "PR-16R", "PR-17S"}), "PR IDs missing or reused")
     check(road["audit"]["findingsTotal"] == 27, "Expected 27 audited findings")
     pr_map = {pr["id"]: pr for pr in cuts}
+    # New v1.4 R0 clarity contract: each decision must have a real owner, gate
+    # and safe fallback. These are proposed decisions, NEVER approval evidence.
+    delivery = load("docs/contracts/r0-delivery-contract.v1.json")
+    check(delivery["schemaVersion"] == "1.0.0", "Delivery contract schema mismatch")
+    decision_ids = unique(delivery["decisions"], "id", "R0 delivery decision")
+    check(decision_ids == {f"DEC-R0-{i:02d}" for i in range(1, 9)},
+          "Expected eight numbered and distinct R0 delivery decisions")
+    check(road.get("r0Delivery", {}).get("decisionIds") == sorted(decision_ids),
+          "Roadmap R0 decision references are missing or unordered")
+    check(road.get("r0Delivery", {}).get("handbookRef") == delivery.get("handbook"),
+          "R0 handbook reference differs from contract")
+    check((ROOT / delivery["handbook"]).is_file(), "R0 handbook missing")
+    for d in delivery["decisions"]:
+        check(d["mustDecideBy"] in pr_ids, f"{d['id']}: unknown before-PR gate")
+        check(bool(d.get("owner")) and bool(d.get("failSafe")) and bool(d.get("checks")),
+              f"{d['id']}: missing owner/failSafe/acceptance checks")
+        check(d["status"] != "APPROVED", f"{d['id']}: approval cannot be fabricated by documentation")
+    check(all(new_id in pr_ids for new_id in ["PR-10V", "PR-12C", "PR-16R"]),
+          "Three previously missing R0 PRs must have named gates")
+    check("PR-10V" in pr_map["PR-10"]["dependsOnPrs"],
+          "Capacity reservation must require qualified Fleet registry")
+    check("PR-12C" in pr_map["PR-19"]["dependsOnPrs"] and
+          "PR-16R" in pr_map["PR-19"]["dependsOnPrs"],
+          "Full R0 E2E must cover cancellation and private review")
+    check(pr_map["PR-13"]["dependsOnPrs"] == ["PR-12"],
+          "Execution must not wait for unapproved cancellation BR")
+    check(pr_map["PR-17"]["dependsOnPrs"] == ["PR-07"],
+          "Invoice engine must not blanket-block permitted ADVANCE on POD")
+    check(pr_map["PR-16R"]["owner"] == "commercial" and
+          pr_map["PR-12C"]["owner"] == "booking" and
+          pr_map["PR-10V"]["owner"] == "fleet",
+          "New PR canonical write owners are inconsistent")
     for pr in cuts:
         for upstream in pr.get("dependsOnPrs", []):
             check(upstream in pr_ids, f"{pr['id']}: unknown PR dependency {upstream}")
@@ -375,9 +407,9 @@ def main() -> int:
         check(bool(pr.get("caseCoverageNote")) or pr["id"] in {"PR-00", "PR-01", "PR-08"},
               f"{pr['id']}: test case-selection rationale missing")
 
-    problems.extend(audit_v13_pr_contract(
+    problems.extend(audit_v14_pr_contract(
         road, full_case_ids, {e["id"]: e["permission"] for e in access["entries"]}, br_ids))
-    problems.extend(audit_v13_markdown_pr_table(road, main_doc))
+    problems.extend(audit_v14_markdown_pr_table(road, main_doc))
     for path in road["testBanks"]:
         check((ROOT / path).is_file(), f"Missing linked test source {path}")
     for item in road["r0Prcuts"]:
