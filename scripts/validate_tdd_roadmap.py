@@ -153,6 +153,29 @@ def audit_v14_markdown_pr_table(road: dict, main_doc: str) -> list[str]:
     return issues
 
 
+def audit_v14_delivery_approvals(delivery: dict) -> list[str]:
+    """Allow legitimate future decisions only with verifiable reviewer evidence."""
+    problems: list[str] = []
+    allowed = {
+        "PROPOSED_ADR_PENDING", "PERMISSION_POLICY_PENDING", "BR_11_PENDING",
+        "PRODUCT_POLICY_PENDING", "TECHNICAL_ARCHITECTURE_PROPOSAL",
+        "BR_11_12_PENDING", "ADR_QUALITY_PENDING", "APPROVED", "REJECTED",
+        "DEFERRED_SAFE_DENY",
+    }
+    for decision in delivery.get("decisions", []):
+        did, state = decision.get("id", "?"), decision.get("status")
+        if state not in allowed:
+            problems.append(f"{did}: unrecognized decision state {state}")
+        if state == "APPROVED":
+            for field in ("approvalEvidenceRef", "approverAuthorityRef",
+                          "approvedVersion", "approvedAtUtc"):
+                if not decision.get(field):
+                    problems.append(f"{did}: APPROVED without {field}")
+        if state in {"REJECTED", "DEFERRED_SAFE_DENY"} and not decision.get("dispositionRationale"):
+            problems.append(f"{did}: {state} without dispositionRationale")
+    return problems
+
+
 def main() -> int:
     problems: list[str] = []
     road = load("docs/contracts/tdd-development-roadmap.v1.json")
@@ -302,7 +325,7 @@ def main() -> int:
         check(d["mustDecideBy"] in pr_ids, f"{d['id']}: unknown before-PR gate")
         check(bool(d.get("owner")) and bool(d.get("failSafe")) and bool(d.get("checks")),
               f"{d['id']}: missing owner/failSafe/acceptance checks")
-        check(d["status"] != "APPROVED", f"{d['id']}: approval cannot be fabricated by documentation")
+    problems.extend(audit_v14_delivery_approvals(delivery))
     check(all(new_id in pr_ids for new_id in ["PR-10V", "PR-12C", "PR-16R"]),
           "Three previously missing R0 PRs must have named gates")
     check("PR-10V" in pr_map["PR-10"]["dependsOnPrs"],
