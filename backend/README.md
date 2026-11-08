@@ -71,3 +71,20 @@ production application pods. CI verifies both a Spring/Flyway-admin migration
 process and an independent `RuntimeDatabaseProfileTest` that boots with the
 migrator environment variables absent. The ephemeral test migrator must not be
 taken as evidence of production bootstrap/rotation orchestration.
+
+## Durable dispatcher claim/fencing baseline (PR-01 partial)
+
+Flyway `V2__outbox_claim_fencing.sql` adds a per-tenant, monotonic
+`claim_token`, worker ownership, lease, retry timestamp, attempt count and
+published timestamp to the existing transactional Outbox. Internal
+`PlatformOutboxClaims` uses `FOR UPDATE SKIP LOCKED` to select one event,
+commits claims before any potential network I/O, and checks owner/token/
+unexpired lease on ack/retry. A separate restricted dispatcher role is used in
+four concurrent real-PG tests. Stale workers cannot acknowledge or reschedule
+an event taken over by another worker.
+
+**Not a production dispatcher:** no broker publisher, tenant discovery
+control-plane, poison/DEAD_LETTER policy, attempt backoff algorithm, metrics,
+cross-system consumer integration or external delivery E2E has been delivered.
+At-least-once delivery remains expected; the Inbox must protect logical
+consumer side effects.

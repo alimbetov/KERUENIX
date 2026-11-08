@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Real PostgreSQL/PostGIS integration test; cannot pass on an embedded database.
  * Enabled only in the dedicated GitHub Actions PostgreSQL foundation job.
- * It does not test actual JWT authority, external delivery or lease fencing.
+ * It does not test actual JWT authority or external broker delivery; lease fencing has a separate DB test.
  */
 @EnabledIfEnvironmentVariable(named = "KERUENIX_DB_URL", matches = "jdbc:postgresql:.*")
 @SpringBootTest
@@ -65,7 +65,7 @@ class PlatformDatabaseIntegrationTest {
     @Test
     void springBootFlywayMigratesWithSeparateAdminAndRuntimeAccounts() {
         assertThat(flyway.info().current()).isNotNull();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("1");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("2");
         assertThat(jdbc.queryForObject("SELECT current_user", String.class))
                 .isEqualTo("keruenix_ci_login");
         assertThat(jdbc.queryForObject("""

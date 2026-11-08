@@ -10,6 +10,7 @@ set -Eeuo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 psql -X -v ON_ERROR_STOP=1 -f "$ROOT/backend/src/main/resources/db/migration/V1__platform_outbox_inbox_rls.sql"
+psql -X -v ON_ERROR_STOP=1 -f "$ROOT/backend/src/main/resources/db/migration/V2__outbox_claim_fencing.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$ROOT/backend/db/admin/bootstrap_roles.sql"
 
 # CI-only principal. Never store real login credentials in a migration.
