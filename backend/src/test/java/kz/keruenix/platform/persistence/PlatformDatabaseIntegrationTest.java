@@ -170,6 +170,70 @@ class PlatformDatabaseIntegrationTest {
                 .hasMessageContaining("different digest");
     }
 
+
+    /**
+     * FOUND-02 RED: an inner TransactionTemplate REQUIRED call shares the
+     * physical connection. It MUST NOT replace the outer tenant's RLS GUC.
+     * A rejected scope switch rolls back the entire business transaction.
+     */
+    @Test
+    void nestedCrossTenantTransactionIsRejectedAndOuterWriteRollsBack() {
+        UUID outerEvent = UUID.randomUUID();
+        UUID forbiddenInnerEvent = UUID.randomUUID();
+
+        assertThatThrownBy(() -> scope.execute(TENANT_A, outer -> {
+            insertOutbox(outer, TENANT_A, outerEvent, DIGEST_A);
+            scope.execute(TENANT_B, inner -> {
+                insertOutbox(inner, TENANT_B, forbiddenInnerEvent, DIGEST_B);
+                return null;
+            });
+            return null;
+        })).isInstanceOf(SecurityException.class)
+                .hasMessageContaining("tenant");
+
+        scope.execute(TENANT_A, sql -> {
+            assertThat(sql.queryForObject(
+                    "SELECT count(*) FROM platform.outbox_event WHERE event_id = ?",
+                    Integer.class, outerEvent)).isZero();
+            return null;
+        });
+        scope.execute(TENANT_B, sql -> {
+            assertThat(sql.queryForObject(
+                    "SELECT count(*) FROM platform.outbox_event WHERE event_id = ?",
+                    Integer.class, forbiddenInnerEvent)).isZero();
+            return null;
+        });
+        assertThat(jdbc.queryForObject(
+                "SELECT NULLIF(current_setting('keruenix.tenant_id', true), '')",
+                String.class)).isNull();
+    }
+
+    @Test
+    void nestedSameTenantUsesOneAtomicTransactionAndPreservesRls() {
+        UUID event = UUID.randomUUID();
+        assertThatThrownBy(() -> scope.execute(TENANT_A, outer -> {
+            insertOutbox(outer, TENANT_A, event, DIGEST_A);
+            scope.execute(TENANT_A, inner -> {
+                assertThat(inner.queryForObject(
+                        "SELECT count(*) FROM platform.outbox_event WHERE event_id = ?",
+                        Integer.class, event)).isEqualTo(1);
+                assertThat(inner.queryForObject(
+                        "SELECT current_setting('keruenix.tenant_id', true)",
+                        String.class)).isEqualTo(TENANT_A.toString());
+                return null;
+            });
+            throw new IllegalStateException("expected rollback");
+        })).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("expected rollback");
+
+        scope.execute(TENANT_A, sql -> {
+            assertThat(sql.queryForObject(
+                    "SELECT count(*) FROM platform.outbox_event WHERE event_id = ?",
+                    Integer.class, event)).isZero();
+            return null;
+        });
+    }
+
     @Test
     void springJdbcNeverRunsUnscopedGeographyWrites() {
         // PostGIS uses geography meters; this is a capability smoke, not an API.
