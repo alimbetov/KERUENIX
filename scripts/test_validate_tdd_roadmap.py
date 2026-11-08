@@ -41,11 +41,11 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         )
 
     def check_risk(self, road: dict) -> list[str]:
-        return module.audit_v13_pr_contract(
+        return module.audit_v14_pr_contract(
             road, self.case_ids, self.permissions, self.br_ids
         )
 
-    def test_current_contract_has_no_v13_risk_errors(self) -> None:
+    def test_current_contract_has_no_v14_risk_errors(self) -> None:
         self.assertEqual([], self.check_risk(self.roadmap))
 
     def test_unknown_critical_case_fails(self) -> None:
@@ -84,7 +84,7 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
                             for p in self.check_risk(road)))
 
     def test_current_markdown_pr_dag_matches_machine(self) -> None:
-        self.assertEqual([], module.audit_v13_markdown_pr_table(
+        self.assertEqual([], module.audit_v14_markdown_pr_table(
             self.roadmap, self.markdown
         ))
 
@@ -112,9 +112,44 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         )
         self.assertNotEqual(changed, self.markdown)
         self.assertTrue(any("PR-03: Markdown prerequisites differ" in p
-                            for p in module.audit_v13_markdown_pr_table(
+                            for p in module.audit_v14_markdown_pr_table(
                                 self.roadmap, changed
                             )))
+
+    def test_fleet_registry_cannot_claim_confirmed_capacity(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-10V")[
+            "outcome"
+        ] = "Registry and full Booking CONFIRMED"
+        self.assertTrue(any("PR-10V Fleet registry" in p for p in self.check_risk(road)))
+
+    def test_cancel_command_must_have_br11(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-12C")[
+            "activationGate"
+        ]["br"] = []
+        self.assertTrue(any("PR-12C cancellation" in p for p in self.check_risk(road)))
+
+    def test_private_review_cannot_become_public_reputation(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-16R")[
+            "outcome"
+        ] = "Public marketplace rating"
+        self.assertTrue(any("PR-16R must remain" in p for p in self.check_risk(road)))
+
+    def test_e2e_must_qualify_cancellation_and_review(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-19")[
+            "dependsOnPrs"
+        ].remove("PR-12C")
+        self.assertTrue(any("PR-19 R0 E2E" in p for p in self.check_risk(road)))
+
+    def test_advance_invoice_cannot_be_blocked_by_blanket_pod_dependency(self) -> None:
+        road = copy.deepcopy(self.roadmap)
+        next(p for p in road["r0Prcuts"] if p["id"] == "PR-17")[
+            "dependsOnPrs"
+        ].append("PR-16")
+        self.assertTrue(any("PR-17 blanket-POD" in p for p in self.check_risk(road)))
 
     def test_wrong_markdown_pr_prerequisite_fails(self) -> None:
         q = chr(96)
@@ -125,7 +160,7 @@ class RoadmapValidatorMutationTests(unittest.TestCase):
         )
         self.assertNotEqual(changed, self.markdown)
         self.assertTrue(any("PR-05: Markdown prerequisites differ" in p
-                            for p in module.audit_v13_markdown_pr_table(
+                            for p in module.audit_v14_markdown_pr_table(
                                 self.roadmap, changed
                             )))
 
