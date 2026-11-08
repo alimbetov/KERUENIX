@@ -4,6 +4,9 @@
 
 **Why this book exists:** [User Story Book](21-user-story-book.md) owns actor-centred outcomes and stable story IDs. This document owns multi-actor **business narratives** that cut across several stories and domain aggregates, and maps to [Access Governance v2.1](24-access-control-tdd-matrix-v2.md), [Lifecycle v1](10-commercial-execution-lifecycle-v1.md) and [Lifecycle acceptance plan](11-commercial-execution-acceptance-v1.md). Do not invent new aggregate status enums in this book; named transitions are candidates from current lifecycle, subject to business validation.
 
+
+**R0 source-of-truth update (2026-11-08):** no KERUENIX payment processing, invoice issuing, AR/AP ledger or bank integration. Binding documents use trusted external NCA EDS verification where the accepted legal profile requires it. [Current scope](38-r0-eds-signing-no-payments.md); historical payment examples elsewhere in this book are superseded and **not acceptance requirements**.
+
 ## A. The real product: three workspaces, one shipment
 
 | Workspace | Who | Their job to be done | What must not be exposed |
@@ -238,33 +241,28 @@ Provider Tenant onboards CustomerAccount/External Customer
 **Existing planned security/lifecycle test references:** AUTH-EXE-003, AUTH-EXT-016..017, LFC-013,014,015,035. These IDs are *planned*, not green tests.
 
 
-## BSC-008 — Документы, счёт, спорная доплата и реальный расчёт
+## BSC-008 — Подтверждённая перевозка, коммерческая стоимость и внешняя бухгалтерия (без платежей)
 
-**Priority:** R0 finance-lite. **Actors:** DOC → FIN → FAP. **Stories:** USB-DOC-001, USB-DOC-002, USB-FIN-001, USB-FIN-002, USB-FIN-003, USB-FAP-001.
+**Priority:** R0 commercial costing. **Actors:** DOC → Commercial Analyst (FIN-cost role); external accountant is **outside** KERUENIX. **Stories:** USB-DOC-001/002, USB-FIN-001/002. Historical FIN-003 and FAP/payment stories are **RETIRED / NOT A PRODUCT REQUIREMENT**.
 
-**Preconditions:** Есть verified delivery evidence; договорные условия и финансовые документы доступны уполномоченным
+**Preconditions:** available authorized QuoteVersion, verified shipment evidence where relevant, buy/sell cost snapshot and customer/account scope.
 
 **Main business flow:**
-1. Documents собирает требуемый пакет и проводит REVIEW_PENDING → COMPLETE только после проверки
-2. Финансист формирует документированный Invoice/AR/AP с версией условий; документация и финансовый статус независимы
-3. Поставщик присылает доплату: сумма не применяется автоматически, проверяются согласование и происхождение
-4. Финансовый утверждающий санкционирует payable, но одобрение не является фактом банковского перевода
-5. Finance сопоставляет подтверждённый bank/ERP reference, учитывает частичные оплаты/авансы и уникальность allocations
+1. Documents creates a verified immutable proof package according to transport and signing rules; original POD stays owned by Execution.
+2. Authorized Commercial Analyst views provider sell/buy amounts, currency, cost version and margin. Neither customer nor carrier sees confidential provider margin by default.
+3. Disputed carrier surcharge remains a `PROPOSED_CHANGE` to commercial terms; never becomes a payable or a bank transaction.
+4. A document issued by an **external** accounting provider may be referenced by opaque ID/type/issuer/URI (subject to approved access), but the internal record does not assert ESF, payment, refund or receivable status.
+5. Online EDS verification of a contract or transport act is handled separately. Signature status never implies a bank transfer.
 
-**Domain state and source-of-truth:** DocumentPackage COMPLETE; Invoice ISSUED; Receivable OPEN/PARTIALLY_SETTLED/SETTLED; Payable APPROVAL_REQUIRED/APPROVED/OPEN/SETTLED; Payment отдельно
+**Domain state:** QuoteVersion/cost snapshot source-owned. Finance-cost bounded context stores only scoped CommercialCostReport and ExternalAccountingDocRef. `PaymentAllocation`, AR/AP ledger, `PAID/SETTLED/REFUNDED`, financial webhooks and tax-ESF issuance **DO NOT EXIST** in KERUENIX product scope.
 
-**Evidence:** package version, invoice ref, approved payable request, bank/ERP transaction and allocation IDs, currency/tax
+**R0 acceptance:**
+1. `BSC-008-AC-01`: Given no verified POD package, When report viewed, Then missing proof is visible; report does not manufacture delivered/paid status.
+2. `BSC-008-AC-02`: Given Tenant-B or a carrier, When provider margin queried, Then role/tenant and field-level policies deny sensitive buy cost.
+3. `BSC-008-AC-03`: Given forged bank callback/payment endpoint, When submitted, Then no handler, database table, Outbox PaymentSettled or payment state exists.
+4. `BSC-008-AC-04`: Given disputed surcharge, When proposed, Then authorized quote amendment is required; no silent cost mutation or payable posting.
 
-**Alternative/negative flows:** Reject package, disputed surcharge, duplicate bank event, partial settlement, bank outage, customer late payment
-
-**Proposed acceptance (Given/When/Then business outcomes):**
-1. `BSC-008-AC-01` — Given delivered Shipment without verified Documents, When finance closes, Then document-complete not implied
-2. `BSC-008-AC-02` — Given payable approved but no bank transaction, When UI renders, Then not shown Settled
-3. `BSC-008-AC-03` — Given duplicate payment callback, When allocation processed, Then sum unchanged
-4. `BSC-008-AC-04` — Given disputed surcharge, When payable approval attempted, Then configured dispute guard blocks automatic payment
-
-**Existing planned security/lifecycle test references:** AUTH-DOC-001, AUTH-FIN-001..004, AUTH-X-024, LFC-021..028. These IDs are *planned*, not green tests.
-
+**Relevant R0 gates:** `AUTH-FIN-001` repurposed as read-only cost permission, `PAY-ABS-01..06`, `SIG-01..13` for legal documents. `AUTH-FIN-002..004`, bank callbacks and `TDD-R0-E2E-06` are **archived out-of-product cases**, not R0 release blockers.
 
 ## BSC-009 — Обоснованный отзыв после услуги и реакция Tenant
 
