@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "1.0.0",
+  "date": "2026-11-08",
+  "status": "PROPOSED_R0_USER_DIRECTION_EDS_PROVIDER_LEGAL_APPROVAL_PENDING",
+  "productBoundary": {
+    "mode": "TRANSPORT_AND_CONTRACT_MANAGEMENT_NO_PAYMENTS",
+    "allowed": [
+      "sell/buy rate and quoted cost",
+      "contractual price currency and version",
+      "margin and commercial cost report",
+      "immutable reference to document issued in external accounting"
+    ],
+    "forbidden": [
+      "payment gateway",
+      "bank transaction ingest",
+      "payment initiation/payout/refund",
+      "PaymentAllocation and accounting ledger",
+      "paid or settled state",
+      "receivables/payables reconciliation",
+      "official ESF issue inside KERUENIX"
+    ],
+    "safeRule": "No PAID, SETTLED, REFUNDED or bank evidence command; external accounting handles financial settlement.",
+    "financeModule": "Keep named finance module within 17 modules but scope it to commercial pricing analytics and external accounting handoff only."
+  },
+  "signing": {
+    "kind": "TECHNICAL_PLATFORM_PORT_NOT_BUSINESS_MODULE",
+    "adapters": [
+      {
+        "id": "NCALAYER",
+        "status": "R0_DESIGN_PREFERRED",
+        "rule": "Use user-controlled NCA EDS through browser; no private key on backend"
+      },
+      {
+        "id": "EGOV_QR",
+        "status": "OPTIONAL_PROVIDER_ONBOARDING_REQUIRED",
+        "rule": "eGov Mobile QR through verified third-party integration; do not assume unrestricted public API"
+      },
+      {
+        "id": "EXTERNAL_DOCUMENT",
+        "status": "OPTIONAL_FALLBACK_LEGAL_APPROVAL_REQUIRED",
+        "rule": "Import independently signed original with cryptographic and authority validation"
+      }
+    ],
+    "documentStates": [
+      "DRAFT",
+      "FROZEN",
+      "SIGN_REQUESTED",
+      "SIGNED_UNVERIFIED",
+      "VERIFIED",
+      "ACCEPTED_BY_OWNER",
+      "REJECTED",
+      "EXPIRED",
+      "FAILED_VERIFICATION"
+    ],
+    "bindingOperations": [
+      {
+        "owner": "commercial",
+        "action": "QuoteVersion ACCEPTED",
+        "condition": "exact terms version and authorized representative EDS, BR-01"
+      },
+      {
+        "owner": "commercial",
+        "action": "binding CarrierCommitment",
+        "condition": "carrier authority and BR-06 form"
+      },
+      {
+        "owner": "booking",
+        "action": "cancellation agreement",
+        "condition": "request alone never binding termination; BR-11"
+      },
+      {
+        "owner": "execution",
+        "action": "binding signed POD/TTN or discrepancy act",
+        "condition": "BR-09/BR-10 legal profile; internal evidence remains distinct"
+      }
+    ],
+    "operationalNoEdsByDefault": [
+      "draft RFQ",
+      "nonbinding RFQ submit after dedicated permission approval",
+      "route planning/assignment",
+      "nonbinding capacity hold",
+      "tracking",
+      "private feedback"
+    ],
+    "validations": [
+      "canonical frozen bytes/hash and exact domain object version",
+      "signature cryptography and NCA trust chain",
+      "certificate validity, revocation and signing time",
+      "signer authorization for exact legal entity and action",
+      "no cross-tenant/account signed-artifact replay",
+      "server-side verification, never trust browser boolean",
+      "original document+signature+verification evidence retained immutably"
+    ],
+    "security": "Never upload, store, request or log private key, key password or OTP. Protect certificate personal data and signed originals.",
+    "atomicity": "External signing is async: verified signed artifact staged durably; owner CAS state+audit+Outbox committed in one database transaction, with idempotent replay.",
+    "denied": "Unsigned, wrong signer, expired/revoked cert, wrong terms hash or unapproved legal profile cannot change binding state.",
+    "tests": [
+      "SIG-01",
+      "SIG-02",
+      "SIG-03",
+      "SIG-04",
+      "SIG-05",
+      "SIG-06",
+      "SIG-07",
+      "SIG-08",
+      "SIG-09",
+      "SIG-10",
+      "SIG-11",
+      "SIG-12",
+      "SIG-13"
+    ]
+  },
+  "roadmap": {
+    "removePr": "PR-17S",
+    "addPr": {
+      "id": "PR-06S",
+      "phase": "RD-04",
+      "owner": "platform",
+      "dependsOnPrs": [
+        "PR-01",
+        "PR-02"
+      ]
+    },
+    "repurposePr": "PR-17",
+    "historicPaymentCaseIds": [
+      "TDD-R0-E2E-06",
+      "TDD-SIM-32-G22-01",
+      "TDD-SIM-32-G22-03",
+      "TDD-SIM-32-G22-04",
+      "TDD-SIM-32-G22-05",
+      "NEG-R0-033",
+      "NEG-R0-034",
+      "NEG-R0-035",
+      "NEG-R0-036"
+    ],
+    "historicTreatment": "Preserve in original case bank for traceability; out-of-scope payment success tests DEFERRED_NOT_R0; add negative HTTP tests ensuring no payment endpoints or state."
+  },
+  "approvals": {
+    "userScope": "REQUIREMENTS_INPUT",
+    "legalEds": "PENDING_COUNSEL",
+    "providerApi": "PENDING_PROVIDER_QUALIFICATION",
+    "br12": "PENDING_STAKEHOLDER_SCOPE_CONFIRMATION"
+  },
+  "references": [
+    "https://old.adilet.zan.kz/rus/docs/K2600000255",
+    "https://pki.gov.kz/ru/ncalayer/",
+    "https://kgd.gov.kz/ru/news/po-podpisaniyu-elektronnyh-dokumentov-posredstvom-skanirovaniya-qr-koda-1-134860"
+  ]
+}
