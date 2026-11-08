@@ -1043,7 +1043,9 @@
     "version14Meaning": "26 atomic PR cuts. Adds independently testable Fleet registry, safe Booking cancellation and post-completion private review, without a new business module.",
     "invoiceTrigger": "PR-17 InvoiceType and trigger matrix needs Finance/legal business approval: ADVANCE only if supported contract terms; never PAID until PR-17S verified evidence.",
     "orderADR": "PR-12 must not create independent mutable Order until DEC-R0-01 canonical owner/Order-projection ADR is approved.",
-    "reviewOwner": "Private verified customer review is Commercial-owned via neutral versioned DeliveryEligibleForReview projection; never direct Commercial->Execution package import."
+    "reviewOwner": "Private verified customer review is Commercial-owned via neutral versioned DeliveryEligibleForReview projection; never direct Commercial->Execution package import.",
+    "financeIndependence": "PR-17 Invoice engine can qualify approved ADVANCE after PR-07, without waiting for POD/Documents. POST_SERVICE issuance stays blocked until delivered proof and contractual trigger, integration qualified in PR-19.",
+    "cancellationIndependence": "PR-13 pickup does not wait for BR-11 cancellation feature PR-12C. Final user journey PR-19 covers cancellation branch separately."
   },
   "trackOwnership": {
     "concept": "A stage may involve multiple modules, but only the owning module can write its canonical tables; each PR declares exactly one primary write owner or a platform technical owner.",
@@ -1526,7 +1528,7 @@
       "outcome": "Trip+pickup offline custody and signed evidence references; implement verified original evidence receipts (not bare URL) before document packaging",
       "testGate": "historical authority, late replay, one custodian, BR-09; hash/size/signer/object existence/orphan replay tests",
       "dependsOnPrs": [
-        "PR-12C"
+        "PR-12"
       ],
       "criticalCaseIds": [
         "NEG-R0-025",
@@ -1669,11 +1671,9 @@
       "phase": "RD-09",
       "owner": "finance",
       "outcome": "Finance invoice, AR/AP and independently approved payable/receivable; outstanding and partial states only; InvoiceType ADVANCE/POST_SERVICE/ADJUSTMENT triggers explicit contract and tax evidence, no POD requirement for signed advance terms",
-      "testGate": "immutable invoice, Money decimal and legal-entity scope, SoD approvals and no mock/approval to PAID; approved InvoiceType→Trigger→Evidence matrix, no silent 100% POD requirement for authorized advance",
+      "testGate": "immutable invoice, Money decimal and legal-entity scope, SoD approvals and no mock/approval to PAID; approved InvoiceType→Trigger→Evidence matrix, no silent 100% POD requirement for authorized advance; POST_SERVICE trigger real delivery/evidence is qualified later at PR-19, not inferred from invoice engine unit tests",
       "dependsOnPrs": [
-        "PR-07",
-        "PR-14",
-        "PR-16"
+        "PR-07"
       ],
       "criticalCaseIds": [
         "NEG-R0-033",
@@ -1694,7 +1694,7 @@
         ],
         "requiredTest": "ROLE_API_UI_AND_FAILURE_STATES"
       },
-      "caseCoverageNote": "Existing case anchors are minimum; select additional applicable cases in per-PR manifest."
+      "caseCoverageNote": "Invoice engine may be qualified from signed Quote/contract triggers for approved ADVANCE; POST_SERVICE may not activate before verified Execution/POD evidence contract and real E2E. No unapproved taxes or mock settlements."
     },
     {
       "id": "PR-17S",
