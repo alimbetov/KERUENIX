@@ -23,7 +23,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import kz.keruenix.platform.errors.SecurityProblemHandler;
 import kz.keruenix.platform.security.TenantScopeAuthorization;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -79,16 +78,20 @@ class TrustedTenantHttpIntegrationTest {
     static final UUID TENANT_B = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     static final UUID ACCOUNT_X = UUID.fromString("11111111-1111-1111-1111-111111111111");
     static final UUID ACCOUNT_Y = UUID.fromString("22222222-2222-2222-2222-222222222222");
-    static KeyPair rsaKeys;
+    // Initialized before Spring Test's application context constructs JwtDecoder.
+    static final KeyPair rsaKeys = ephemeralKeyPair();
 
     @Autowired MockMvc mvc;
     @Autowired DataSource dataSource;
 
-    @BeforeAll
-    static void generateEphemeralSigningKey() throws Exception {
-        var generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(2048);
-        rsaKeys = generator.generateKeyPair();
+    static KeyPair ephemeralKeyPair() {
+        try {
+            var generator = KeyPairGenerator.getInstance("RSA");
+            generator.initialize(2048);
+            return generator.generateKeyPair();
+        } catch (java.security.GeneralSecurityException failure) {
+            throw new ExceptionInInitializerError(failure);
+        }
     }
 
     @BeforeEach
