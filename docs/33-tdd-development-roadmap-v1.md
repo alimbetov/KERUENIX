@@ -298,7 +298,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 
 **Зависимости:** `RD-07`. **Ответственные модули:** `tracking`, `documents`, `fleet`, `execution`. **Статус:** PLANNED / NOT QUALIFIED.
 
-**Scope и результат:** Три независимых owner-среза PR-15 Tracking, PR-16 Documents и **PR-16R Commercial private feedback только после проверенной завершённой услуги**: Event-derived customer timeline, permission-filtered milestone, ETA freshness/watermarks; verified document packages and downloads; cursor/keyset for immutable chronological streams. **Soft Delete не является автоматически активируемой функцией:** только явно разрешённые draft-объекты и отдельный бизнес/retention gate; Bookings, POD, finance и custody не удаляются.
+**Scope и результат:** Три независимых owner-среза PR-15 Tracking, PR-16 Documents и **PR-16R Commercial private feedback только после проверенной завершённой услуги (отдельный fulfilled-service тест; 8/10 частичный POD не соответствует eligibility)**: Event-derived customer timeline, permission-filtered milestone, ETA freshness/watermarks; verified document packages and downloads; cursor/keyset for immutable chronological streams. **Soft Delete не является автоматически активируемой функцией:** только явно разрешённые draft-объекты и отдельный бизнес/retention gate; Bookings, POD, finance и custody не удаляются.
 
 **Изменения в коде/артефактах:**
 - TrackingQueryApi filtered projection and rebuild
@@ -863,6 +863,6 @@ This pass does **not** replace 27 prior audit findings or falsely claim implemen
 - `PR-17`: explicitly distinguish approved advance invoice from post-service invoice, and `PR-17S`: verified external payment. Mock bank callback does not prove PAID.
 - `PR-19` is gated on `PR-12C` and `PR-16R` because both are in the stated R0 customer day-in-life journey.
 
-**Maintained count:** `RD-00..12` 13 R0 stages + 3 RX candidates, **26 PR cuts** and **132 previously defined risk-based acceptance specifications** (plus eight MIX compositions not counted). Any new local unit/browser checks for new PRs must appear in their applicability manifest; no invented global "135 passing tests" claim.
+**E2E review split:** partial 8/10 remains outstanding and must **not** be declared full-service feedback eligible; a separate confirmed completion fixture proves one private eligible review.\n\n**Maintained count:** `RD-00..12` 13 R0 stages + 3 RX candidates, **26 PR cuts** and **132 previously defined risk-based acceptance specifications** (plus eight MIX compositions not counted). Any new local unit/browser checks for new PRs must appear in their applicability manifest; no invented global "135 passing tests" claim.
 
 **Priority:** Execute `PR-00` (record truthful ADR/BR statuses) + `PR-01` (Java/PG/Modulith/RLS/Outbox foundation) with code, then `PR-02/03C/03/04/05` as applicable. Don't treat documentation CI as successful application-domain TDD.
