@@ -231,7 +231,7 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 
 ## Development roadmap technical audit v1.1
 
-[33 — TDD Development Roadmap v1.3](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) revise R0 development sequencing after **27 documented design findings** across two audits; 23 PR cuts with source-owner/activation/security gates. [Machine roadmap](contracts/tdd-development-roadmap.v1.json) contains 13 RD phases, three optional RX phases and **23 independent implementation PR cuts**.
+[33 — TDD Development Roadmap v1.4](33-tdd-development-roadmap-v1.md) and [34 — Technical Audit](34-tdd-roadmap-technical-audit.md) revise R0 development sequencing after **27 documented design findings** across two audits; 23 PR cuts with source-owner/activation/security gates. [Machine roadmap](contracts/tdd-development-roadmap.v1.json) contains 13 RD phases, three optional RX phases and **26 independent implementation PR cuts**.
 
 - `KX-ROAD-001` P0: RD-01 owns durable transactional Outbox/Inbox, RLS, data/migration foundation *before* RD-03 state writes. RD-10 performs hardening/recovery, not first Job implementation.
 - `KX-ROAD-002` P0: RD-05 is three independently qualified Cargo, Compliance, Fleet owner PRs; Booking and Finance cross-module references only through exported API/event/snapshot.
@@ -240,6 +240,14 @@ Updated [Access Governance v2.1](24-access-control-tdd-matrix-v2.md) and [machin
 - `KX-ROAD-005` P1: [roadmap contract CI](../.github/workflows/tdd-roadmap-contract.yml) validates DAG, ownership, BR/BSC, phase and test references. A docs schema check is not Java/TDD evidence.
 
 **Status:** changes to planning/specification only; no real R0 business module, signed business approval, PostgreSQL acceptance, or end-to-end qualification has been established by this audit.
+
+## R0 Developer Handoff — explicit source ownership and missing steps (v1.4)
+
+[35 — R0 Developer Handbook](35-r0-developer-handbook.md) and [R0 Decision Contract](contracts/r0-delivery-contract.v1.json) formalize **8 open design/business decisions**, not real approvals. [36 — PR-00/01 Start Pack](36-r0-tdd-start-pack.md) defines 12 new foundation test specifications (`FOUND-01..12`) separate from the previously documented **132 R0 risk-case candidates**. No new business test implementation is implied.
+
+**Additional independent PR cuts:** `PR-10V` Fleet identity/registry without capacity commitment, `PR-12C` Booking cancellation request/authoritative decision under BR-11, `PR-16R` Commercial private proof-verified review. `PR-19` must accept all three relevant user outcomes, and its DAG must include cancellation and private feedback. Execution `PR-13` does **not** wait for BR-11; Finance `PR-17` may develop an approved advance-invoice contract before POD but must fail-closed for POST_SERVICE without verified evidence. [Roadmap v1.4](33-tdd-development-roadmap-v1.md) contains 26 PRs, not 23.
+
+**Order source-of-truth ADR:** Proposed `My Orders` is an account-scoped read-only composition, not a second mutable Booking/Shipment aggregate; pending decision before Booking migrations. **Commercial CustomerAccount ADR:** Commercial owns business relation, Tenancy only grants/identity; pending actual owner signoff. **RFQ Submit:** a separately approved permission is still missing; must stay deny-only.
 
 ## Acceptance status
 
