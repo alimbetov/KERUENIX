@@ -3,6 +3,14 @@
 **Версия:** 0.2 · **Статус:** DRAFT. Здесь нет реализованных/приёмочно закрытых требований.  
 **Приоритет P0:** обязательно проработать для безопасного ядра/первого пилота; конкретный функционал может быть ограничен реализацией Release 0. P1 — расширение после первого вертикального процесса. P2 — дальнейшее развитие.
 
+## Binding 2026-11-08 product scope and traceability override
+
+The [R0 technical/business review](39-r0-technical-business-review.md) and [scope contract](contracts/r0-scope-eds-signing.v1.json) supersede all historical P0 finance/payment rows `KX-FIN-002`, `KX-LFC-008`, `KX-ACCESS-V21-005`, `KX-SIM-004` that formerly required internal bank/ERP reconciliation, receivable/payable ledger, payment allocation or settlement: **RETIRED_OUT_OF_KERUENIX_PRODUCT_SCOPE**. These row IDs remain searchable for historical traceability, not runnable R0 requirements or future R1/R2 commitments.
+
+**Current P0:** (1) commercial buy/sell cost+margin report and customer/tenant field masking `AUTH-FIN-001`; (2) no payment endpoints/tables/permissions/status or bank credentials `PAY-ABS-01..06`; (3) server-verified NCA EDS for legally binding artifacts under approved legal profile `SIG-01..18`, including Digital Code Article 50 document preview/explicit sign/notice/save, Article 61 delegation/open verification, Article 62 portable original; (4) actual RLS/Modulith/Outbox and correct customer/transport user E2E.
+
+**No code qualified:** the presence of these tests in spec is not successful Testcontainers or legally approved signature integration.
+
 ## Общая матрица
 
 | ID | Требование | Приор. | Доказательство / тест | Источник |
