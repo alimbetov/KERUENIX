@@ -81,7 +81,7 @@ RD-01 Build/CI/PG/PostGIS + durable Outbox/Inbox foundation ──────�
 | `RD-07` | Execution + Custody + Partial POD | `RD-06` | execution, cargo, compliance |
 | `RD-08` | Tracking + Documents + Query/Soft Delete Qualification | `RD-07` | tracking, documents, fleet, execution |
 | `RD-09` | Commercial Cost & External Accounting Handoff (**1 PR, NO PAYMENTS**) | `RD-04` | finance owns only versioned commercial costing and external document reference, never payment ledger |
-| `RD-10` | **Jobs Resilience Hardening** + Subscription Safety | `RD-02`, `RD-06`, `RD-07`, `RD-09` | platform jobs + scoped tenancy/execution/finance; not first Outbox deployment |
+| `RD-10` | **Jobs Resilience Hardening** + Subscription Safety | `RD-02`, `RD-06`, `RD-07` | platform jobs + scoped tenancy/execution/finance; not first Outbox deployment |
 | `RD-11` | R0 Full E2E + Recovery + Performance | `RD-03`, `RD-04`, `RD-05`, `RD-06`, `RD-07`, `RD-08`, `RD-09`, `RD-10` | tenancy, commercial, fleet, cargo, compliance, booking, execution, tracking, documents, finance |
 | `RD-12` | Pilot Acceptance + Release Qualification | `RD-11`, `RD-00` | tenancy, commercial, fleet, booking, execution, tracking, documents, finance |
 
