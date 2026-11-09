@@ -69,6 +69,57 @@ class RfqDraftRedContractTest {
         assertThat(countOutbox(TENANT_A)).isEqualTo(before);
     }
 
+
+    /** NEG-R0-011: exact same request is idempotent; conflicting cargo is 409. */
+    @Test
+    void sameKeyDifferentCanonicalCargoIsConflictAndCannotMutateOriginalDraft() throws Exception {
+        String key = UUID.randomUUID().toString();
+        UUID initialCargo = UUID.randomUUID();
+        UUID changedCargo = UUID.randomUUID();
+        String token = TrustedTenantHttpIntegrationTest.valid("alice");
+
+        var original = mvc.perform(post("/api/v1/rfqs/drafts")
+                .header("Authorization", "Bearer " + token)
+                .header("Idempotency-Key", key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(initialCargo)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String originalBody = original.getResponse().getContentAsString();
+        assertThat(originalBody).contains("DRAFT");
+
+        var replay = mvc.perform(post("/api/v1/rfqs/drafts")
+                .header("Authorization", "Bearer " + token)
+                .header("Idempotency-Key", key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(initialCargo)))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+        assertThat(replay.getResponse().getContentAsString()).isEqualTo(originalBody);
+
+        mvc.perform(post("/api/v1/rfqs/drafts")
+                .header("Authorization", "Bearer " + token)
+                .header("Idempotency-Key", key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(changedCargo)))
+                .andExpect(status().isConflict())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .jsonPath("$.code").value("KX-GEN-409-002"));
+    }
+
+    @Test
+    void unrelatedCustomerCannotCreateDraftForCustomerX() throws Exception {
+        int before = countOutbox(TENANT_A);
+        mvc.perform(post("/api/v1/rfqs/drafts")
+                .header("Authorization", "Bearer " + TrustedTenantHttpIntegrationTest.valid("bob"))
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(UUID.randomUUID())))
+                .andExpect(status().isForbidden());
+        assertThat(countOutbox(TENANT_A)).isEqualTo(before);
+    }
+
     /**
      * Pending DEC-R0-03: draft cannot authorize Submit, Quote or Booking.
      * This negative safety contract is executable independently of PR-04.
