@@ -40,7 +40,11 @@ class TenantScopeAuthorizationBoundaryTest {
                 .expiresAt(Instant.now().plusSeconds(60))
                 .claim("tenant_id", TENANT_B.toString())
                 .build();
-        return new JwtAuthenticationToken(jwt);
+        var verified = new JwtAuthenticationToken(jwt);
+        // Spring Security's real JwtAuthenticationProvider authenticates this
+        // after verification; the direct unit fixture must reproduce that state.
+        verified.setAuthenticated(true);
+        return verified;
     }
 
     @Test
