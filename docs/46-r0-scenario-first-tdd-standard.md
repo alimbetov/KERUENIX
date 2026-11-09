@@ -52,6 +52,8 @@
 
 **Пятый узел S0:** [55 — Tracking, Documents, Service Review, Commercial Cost](55-s0-tracking-documents-cost-test-design.md) / [17 тестовых контрактов](contracts/r0-s0-tracking-documents-cost-case-contracts.v1.json), включая 4 новых Cost. Все оракулы остаются draft; не принимать 8/10 как полноценную доставку, не обещать немедленный revoke presigned URL, не добавлять платежи.
 
+**Шестой узел S0:** [56 — Resilience / Recovery / Cross-role E2E / Release](56-s0-resilience-release-test-design.md) / [29 контрактов](contracts/r0-s0-resilience-release-case-contracts.v1.json). Continuity разрешён только при реально утверждённом BR-04, restore и exact-SHA release требуют измеримого evidence; все решения пока unreviewed.
+
 ## Пакеты S0 → S1 по порядку рисков
 
 1. **FOUND + Tenancy:** RLS, JWT, CustomerAccount, revoke, module graph, Liquibase migration и recovery (PR-01..03).

@@ -86,3 +86,4 @@ jobs:
           python3 scripts/validate_s0_cargo_booking.py
           python3 scripts/validate_s0_delivery_batches.py execution_custody_pod
           python3 scripts/validate_s0_delivery_batches.py tracking_documents_cost
+          python3 scripts/validate_s0_delivery_batches.py resilience_release

@@ -130,5 +130,68 @@ class DownstreamS0SafetyTests(unittest.TestCase):
         self.row("NEG-R0-032")["proposal"]["negativeVariants"]=[]
         self.assertTrue(any("negative/failure variants" in x for x in self.errors()))
 
+
+class ResilienceReleaseS0SafetyTests(unittest.TestCase):
+    batch="resilience_release"
+    def setUp(self):
+        cfg=m.BATCHES[self.batch]
+        self.plan=m.load(cfg["file"]);self.alloc=m.load(m.ALLOC);self.ext=m.load(m.EXT)
+        self.ledger=m.load(m.LEDGER);self.doc=(ROOT/cfg["report"]).read_text(encoding="utf-8")
+    def errors(self):
+        return m.validate(self.batch,self.plan,self.alloc,self.ext,self.ledger,self.doc)
+    def row(self,cid):
+        return next(x for x in self.plan["cases"] if x["id"]==cid)
+    def test_design_baseline_not_qualified(self):
+        self.assertEqual(self.errors(),[])
+        self.assertEqual(len(self.plan["cases"]),29)
+    def test_loss_of_release_case_detected(self):
+        self.plan["cases"].pop()
+        self.assertTrue(any("missing/duplicate case" in x for x in self.errors()))
+    def test_replay_and_crash_must_be_defined(self):
+        self.plan["rules"]["outboxInboxIdempotent"]=False
+        self.assertTrue(any("outboxInboxIdempotent" in x for x in self.errors()))
+    def test_suspension_never_general_auth(self):
+        self.plan["rules"]["suspensionSafetyScopeNotGeneralAuth"]=False
+        self.assertTrue(any("suspensionSafetyScopeNotGeneralAuth" in x for x in self.errors()))
+    def test_suspension_no_new_booking(self):
+        self.plan["rules"]["noBookingDuringSuspension"]=False
+        self.assertTrue(any("noBookingDuringSuspension" in x for x in self.errors()))
+    def test_custody_durability_essential(self):
+        self.plan["rules"]["noLostCustodyOnCrash"]=False
+        self.assertTrue(any("noLostCustodyOnCrash" in x for x in self.errors()))
+    def test_restore_drill_required(self):
+        self.plan["rules"]["restoreDrillRequired"]=False
+        self.assertTrue(any("restoreDrillRequired" in x for x in self.errors()))
+    def test_release_requires_exact_sha(self):
+        self.plan["rules"]["exactShaReleaseEvidence"]=False
+        self.assertTrue(any("exactShaReleaseEvidence" in x for x in self.errors()))
+    def test_pilot_must_include_two_tenants(self):
+        self.plan["rules"]["twoTenantPilotRequired"]=False
+        self.assertTrue(any("twoTenantPilotRequired" in x for x in self.errors()))
+    def test_cannot_return_payment_scope(self):
+        self.plan["rules"]["noPayments"]=False
+        self.assertTrue(any("noPayments" in x for x in self.errors()))
+    def test_br04_cannot_be_removed(self):
+        self.row("TDD-SIM-41-G05-01")["proposal"]["pendingDecisionRefs"]=[]
+        self.assertTrue(any("BR/DEC blockers hidden" in x for x in self.errors()))
+    def test_pending_binding_cannot_auto_allow(self):
+        self.row("TDD-SIM-41-G05-01")["proposal"]["activation"]="ALLOW"
+        self.assertTrue(any("unauthorized positive" in x for x in self.errors()))
+    def test_immutable_e2e_custody_then(self):
+        self.row("TDD-R0-E2E-04")["canonical"]["then"]="ALL_DELIVERED_AFTER_8"
+        self.assertTrue(any("canonical Given/When/Then" in x for x in self.errors()))
+    def test_release_cannot_fake_signoff(self):
+        self.row("PR20-REL-04")["reviewer"]="fake"
+        self.assertTrue(any("fabricated reviewer" in x for x in self.errors()))
+    def test_release_case_owner(self):
+        self.row("PR20-REL-01")["primaryPr"]="PR-18"
+        self.assertTrue(any("original module owner" in x for x in self.errors()))
+    def test_role_e2e_remains_pr19_owned(self):
+        self.row("TDD-R0-E2E-07")["primaryPr"]="PR-18"
+        self.assertTrue(any("original module owner" in x for x in self.errors()))
+    def test_no_production_qualified_claim(self):
+        self.plan["status"]="QUALIFIED"
+        self.assertTrue(any("cannot bypass S0" in x for x in self.errors()))
+
 if __name__=="__main__":
     unittest.main()

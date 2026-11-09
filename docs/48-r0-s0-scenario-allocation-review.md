@@ -98,6 +98,8 @@
 
 **S0 Tracking/Documents/Commercial Cost:** [55 — 17 контрактов](55-s0-tracking-documents-cost-test-design.md) + [machine oracles](contracts/r0-s0-tracking-documents-cost-case-contracts.v1.json). Stale GPS, immutable original, URL TTL, PrivateReview eligibility и NO PAYMENTS остаются обязательными review-факторами.
 
+**S0 Resilience/Release:** [56 — 29 предложенных тестовых контрактов](56-s0-resilience-release-test-design.md), [DB/Event/UI machine matrix](contracts/r0-s0-resilience-release-case-contracts.v1.json). Recovery drill, no blanket suspension grant, двухтенантный pilot и exact-SHA digest остаются `NOT_REVIEWED` до реального evidence.
+
 ## 5. Definition of Done для Scenario Design
 
 S0 считается подготовленным к **Test-First** только если все 121 активных R0 case имеют подтверждённые ownership/BR applicability, полные Given/When/Then и oracle (HTTP + DB + Outbox/Inbox/Audit/UI где применимо). Для локальных PR-08/06S/17/20 дописаны отдельные test case contracts. Все 26 PR связаны с реальными (или явно out-of-scope) test goals.
