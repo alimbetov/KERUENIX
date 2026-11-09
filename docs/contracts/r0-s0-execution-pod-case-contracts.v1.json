@@ -1,0 +1,1322 @@
+{
+  "schemaVersion": "1.0.0",
+  "date": "2026-11-09",
+  "phase": "S0_SCENARIO_DESIGN",
+  "batch": "execution_custody_pod",
+  "status": "PROPOSED_NOT_REVIEWED",
+  "sourceAllocation": "docs/contracts/r0-scenario-allocation.v1.json",
+  "scopePrs": [
+    "PR-13",
+    "PR-14"
+  ],
+  "count": {
+    "primary": 22,
+    "impacted": 3,
+    "local": 0,
+    "total": 25
+  },
+  "rules": {
+    "noNewDomainCode": true,
+    "custodyOwnerNeverAmbiguous": true,
+    "handlingUnitConservation": true,
+    "partialPodNotCompleted": true,
+    "immutableOriginalEvidence": true,
+    "offlineReplayDedup": true,
+    "unapprovedBindingActionsDenyOrHold": true,
+    "noPayments": true,
+    "reviewCannotBeIssuedByCi": true
+  },
+  "fixture": {
+    "id": "FIX-R0-EXECUTION-01",
+    "units": 10,
+    "accepted": 8,
+    "refused": 2,
+    "driverRevokedVariant": true,
+    "receiverTokenPerAttempt": true,
+    "offlineQueue": true,
+    "crashBeforeAck": true,
+    "syntheticDataOnly": true
+  },
+  "cases": [
+    {
+      "id": "TDD-SIM-24-G15-01",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Assigned driver captures pickup evidence offline while valid assignment; server receives later",
+        "when": "Upload event with assignment history/version and evidences",
+        "then": "One validated historical custody transition after authoritative reconciliation"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Assigned driver captures pickup evidence offline while valid assignment; server receives later"
+        ],
+        "whenSteps": [
+          "Upload event with assignment history/version and evidences",
+          "An assigned driver stores a durable offline pickup with eventId, assignmentVersion, unitIds and evidence hash; server receives it after reconnect"
+        ],
+        "dbOracle": "Only historically valid, non-conflicting handover of exact units changes custody ledger; preserve observedAt and serverReceivedAt separately",
+        "eventOracle": "One PickupConfirmed event only after verified reconciliation; unrelated units and tenants untouched",
+        "httpUiOracle": "Offline UI shows PENDING until server confirms; do not display custody success on local enqueue",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_24_G15_01Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Client observedAt cannot establish revoked driver authority alone"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-24-G15-02",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Reassigned/revoked driver forges new pickup observedAt after revocation",
+        "when": "Upload stale assignment event",
+        "then": "DENY for current state mutation; evidence quarantined if needed, not silently dropped or accepted"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Reassigned/revoked driver forges new pickup observedAt after revocation"
+        ],
+        "whenSteps": [
+          "Upload stale assignment event",
+          "A revoked driver submits stale assignment/version and forged observedAt"
+        ],
+        "dbOracle": "No current custody mutation or recipient/driver ownership change; suspicious original stored in quarantine with provenance",
+        "eventOracle": "No PickupConfirmed; independent incident/evidence audit allowed",
+        "httpUiOracle": "DENIED/NEEDS_RECONCILIATION; never successful pickup",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_24_G15_02Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Client observedAt cannot establish revoked driver authority alone"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-24-G15-03",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Two drivers submit overlapping cargo-unit custody transfers at same instant",
+        "when": "Both commands compete on same CargoUnits",
+        "then": "One legal custodian per unit, inconsistency quarantined with audit"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Two drivers submit overlapping cargo-unit custody transfers at same instant"
+        ],
+        "whenSteps": [
+          "Both commands compete on same CargoUnits",
+          "Two independently authenticated drivers try competing handovers for the same HandlingUnit"
+        ],
+        "dbOracle": "Serializable/version-fenced custody owner: exactly one authoritative custodian per unit; conflicting event quarantined",
+        "eventOracle": "One CustodyTransferred or PickupConfirmed, not two; no gap in custody timeline",
+        "httpUiOracle": "One success, competing conflict with incident ID",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_24_G15_03Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Client observedAt cannot establish revoked driver authority alone"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-24-G15-04",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Offline event resent five times after server crash",
+        "when": "Replay same stable event ID, payload digest",
+        "then": "Exactly one logical custody movement; no duplicate handover"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Offline event resent five times after server crash"
+        ],
+        "whenSteps": [
+          "Replay same stable event ID, payload digest",
+          "Replay same offline eventId and identical digest five times after server crash"
+        ],
+        "dbOracle": "Dedup unique (tenant,consumer,eventId,digest) and single ledger transition; changed digest conflicts",
+        "eventOracle": "One logical handover; retries may deliver transport twice but Inbox prevents duplicate effects",
+        "httpUiOracle": "One completed pickup, not five notifications",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_24_G15_04Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Client observedAt cannot establish revoked driver authority alone"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-24-G15-05",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Carrier driver has grant for Trip-1, attempts Trip-2 under different Tenant",
+        "when": "Upload pickup evidence",
+        "then": "DENY, no evidence leak or foreign cargo mutation"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Carrier driver has grant for Trip-1, attempts Trip-2 under different Tenant"
+        ],
+        "whenSteps": [
+          "Upload pickup evidence",
+          "Driver authorized Trip-A attacks Trip-B or customer-Y cargo with switched selector"
+        ],
+        "dbOracle": "No foreign unit, document, vehicle or custodian read/write through RLS/ABAC",
+        "eventOracle": "No foreign pickup event, export or log disclosure",
+        "httpUiOracle": "Nondisclosing 403/404; no foreign trip hints",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_24_G15_05Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Client observedAt cannot establish revoked driver authority alone"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-28-G18-01",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "10 CargoUnits in custody, consignee accepts 8 and refuses 2",
+        "when": "Recipient signs partial POD",
+        "then": "8 accepted, 2 retained with named custodian/disposition; Shipment not fully DELIVERED"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "10 CargoUnits in custody, consignee accepts 8 and refuses 2"
+        ],
+        "whenSteps": [
+          "Recipient signs partial POD",
+          "Receiver scoped to one delivery attempt signs 8 accepted and 2 refused from exactly 10 stable units"
+        ],
+        "dbOracle": "Each unit has exactly one disposition: ACCEPTED eight, REFUSED/RETURN_PENDING two with named custodian; 8+2=10; Shipment != DELIVERED",
+        "eventOracle": "DeliveryAttemptPartialRecorded only; no ShipmentDelivered(all) and no review eligibility",
+        "httpUiOracle": "Customer sees PARTIAL 8/10 and remaining 2 custodian/disposition",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_28_G18_01Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Conservation 8 accepted + 2 refused = 10; partial delivery NOT completed and NOT review eligible"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-28-G18-02",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Receiver with invalid link or mismatched units attempts mark all delivered",
+        "when": "Submit POD for 10 though only 8 scanned/verified",
+        "then": "DENY; no delivery proof for remaining 2"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Receiver with invalid link or mismatched units attempts mark all delivered"
+        ],
+        "whenSteps": [
+          "Submit POD for 10 though only 8 scanned/verified",
+          "Receiver scans only eight units but submits claimed total ten or altered unit IDs"
+        ],
+        "dbOracle": "Refuse false full-delivery state; two unscanned units remain assigned to verified custodian; original evidence unchanged",
+        "eventOracle": "No ShipmentDelivered(all) or signed proof for missing units",
+        "httpUiOracle": "Validation/DENY, correct remaining count and no false success",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_28_G18_02Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Conservation 8 accepted + 2 refused = 10; partial delivery NOT completed and NOT review eligible"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-28-G18-03",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Driver and receiver concurrently submit overlapping POD/delivery attempts",
+        "when": "POD acceptance races reattempt for 2 units",
+        "then": "No double-counted accepted/returned quantities; per-unit conservation holds"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Driver and receiver concurrently submit overlapping POD/delivery attempts"
+        ],
+        "whenSteps": [
+          "POD acceptance races reattempt for 2 units",
+          "Driver return and receiver acceptance race for same two residual units"
+        ],
+        "dbOracle": "Uniqueness and expectedVersion enforce one disposition per unit; sum=10 and no double ACCEPTED/RETURNED",
+        "eventOracle": "At most one logical event per unit transition; conflicting attempt quarantined",
+        "httpUiOracle": "One authoritative result; competitor sees conflict",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_28_G18_03Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Conservation 8 accepted + 2 refused = 10; partial delivery NOT completed and NOT review eligible"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-28-G18-04",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Duplicate signed POD callback or offline photos arrive out of order",
+        "when": "Process same evidence key twice",
+        "then": "One logical accepted quantity; original signature immutable and correction append-only"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Duplicate signed POD callback or offline photos arrive out of order"
+        ],
+        "whenSteps": [
+          "Process same evidence key twice",
+          "Duplicate signed POD callback and older photo arrive out of order"
+        ],
+        "dbOracle": "Original POD bytes/hash and 8 accepted units immutable; correction/issue append-only, not update of original",
+        "eventOracle": "No second quantity increment or extra ShipmentDelivered; correction has separate event",
+        "httpUiOracle": "Original and append-only corrections in timeline",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_28_G18_04Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Conservation 8 accepted + 2 refused = 10; partial delivery NOT completed and NOT review eligible"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-28-G18-05",
+      "kind": "BLOCKER",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Receiver guest token for one DeliveryAttempt accesses other shipment",
+        "when": "Read/submit POD for foreign cargo",
+        "then": "DENY with no unrelated identity/cargo disclosure"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Receiver guest token for one DeliveryAttempt accesses other shipment"
+        ],
+        "whenSteps": [
+          "Read/submit POD for foreign cargo",
+          "Guest receiver token scoped to DeliveryAttempt-A requests Attempt-B or another tenant"
+        ],
+        "dbOracle": "No cross-attempt signed document, cargo unit, identity or status disclosure",
+        "eventOracle": "No POD submitted or foreign object URL issued",
+        "httpUiOracle": "Expired/wrong-scope link denied without details",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_28_G18_05Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Conservation 8 accepted + 2 refused = 10; partial delivery NOT completed and NOT review eligible"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-23-S14-01",
+      "kind": "SAFETY",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Driver discovers wrong weight/units or broken seal on pickup",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Do not create IN_CUSTODY; create auditable mismatch/incident for owner review"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Driver discovers wrong weight/units or broken seal on pickup"
+        ],
+        "whenSteps": [
+          "Run the stated R0 safety/exception operation under affected roles and current resource state",
+          "Pickup weight/quantity mismatch or broken seal detected"
+        ],
+        "dbOracle": "No IN_CUSTODY for mismatching units; mismatch incident preserves original declared CargoProfile hash",
+        "eventOracle": "IncidentReported only, no PickupConfirmed",
+        "httpUiOracle": "Mismatch visible for owner review, not transported",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_23_S14_01Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-25-S16-01",
+      "kind": "SAFETY",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Assigned vehicle breaks down with cargo already in custody",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Append incident and handover/RecoveryCase; do not overwrite original carrier, keep custodian known"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Assigned vehicle breaks down with cargo already in custody"
+        ],
+        "whenSteps": [
+          "Run the stated R0 safety/exception operation under affected roles and current resource state",
+          "Vehicle breakdown after custody established"
+        ],
+        "dbOracle": "Retain named current custodian and original carrier identity; append RecoveryCase and handover only with authorized evidence",
+        "eventOracle": "No phantom ReplacementCarrierConfirmed or silent CustodyTransferred",
+        "httpUiOracle": "Interrupted trip and responsible custodian remain visible",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_25_S16_01Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-27-S17-01",
+      "kind": "SAFETY",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Receiver absent or declines to sign",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Failed DeliveryAttempt and continued named custody, not Shipment.DELIVERED"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Receiver absent or declines to sign"
+        ],
+        "whenSteps": [
+          "Run the stated R0 safety/exception operation under affected roles and current resource state",
+          "Recipient absent or refuses to sign"
+        ],
+        "dbOracle": "Failed DeliveryAttempt persisted; cargo remains under known driver custodian, not DELIVERED",
+        "eventOracle": "DeliveryAttemptFailed, no ShipmentDelivered",
+        "httpUiOracle": "Customer shows FAILED ATTEMPT and next action",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_27_S17_01Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-29-S19-01",
+      "kind": "SAFETY",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Guest POD recipient has expired/guessed delivery link",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "DENY unless exactly scoped authorized recipient, immutable evidence"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Guest POD recipient has expired/guessed delivery link"
+        ],
+        "whenSteps": [
+          "Run the stated R0 safety/exception operation under affected roles and current resource state",
+          "Guest recipient uses invalid/guessed/expired attempt link"
+        ],
+        "dbOracle": "No signed POD, no foreign cargo details or document URL",
+        "eventOracle": "No DeliveryAccepted, no new broad grant",
+        "httpUiOracle": "Link invalid; one-attempt scope",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_29_S19_01Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-29-S25-01",
+      "kind": "SAFETY",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Customer reports cargo issue before completion",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Accept scoped issue with evidence, keep review eligibility independent"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Customer reports cargo issue before completion"
+        ],
+        "whenSteps": [
+          "Run the stated R0 safety/exception operation under affected roles and current resource state",
+          "Customer submits issue report before full completion"
+        ],
+        "dbOracle": "Store scoped issue/evidence separately from POD and service review; incomplete shipment not review-eligible",
+        "eventOracle": "IssueReported only; no payment/refund or ServiceReviewPublished",
+        "httpUiOracle": "Issue visible separately; no review eligibility",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_SIM_29_S25_01Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-025",
+      "kind": "NEGATIVE",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Driver assignment revoked, device still has offline queue",
+        "when": "Forge event timestamp preceding revocation with invalid evidence/assignment snapshot",
+        "then": "DENY current custody mutation; suspicious historical evidence quarantined"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Driver assignment revoked, device still has offline queue"
+        ],
+        "whenSteps": [
+          "Forge event timestamp preceding revocation with invalid evidence/assignment snapshot",
+          "Revoked driver forges event timestamp before revocation with invalid assignment evidence"
+        ],
+        "dbOracle": "Custody ledger untouched; suspicious historical evidence quarantined with verified server receipt",
+        "eventOracle": "No PickupConfirmed or retroactive authority",
+        "httpUiOracle": "Incident/reconciliation required",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.NEG_R0_025Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Client observedAt cannot establish revoked driver authority alone"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-026",
+      "kind": "NEGATIVE",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Earlier offline eventId E1 accepted for CargoUnits [A,B]",
+        "when": "Replay E1 with different cargo unit set or proof hash",
+        "then": "CONFLICT/quarantine, never ignore changed payload as identical retry"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Earlier offline eventId E1 accepted for CargoUnits [A,B]"
+        ],
+        "whenSteps": [
+          "Replay E1 with different cargo unit set or proof hash",
+          "Replay accepted eventId with a different unit list or original evidence hash"
+        ],
+        "dbOracle": "Original accepted custody transition unchanged; tamper digest conflict durable",
+        "eventOracle": "No second PickupConfirmed, no silent overwrite",
+        "httpUiOracle": "CONFLICT and support/inspection",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.NEG_R0_026Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-027",
+      "kind": "NEGATIVE",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Trip INTERRUPTED; cargo assigned to previous driver custodian",
+        "when": "Assign replacement driver and mark custody transferred without signed handover",
+        "then": "DENY custody transfer without handover evidence"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Trip INTERRUPTED; cargo assigned to previous driver custodian"
+        ],
+        "whenSteps": [
+          "Assign replacement driver and mark custody transferred without signed handover",
+          "Dispatcher reassigns interrupted trip without actual signed handover"
+        ],
+        "dbOracle": "Keep original custodian; replacement driver assignment is distinct from custody transfer",
+        "eventOracle": "No CustodyTransferred event",
+        "httpUiOracle": "Interruption and pending transfer shown",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.NEG_R0_027Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-028",
+      "kind": "NEGATIVE",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-13",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Customer already has confirmed later custody/POD for same cargo unit",
+        "when": "Receive earlier offline pickup not previously reconciled",
+        "then": "Do not rewind custody or double deliver; quarantine order conflict"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Customer already has confirmed later custody/POD for same cargo unit"
+        ],
+        "whenSteps": [
+          "Receive earlier offline pickup not previously reconciled",
+          "Late offline pickup arrives after newer accepted custody and POD"
+        ],
+        "dbOracle": "No temporal rewind or duplicate delivery; quarantine out-of-order conflict for human reconciliation",
+        "eventOracle": "No stale PickupConfirmed or DeliveryReversed",
+        "httpUiOracle": "Customer timeline monotonic, conflict for operator",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.NEG_R0_028Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Conservation 8 accepted + 2 refused = 10; partial delivery NOT completed and NOT review eligible"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-029",
+      "kind": "NEGATIVE",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "One-time proof link bound to DeliveryAttempt-1 and recipient",
+        "when": "Reuse link for DeliveryAttempt-2 or after expiration",
+        "then": "DENY outside exact attempt/validity, no equivalent company-wide access"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "One-time proof link bound to DeliveryAttempt-1 and recipient"
+        ],
+        "whenSteps": [
+          "Reuse link for DeliveryAttempt-2 or after expiration",
+          "Guest POD token reused on other attempt or after expiration"
+        ],
+        "dbOracle": "No cross-attempt proof or leaked guest/cargo identity",
+        "eventOracle": "No DeliveryAccepted for wrong attempt",
+        "httpUiOracle": "Invalid link, no broad recipient permissions",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.NEG_R0_029Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-030",
+      "kind": "NEGATIVE",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Ten identified units in custodian ledger; eight accepted, two refused",
+        "when": "Submit complete delivery flag with partial accepted counts",
+        "then": "DENY full-delivery transition; preserve 8 accepted + 2 identified residual"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Ten identified units in custodian ledger; eight accepted, two refused"
+        ],
+        "whenSteps": [
+          "Submit complete delivery flag with partial accepted counts",
+          "Submit DELIVERED flag when 8 accepted and 2 refused"
+        ],
+        "dbOracle": "Conservation 8+2=10; 2 residual units keep named custodian; shipment remains PARTIAL",
+        "eventOracle": "No ShipmentDelivered(all), no full-completion review",
+        "httpUiOracle": "Partial 8/10 with outstanding units",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.NEG_R0_030Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Conservation 8 accepted + 2 refused = 10; partial delivery NOT completed and NOT review eligible"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-031",
+      "kind": "NEGATIVE",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-14"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Signed original POD and photo hash already stored; damage reported later",
+        "when": "Update original signed document bytes/receiver/date instead of append correction",
+        "then": "DENY overwrite; immutable original, separate correction/dispute record"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "verified custodian or scoped receiver"
+        ],
+        "given": [
+          "Signed original POD and photo hash already stored; damage reported later"
+        ],
+        "whenSteps": [
+          "Update original signed document bytes/receiver/date instead of append correction",
+          "Try editing original signed POD/photo bytes after issue"
+        ],
+        "dbOracle": "Original digest/version immutable; correction or dispute as separate append-only entity",
+        "eventOracle": "Only CorrectionAdded when authorized, not retroactive POD update",
+        "httpUiOracle": "Original and correction history visible",
+        "negativeVariants": [
+          "forged account/tenant or expired grant must DENY",
+          "replayed changed digest must CONFLICT and preserve original"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.NEG_R0_031Test#contract",
+        "failureInjection": "race/replay/rollback when relevant"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-04",
+      "kind": "E2E",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-13",
+        "PR-14"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Cargo conservation and original proof immutable; track customer-safe statuses"
+      },
+      "proposal": {
+        "actors": [
+          "assigned-driver",
+          "receiver",
+          "provider-operator",
+          "customer-org-x"
+        ],
+        "given": [
+          "Trip and driver assignment are verified and not revoked",
+          "Exactly 10 immutable HandlingUnit IDs exist; no previous custody receipt",
+          "Receiver has narrow delivery-attempt scope; offline event IDs are globally unique within correct tenant"
+        ],
+        "whenSteps": [
+          "Driver scans 10 units and commits online custody pickup with original evidence",
+          "Driver goes offline; stores signed-scoped movement event and reopens local pending queue",
+          "Receiver accepts exactly 8 units; marks remaining 2 refused/return-pending with named custodian",
+          "Replay same and changed-digest offline eventIds while network recovers",
+          "Record return/disposition of 2 units under authorized custody transition, never overwrite original POD"
+        ],
+        "dbOracle": "Stable unit identities; 8+2=10; no double handover, original hash immutable, no full delivered",
+        "eventOracle": "Inbox dedup, no ShipmentDelivered(all); bounded original evidence",
+        "httpUiOracle": "Customer PARTIAL and 2 residual, review blocked",
+        "negativeVariants": [
+          "Revoked driver assignment with forged observedAt DENY",
+          "Duplicate offline event with different payload hash quarantined"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "BR-10",
+          "BR-04",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_R0_E2E_04Test#contract",
+        "failureInjection": "offline replay + crash + reorder"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed",
+        "Conservation 8 accepted + 2 refused = 10; partial delivery NOT completed and NOT review eligible"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-05",
+      "kind": "E2E",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-13"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Request-only separation and correct compensation/custody branch"
+      },
+      "proposal": {
+        "actors": [
+          "customer-org-x",
+          "provider-booking-approver",
+          "carrier-driver"
+        ],
+        "given": [
+          "Booking is CONFIRMED with exclusive CapacityReservation",
+          "Two separate variants: Trip has NOT STARTED, and Trip already STARTED with active custody",
+          "Cancellation authority/rules BR-11 and DEC-R0-04 remain pending and must fail closed"
+        ],
+        "whenSteps": [
+          "Customer submits CancelRequest; do not mutate Booking immediately",
+          "Authorized approver tries cancellation before Trip.STARTED and records decision or DENY if policy pending",
+          "Simulate concurrent Trip.STARTED while cancellation request is pending",
+          "Attempt cancellation after active custody and inspect protected resource transitions"
+        ],
+        "dbOracle": "Booking request differs CANCELLED; no orphan custody or capacity release with in-flight goods",
+        "eventOracle": "No phantom CapacityReleased or cancellation success",
+        "httpUiOracle": "Pending/denied/recovery state visible",
+        "negativeVariants": [
+          "Concurrent cancel vs Trip.STARTED",
+          "Replay cancellation request with same ID and conflicting payload"
+        ],
+        "pendingDecisionRefs": [
+          "BR-06",
+          "BR-07",
+          "BR-11",
+          "BR-09",
+          "DEC-R0-01",
+          "DEC-R0-04",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_R0_E2E_05Test#contract",
+        "failureInjection": "offline replay + crash + reorder"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-07",
+      "kind": "E2E",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-13",
+        "PR-14"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Only approved safety continuity, no new discretionary booking, no cargo evidence stranded"
+      },
+      "proposal": {
+        "actors": [
+          "tenant-admin",
+          "driver-in-active-custody",
+          "provider-operator"
+        ],
+        "given": [
+          "Tenant subscription is suspended during active custody and mandatory POD is pending",
+          "The supported safety-continuity scope remains subject to pending BR-04 legal approval"
+        ],
+        "whenSteps": [
+          "Suspend tenant while preserving immutable custody facts",
+          "Driver submits mandatory pre-authorized POD/evidence through narrow continuity policy; otherwise fail closed with durable recovery path",
+          "Provider attempts to create new Booking through same continuity token",
+          "Restart service while custody evidence is pending and retry mandatory event"
+        ],
+        "dbOracle": "Persist mandatory evidence under only specifically authorized continuity scope; prohibit fresh commercial booking",
+        "eventOracle": "Dedup safety event, no blanket booking event or cross-tenant release",
+        "httpUiOracle": "Restricted account, custody preserved with safe recovery state",
+        "negativeVariants": [
+          "Provider switches tenant header during continuity",
+          "SaaS policy service unavailable, default DENY fresh booking"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "BR-10",
+          "BR-04",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "execution.qualifier.TDD_R0_E2E_07Test#contract",
+        "failureInjection": "offline replay + crash + reorder"
+      },
+      "technicalReviewFlags": [
+        "Preserve original immutable evidence and current custodian unless a verified handover is committed"
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    }
+  ]
+}

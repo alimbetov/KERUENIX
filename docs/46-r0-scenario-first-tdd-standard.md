@@ -48,6 +48,8 @@
 
 **Третий модульный S0 checkpoint:** [53 — Cargo, Compliance, Fleet, Booking](53-s0-cargo-fleet-booking-test-design.md) / [37 contract designs](contracts/r0-s0-cargo-fleet-booking-case-contracts.v1.json). Проверка `UNKNOWN → HOLD`, эксклюзивности Capacity и запрет потери cargo custody при отмене остаются обязательными; проекты не означают финальный Test Review.
 
+**Четвёртый узел S0:** [54 — Execution / Custody / POD](54-s0-execution-pod-test-design.md), [25 контрактов](contracts/r0-s0-execution-pod-case-contracts.v1.json) (22 primary + 3 impacted E2E). Проверки 8/10, одного custodian, offline dedup и immutable proof — проект S0, не принятая бизнес-реализация.
+
 ## Пакеты S0 → S1 по порядку рисков
 
 1. **FOUND + Tenancy:** RLS, JWT, CustomerAccount, revoke, module graph, Liquibase migration и recovery (PR-01..03).
