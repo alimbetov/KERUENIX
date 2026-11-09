@@ -54,6 +54,8 @@
 
 **Шестой узел S0:** [56 — Resilience / Recovery / Cross-role E2E / Release](56-s0-resilience-release-test-design.md) / [29 контрактов](contracts/r0-s0-resilience-release-case-contracts.v1.json). Continuity разрешён только при реально утверждённом BR-04, restore и exact-SHA release требуют измеримого evidence; все решения пока unreviewed.
 
+**Сводный cross-pack S0-аудит:** [57 — полнота 121/121 primary сценариев и 26/26 PR](57-s0-completeness-audit.md). Все 184 уникальных ID (включая retired и extension) учтены; 20 BR/DEC остаются pending. Это покрытие **проектов**, не S0 signoff, не реальные S1 тесты.
+
 ## Пакеты S0 → S1 по порядку рисков
 
 1. **FOUND + Tenancy:** RLS, JWT, CustomerAccount, revoke, module graph, Liquibase migration и recovery (PR-01..03).
