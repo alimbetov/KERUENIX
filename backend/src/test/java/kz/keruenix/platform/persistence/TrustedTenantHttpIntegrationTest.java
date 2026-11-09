@@ -123,7 +123,7 @@ class TrustedTenantHttpIntegrationTest {
         return signed.serialize();
     }
 
-    private static String valid(String subject) throws Exception {
+    static String valid(String subject) throws Exception {
         return sign(subject, ISSUER, AUDIENCE, Instant.now().plusSeconds(300),
                 (RSAPrivateKey) rsaKeys.getPrivate());
     }
