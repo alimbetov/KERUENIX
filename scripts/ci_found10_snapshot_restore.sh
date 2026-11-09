@@ -25,10 +25,17 @@ VALUES
 SQL
 
 # pg_dump is a real physical-data snapshot, not an empty-schema clone.
-pg_dump --format=custom --no-owner --no-acl --file="${KERUENIX_BACKUP_PATH}"   --dbname=keruenix_upgrade_test
+# The Ubuntu host's pg_dump can be newer than PostgreSQL 16, producing
+# restore statements (e.g. transaction_timeout) that PG16 does not support.
+# Use matching PG16 client utilities inside the GitHub Actions service container.
+pg_container=$(docker ps -q --filter "ancestor=postgis/postgis:16-3.7" | head -n 1)
+[[ -n "$pg_container" ]] || { echo "PostGIS 16 service container not found" >&2; exit 1; }
+docker exec "$pg_container" pg_dump --format=custom --no-owner \
+  -U postgres --dbname=keruenix_upgrade_test > "${KERUENIX_BACKUP_PATH}"
 test -s "${KERUENIX_BACKUP_PATH}"
 psql -X -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE keruenix_restore_test'
-pg_restore --exit-on-error --no-owner --no-acl   --dbname=keruenix_restore_test "${KERUENIX_BACKUP_PATH}"
+docker exec -i "$pg_container" pg_restore --exit-on-error --no-owner \
+  -U postgres --dbname=keruenix_restore_test < "${KERUENIX_BACKUP_PATH}"
 
 for db in keruenix_upgrade_test keruenix_restore_test; do
   result=$(psql -X -At -v ON_ERROR_STOP=1 -d "$db" <<'SQL'
