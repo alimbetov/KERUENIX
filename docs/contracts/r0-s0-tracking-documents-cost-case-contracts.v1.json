@@ -461,7 +461,7 @@
         ],
         "dbOracle": "Tenant & CustomerAccount filters before count/facet/range queries; no foreign GPS or order list",
         "eventOracle": "No new export or cached projected foreign results",
-        "httpUiOracle": "Empty or nondisclosing rejection",
+        "httpUiOracle": "Customer-Y sees an empty or nondisclosing denied result, including zero facets/count for Customer-X and no cross-account IDs",
         "negativeVariants": [
           "cross-tenant or wrong CustomerAccount context denied",
           "replay/stale grant or altered original cannot silently succeed"
@@ -510,7 +510,7 @@
         ],
         "dbOracle": "No new protected POD or tracking detail read; cache cannot bypass grants",
         "eventOracle": "No newly issued document link or customer alert",
-        "httpUiOracle": "Access revoked, no stale old data",
+        "httpUiOracle": "Previously authorized customer sees revoked-access state; no cached protected order fields or POD are rendered after grant revoke",
         "negativeVariants": [
           "cross-tenant or wrong CustomerAccount context denied",
           "replay/stale grant or altered original cannot silently succeed"
@@ -555,7 +555,7 @@
           "Principal switches carrier to customer projection with stale cache identity"
         ],
         "dbOracle": "Sensitive buy rate/driver PII/provider margin not included in customer export, count or fields",
-        "eventOracle": "No cross-role CSV export",
+        "eventOracle": "No CSV/export job or notification is generated using the stale carrier context; no private provider margin is delivered to customer",
         "httpUiOracle": "Customer-safe data only, no hidden rate fields",
         "negativeVariants": [
           "cross-tenant or wrong CustomerAccount context denied",
@@ -604,7 +604,7 @@
         ],
         "dbOracle": "No evidence link/foreign cargo read or signed POD under wrong attempt",
         "eventOracle": "No DeliveryAccepted or foreign link issuance",
-        "httpUiOracle": "Invalid scoped link",
+        "httpUiOracle": "Guest receives invalid or expired link response with no DeliveryAttempt-B, identity or cargo-unit metadata disclosed",
         "negativeVariants": [
           "cross-tenant or wrong CustomerAccount context denied",
           "replay/stale grant or altered original cannot silently succeed"
@@ -741,7 +741,7 @@
           "Provider operator tries margin read in Customer-X/Carrier role"
         ],
         "dbOracle": "Customer and carrier projections exclude private buy/sell margin before cursor/aggregation",
-        "eventOracle": "No leaked export/notification job",
+        "eventOracle": "No cross-role financial export, notification, or margin disclosure event is created for an insufficiently authorized user",
         "httpUiOracle": "403/field-protected projection without counts leakage",
         "negativeVariants": [
           "cross-tenant or wrong CustomerAccount context denied",
