@@ -11,7 +11,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ModulithNegativeBoundaryTest {
     @Test
     void separateFixtureDetectsForbiddenInternalRepositoryDependency() {
-        assertThatThrownBy(() -> ApplicationModules.of(FixtureRoot.class).verify())
+        // The fixture lives under target/test-classes. Modulith's default
+        // importer excludes test classes, so explicitly include this isolated
+        // synthetic test root; the production verification stays unchanged.
+        assertThatThrownBy(() -> ApplicationModules.of(FixtureRoot.class, location -> true).verify())
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("RepositoryInternal");
     }
