@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.authorization.AuthorizationDecision;
 import kz.keruenix.platform.errors.SecurityProblemHandler;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.context.annotation.Import;
@@ -48,14 +49,22 @@ class RfqDraftRedContractTest {
     static class DraftSecurityConfig {
         @Bean
         @Order(1)
-        SecurityFilterChain rfqContractOnly(HttpSecurity http, SecurityProblemHandler errors)
+        SecurityFilterChain rfqContractOnly(HttpSecurity http, SecurityProblemHandler errors,
+                TrustedTenantHttpIntegrationTest.QualificationGrantRegistry grants)
                 throws Exception {
             return http.securityMatcher("/api/v1/rfqs/**")
                     .csrf(AbstractHttpConfigurer::disable)
                     .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authorizeHttpRequests(a -> a
                             .requestMatchers(HttpMethod.POST, "/api/v1/rfqs/*/submit").denyAll()
-                            .anyRequest().authenticated())
+                            // Synthetic fixed CustomerAccount fixture only: never a production grant.
+                            .requestMatchers(HttpMethod.POST, "/api/v1/rfqs/drafts")
+                            .access((auth, context) -> new AuthorizationDecision(
+                                    auth.get().isAuthenticated()
+                                      && grants.canAccess(auth.get().getName(),
+                                              TrustedTenantHttpIntegrationTest.TENANT_A,
+                                              TrustedTenantHttpIntegrationTest.ACCOUNT_X)))
+                            .anyRequest().denyAll())
                     .exceptionHandling(e -> e.authenticationEntryPoint(errors)
                             .accessDeniedHandler(errors))
                     .oauth2ResourceServer(o -> o.authenticationEntryPoint(errors)
