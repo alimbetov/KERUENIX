@@ -51,6 +51,7 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -58,6 +59,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -296,6 +298,63 @@ class TrustedTenantHttpIntegrationTest {
                 .andExpect(status().isAccepted());
     }
 
+
+    /**
+     * FOUND-08 / NEG-R0-005: X/Y have the same provider tenant, so tenant RLS
+     * alone cannot prevent count/list leakage; ABAC must precede pagination.
+     */
+    @Test
+    void customerAccountCountAndIdsAreScopedBeforePagination() throws Exception {
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID();
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_X))
+                .header("Authorization", "Bearer " + valid("alice"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(x, TENANT_A))).andExpect(status().isAccepted());
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_Y))
+                .header("Authorization", "Bearer " + valid("bob"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(y, TENANT_A))).andExpect(status().isAccepted());
+
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.ids[0]").value(x.toString()));
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", y.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.ids").isEmpty());
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("alice")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("KX-AUTH-403-001"));
+    }
+
+    @Test
+    void revokeStopsNewCustomerListAndCountEvenWithOldValidJwt() throws Exception {
+        String token = valid("alice");
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        grantRegistry.revoke("alice", TENANT_A, ACCOUNT_X);
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("KX-AUTH-403-001"));
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("bob")))
+                .andExpect(status().isOk());
+    }
+
     @TestConfiguration(proxyBeanMethods = false)
     static class QualificationConfig {
         @Bean
@@ -359,6 +418,30 @@ class TrustedTenantHttpIntegrationTest {
         }
 
         record ProbeCommand(UUID eventId, UUID tenantId) {}
+
+        @GetMapping("/__qualification/tenant/{tenant}/account/{account}/records")
+        ResponseEntity<Map<String, Object>> list(
+                Authentication authentication,
+                @PathVariable UUID tenant, @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID id) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                // Scope both COUNT and row IDs before any filtering/pagination.
+                String condition = id == null ? "" : " AND audit_id = ?";
+                Object[] args = id == null
+                        ? new Object[]{scope.customerAccountId().toString()}
+                        : new Object[]{scope.customerAccountId().toString(), id};
+                Integer total = jdbc.queryForObject(
+                        "SELECT count(*) FROM platform.audit_fact WHERE subject_ref = ?" + condition,
+                        Integer.class, args);
+                java.util.List<String> ids = jdbc.query(
+                        "SELECT audit_id::text FROM platform.audit_fact WHERE subject_ref = ?"
+                                + condition + " ORDER BY audit_id LIMIT 50",
+                        (rs, row) -> rs.getString(1), args);
+                return ResponseEntity.ok(Map.<String, Object>of("total", total, "ids", ids));
+            });
+        }
+
 
         @PostMapping("/__qualification/tenant/{tenant}/account/{account}/probe")
         ResponseEntity<Map<String, String>> write(
