@@ -5,6 +5,8 @@ on:
     paths:
       - 'backend/**'
       - 'docs/contracts/api-error-catalog.v1.json'
+      - 'docs/61-dec-ca-01-04-proposal-and-red-gates.md'
+      - 'scripts/ci_assert_ca_adapter_api_absent_red.sh'
       - '.github/workflows/backend-error-contract.yml'
   push:
     branches:
@@ -35,3 +37,5 @@ jobs:
         run: python3 backend/scripts/check_error_catalog.py
       - name: Compile and run MVC, Security and RFC9457 contract tests
         run: mvn -B -ntp -f backend/pom.xml verify
+      - name: CA cache/worker ports — expected API-absent compile RED only (NOT behavioral acceptance)
+        run: bash scripts/ci_assert_ca_adapter_api_absent_red.sh
