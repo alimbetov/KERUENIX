@@ -106,6 +106,24 @@ class TrustedTenantHttpIntegrationTest {
                 System.getenv("KERUENIX_DB_MIGRATOR_PASSWORD"));
              Statement ddl = admin.createStatement()) {
             ddl.execute(Files.readString(Path.of("db/admin/bootstrap_roles.sql")));
+            ddl.execute("""
+                    CREATE TABLE IF NOT EXISTS platform.qualification_account_geo (
+                      tenant_id uuid NOT NULL,
+                      customer_account_id uuid NOT NULL,
+                      location_id uuid NOT NULL,
+                      position geography(Point,4326) NOT NULL,
+                      PRIMARY KEY (tenant_id, customer_account_id, location_id)
+                    )
+                    """);
+            ddl.execute("""
+                    ALTER TABLE platform.qualification_account_geo ENABLE ROW LEVEL SECURITY;
+                    ALTER TABLE platform.qualification_account_geo FORCE ROW LEVEL SECURITY;
+                    DROP POLICY IF EXISTS q_account_geo_tenant ON platform.qualification_account_geo;
+                    CREATE POLICY q_account_geo_tenant ON platform.qualification_account_geo
+                        USING (tenant_id = platform.current_tenant_id())
+                        WITH CHECK (tenant_id = platform.current_tenant_id());
+                    GRANT SELECT, INSERT ON platform.qualification_account_geo TO keruenix_app;
+                    """);
             ddl.execute("GRANT keruenix_app TO keruenix_ci_login");
         }
     }
@@ -456,6 +474,73 @@ class TrustedTenantHttpIntegrationTest {
         }
     }
 
+    /** Same tenant, two customers, identical positions: tenant RLS alone is insufficient. */
+    @Test
+    void customerGeoSearchIsScopedByCurrentServerGrantAndAccountBeforeDistance() throws Exception {
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID();
+        String endpoint = "/__qualification/tenant/{tenant}/account/{account}/geo";
+        mvc.perform(post(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()).param("lon", "76.9")
+                .param("lat", "43.2").param("srid", "4326"))
+                .andExpect(status().isAccepted());
+        mvc.perform(post(endpoint, TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("bob"))
+                .param("id", y.toString()).param("lon", "76.9")
+                .param("lat", "43.2").param("srid", "4326"))
+                .andExpect(status().isAccepted());
+
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("lon", "76.9").param("lat", "43.2").param("radius", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ids", org.hamcrest.Matchers.hasItem(x.toString())))
+                .andExpect(jsonPath("$.ids", org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.hasItem(y.toString()))));
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("lon", "76.9").param("lat", "43.2").param("radius", "5"))
+                .andExpect(status().isForbidden());
+    }
+
+    /** Reject bad WGS84 inputs before PostGIS and persist no invalid row. */
+    @Test
+    void customerGeoRejectsOutOfRangeCoordinatesAndWrongSrid() throws Exception {
+        String endpoint = "/__qualification/tenant/{tenant}/account/{account}/geo";
+        for (String[] invalid : new String[][]{
+                {"181","43.2","4326"}, {"76.9","91","4326"},
+                {"-181","43.2","4326"}, {"76.9","-91","4326"},
+                {"76.9","43.2","3857"}, {"NaN","43.2","4326"}}) {
+            UUID id = UUID.randomUUID();
+            mvc.perform(post(endpoint, TENANT_A, ACCOUNT_X)
+                    .header("Authorization", "Bearer " + valid("alice"))
+                    .param("id", id.toString()).param("lon", invalid[0])
+                    .param("lat", invalid[1]).param("srid", invalid[2]))
+                    .andExpect(status().isBadRequest());
+            new PlatformTenantTransaction(dataSource).execute(TENANT_A, jdbc -> {
+                assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM platform.qualification_account_geo WHERE location_id=?",
+                        Integer.class, id)).isZero();
+                return null;
+            });
+        }
+    }
+
+    @Test
+    void customerGeoRevocationClosesReadsUsingOldJwt() throws Exception {
+        String endpoint = "/__qualification/tenant/{tenant}/account/{account}/geo";
+        String jwt = valid("alice");
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + jwt)
+                .param("lon", "76.9").param("lat", "43.2").param("radius", "50"))
+                .andExpect(status().isOk());
+        grantRegistry.revoke("alice", TENANT_A, ACCOUNT_X);
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + jwt)
+                .param("lon", "76.9").param("lat", "43.2").param("radius", "50"))
+                .andExpect(status().isForbidden());
+    }
+
     @TestConfiguration(proxyBeanMethods = false)
     static class QualificationConfig {
         @Bean
@@ -589,6 +674,61 @@ class TrustedTenantHttpIntegrationTest {
                         : new Object[]{scope.customerAccountId().toString(), id};
                 Integer count = jdbc.queryForObject(query, Integer.class, args);
                 return ResponseEntity.ok(Map.<String, Object>of("total", count));
+            });
+        }
+
+        /**
+         * Qualification-only GIS CRUD. Must never ship as a production endpoint.
+         * Server grant is checked before the tenant-scoped query; account
+         * predicate is mandatory even though RLS covers only tenant_id.
+         */
+        @PostMapping("/__qualification/tenant/{tenant}/account/{account}/geo")
+        ResponseEntity<Map<String, Object>> putGeo(
+                Authentication authentication, @PathVariable UUID tenant,
+                @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam UUID id,
+                @org.springframework.web.bind.annotation.RequestParam double lon,
+                @org.springframework.web.bind.annotation.RequestParam double lat,
+                @org.springframework.web.bind.annotation.RequestParam int srid) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            if (!Double.isFinite(lon) || !Double.isFinite(lat)
+                    || lon < -180 || lon > 180 || lat < -90 || lat > 90
+                    || srid != 4326) {
+                return ResponseEntity.badRequest().body(Map.of("code", "INVALID_GEO_POINT"));
+            }
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                jdbc.update("""
+                        INSERT INTO platform.qualification_account_geo
+                          (tenant_id,customer_account_id,location_id,position)
+                        VALUES (?, ?, ?, ST_SetSRID(ST_MakePoint(?,?),4326)::geography)
+                        """, scope.tenantId(), scope.customerAccountId(), id, lon, lat);
+                return ResponseEntity.accepted().body(Map.<String, Object>of("id", id.toString()));
+            });
+        }
+
+        @GetMapping("/__qualification/tenant/{tenant}/account/{account}/geo")
+        ResponseEntity<Map<String, Object>> getGeo(
+                Authentication authentication, @PathVariable UUID tenant,
+                @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam double lon,
+                @org.springframework.web.bind.annotation.RequestParam double lat,
+                @org.springframework.web.bind.annotation.RequestParam double radius) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            if (!Double.isFinite(lon) || !Double.isFinite(lat) || !Double.isFinite(radius)
+                    || lon < -180 || lon > 180 || lat < -90 || lat > 90
+                    || radius < 0 || radius > 100000) {
+                return ResponseEntity.badRequest().body(Map.of("code", "INVALID_GEO_QUERY"));
+            }
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                var ids = jdbc.query("""
+                        SELECT location_id::text FROM platform.qualification_account_geo
+                        WHERE customer_account_id = ?
+                          AND ST_DWithin(position,
+                            ST_SetSRID(ST_MakePoint(?,?),4326)::geography, ?)
+                        ORDER BY location_id
+                        """, (rs, i) -> rs.getString(1),
+                        scope.customerAccountId(), lon, lat, radius);
+                return ResponseEntity.ok(Map.<String, Object>of("total", ids.size(), "ids", ids));
             });
         }
 
