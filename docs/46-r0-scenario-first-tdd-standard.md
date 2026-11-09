@@ -50,6 +50,8 @@
 
 **Четвёртый узел S0:** [54 — Execution / Custody / POD](54-s0-execution-pod-test-design.md), [25 контрактов](contracts/r0-s0-execution-pod-case-contracts.v1.json) (22 primary + 3 impacted E2E). Проверки 8/10, одного custodian, offline dedup и immutable proof — проект S0, не принятая бизнес-реализация.
 
+**Пятый узел S0:** [55 — Tracking, Documents, Service Review, Commercial Cost](55-s0-tracking-documents-cost-test-design.md) / [17 тестовых контрактов](contracts/r0-s0-tracking-documents-cost-case-contracts.v1.json), включая 4 новых Cost. Все оракулы остаются draft; не принимать 8/10 как полноценную доставку, не обещать немедленный revoke presigned URL, не добавлять платежи.
+
 ## Пакеты S0 → S1 по порядку рисков
 
 1. **FOUND + Tenancy:** RLS, JWT, CustomerAccount, revoke, module graph, Liquibase migration и recovery (PR-01..03).

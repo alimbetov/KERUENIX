@@ -82,5 +82,53 @@ class ExecutionS0SafetyTests(unittest.TestCase):
         self.plan["status"]="QUALIFIED"
         self.assertTrue(any("cannot bypass S0" in x for x in self.errors()))
 
+
+class DownstreamS0SafetyTests(unittest.TestCase):
+    batch="tracking_documents_cost"
+    def setUp(self):
+        cfg=m.BATCHES[self.batch]
+        self.plan=m.load(cfg["file"]);self.alloc=m.load(m.ALLOC);self.ext=m.load(m.EXT)
+        self.ledger=m.load(m.LEDGER);self.doc=(ROOT/cfg["report"]).read_text(encoding="utf-8")
+    def errors(self):
+        return m.validate(self.batch,self.plan,self.alloc,self.ext,self.ledger,self.doc)
+    def row(self,id):
+        return next(x for x in self.plan["cases"] if x["id"]==id)
+    def test_design_is_not_approved(self):
+        self.assertEqual(self.errors(),[])
+        self.assertEqual(len(self.plan["cases"]),17)
+    def test_stale_booking_must_not_confirm(self):
+        self.row("NEG-R0-044")["canonical"]["then"]="CONFIRMED"
+        self.assertTrue(any("canonical Given/When/Then" in x for x in self.errors()))
+    def test_tracking_cannot_lose_tenant_scope(self):
+        self.plan["rules"]["tenantAccountTrackingScope"]=False
+        self.assertTrue(any("tenantAccountTrackingScope" in x for x in self.errors()))
+    def test_signed_url_ttl_must_remain_explicit(self):
+        self.plan["rules"]["signedUrlTtlExplicit"]=False
+        self.assertTrue(any("signedUrlTtlExplicit" in x for x in self.errors()))
+    def test_private_review_requires_verified_completion(self):
+        self.plan["rules"]["reviewOnlyAfterVerifiedComplete"]=False
+        self.assertTrue(any("reviewOnlyAfterVerifiedComplete" in x for x in self.errors()))
+    def test_cost_cannot_become_payment(self):
+        self.plan["rules"]["noPayments"]=False
+        self.assertTrue(any("noPayments" in x for x in self.errors()))
+    def test_immutable_pod_original_protected(self):
+        self.plan["rules"]["originalProofImmutable"]=False
+        self.assertTrue(any("originalProofImmutable" in x for x in self.errors()))
+    def test_cost_case_original_owner_cannot_change(self):
+        self.row("PR17-COST-01")["primaryPr"]="PR-16"
+        self.assertTrue(any("original module owner" in x for x in self.errors()))
+    def test_original_e2e_ownership_stays_pr19(self):
+        self.row("TDD-R0-E2E-04")["primaryPr"]="PR-16"
+        self.assertTrue(any("original module owner" in x for x in self.errors()))
+    def test_pending_review_not_approved(self):
+        self.row("NEG-R0-048")["status"]="QUALIFIED"
+        self.assertTrue(any("cannot claim Test Review" in x for x in self.errors()))
+    def test_no_fake_evidence(self):
+        self.row("PR17-COST-03")["evidence"]="passed"
+        self.assertTrue(any("fabricated reviewer" in x for x in self.errors()))
+    def test_failure_and_replay_variants_required(self):
+        self.row("NEG-R0-032")["proposal"]["negativeVariants"]=[]
+        self.assertTrue(any("negative/failure variants" in x for x in self.errors()))
+
 if __name__=="__main__":
     unittest.main()

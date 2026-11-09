@@ -1,0 +1,856 @@
+{
+  "schemaVersion": "1.0.0",
+  "date": "2026-11-09",
+  "phase": "S0_SCENARIO_DESIGN",
+  "batch": "tracking_documents_cost",
+  "status": "PROPOSED_NOT_REVIEWED",
+  "sourceAllocation": "docs/contracts/r0-scenario-allocation.v1.json",
+  "sourceExtension": "docs/contracts/r0-s0-extension-gwt.v1.json",
+  "scopePrs": [
+    "PR-15",
+    "PR-16",
+    "PR-16R",
+    "PR-17"
+  ],
+  "count": {
+    "primary": 6,
+    "impacted": 7,
+    "local": 4,
+    "total": 17
+  },
+  "rules": {
+    "noNewDomainCode": true,
+    "tenantAccountTrackingScope": true,
+    "staleLocationNotConfirmed": true,
+    "originalProofImmutable": true,
+    "signedUrlTtlExplicit": true,
+    "reviewOnlyAfterVerifiedComplete": true,
+    "costWithoutSettlement": true,
+    "noPayments": true,
+    "reviewCannotBeIssuedByCi": true
+  },
+  "fixture": {
+    "id": "FIX-R0-DOWNSTREAM-01",
+    "sameTenantCustomersTwo": true,
+    "lastGpsFreshnessWatermark": true,
+    "existingSignedUrl": true,
+    "grantRevoked": true,
+    "partialPOD": {
+      "accepted": 8,
+      "retained": 2
+    },
+    "costReportWithCurrency": true,
+    "externalRefReadOnly": true,
+    "syntheticDataOnly": true
+  },
+  "cases": [
+    {
+      "id": "TDD-SIM-30-S20-01",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-16",
+      "ownerModule": "documents",
+      "impactedPrs": [
+        "PR-16"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Verified POD access revoked while old presigned URL exists",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Protected API denies immediately; signed URL exposure bounded/documented; never claim hard revoke without proxy"
+      },
+      "proposal": {
+        "actors": [
+          "documents",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Verified POD access revoked while old presigned URL exists"
+        ],
+        "whenSteps": [
+          "Run the stated R0 safety/exception operation under affected roles and current resource state",
+          "Signed URL issued before revoke, protected API used after revoke"
+        ],
+        "dbOracle": "New protected API and link issuance DENY after revoke; preissued URL usable only until independently reviewed TTL, no false hard revoke",
+        "eventOracle": "No new DocumentLinkIssued or external object access grant from revoked account",
+        "httpUiOracle": "Revoked access and bounded URL exposure described; never claim instant invalidation",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "qualification.TDD_SIM_30_S20_01Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "Already-issued signed URL cannot be claimed immediately revoked without proven proxy/token invalidation."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-26-S24-01",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-15",
+      "ownerModule": "tracking",
+      "impactedPrs": [
+        "PR-15"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "GPS cache is stale and partner grant revoked",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Customer sees stale/unavailable time marked; no foreign live coordinates or post-revoke updates"
+      },
+      "proposal": {
+        "actors": [
+          "tracking",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "GPS cache is stale and partner grant revoked"
+        ],
+        "whenSteps": [
+          "Run the stated R0 safety/exception operation under affected roles and current resource state",
+          "GPS cache older than service freshness watermark, customer grant revoked"
+        ],
+        "dbOracle": "Stale lastKnownAt/source marked as stale; no foreign current coordinates or new subscription delivery after revoke",
+        "eventOracle": "No TrackingUpdated-to-revoked-customer notification; bounded raw telemetry retention policy",
+        "httpUiOracle": "Customer sees STALE/UNAVAILABLE with timestamp, not fake live position",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "qualification.TDD_SIM_26_S24_01Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-032",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-16",
+      "ownerModule": "documents",
+      "impactedPrs": [
+        "PR-16"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Customer had temporary signed POD URL before grant revoked",
+        "when": "Download after revoke through protected API and test direct URL after TTL",
+        "then": "Protected API DENY immediately; object URL unusable after actual TTL, no false hard-revoke claim"
+      },
+      "proposal": {
+        "actors": [
+          "documents",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Customer had temporary signed POD URL before grant revoked"
+        ],
+        "whenSteps": [
+          "Download after revoke through protected API and test direct URL after TTL",
+          "Customer X old signed POD URL, grant revoked and new API request"
+        ],
+        "dbOracle": "New protected detail/list/download DENY; previously issued URL validity governed by actual TTL and resource access mechanism",
+        "eventOracle": "No new signed link issue or post-revoke link notification",
+        "httpUiOracle": "Revoke notice, explicit presigned URL limitation and expiry",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "qualification.NEG_R0_032Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "Already-issued signed URL cannot be claimed immediately revoked without proven proxy/token invalidation."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-044",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-15",
+      "ownerModule": "tracking",
+      "impactedPrs": [
+        "PR-15"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Booking confirmation failed/rolled back but old event arrives late",
+        "when": "Update customer My Orders from stale/replayed event",
+        "then": "Do not show authoritative CONFIRMED unless current valid Booking version; order events with version watermark"
+      },
+      "proposal": {
+        "actors": [
+          "tracking",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Booking confirmation failed/rolled back but old event arrives late"
+        ],
+        "whenSteps": [
+          "Update customer My Orders from stale/replayed event",
+          "Out-of-order event claims Booking CONFIRMED but aggregate remains pending after rollback"
+        ],
+        "dbOracle": "Tracking read model only updates from authoritative current Booking version/watermark; no state regression",
+        "eventOracle": "No BookingConfirmed customer notification from invalid stale event",
+        "httpUiOracle": "Show PENDING/EXCEPTION with source freshness, not CONFIRMED",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "qualification.NEG_R0_044Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-047",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-16R",
+      "ownerModule": "commercial",
+      "impactedPrs": [
+        "PR-16R",
+        "PR-17"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Service partial POD or undelivered with customer damage report",
+        "when": "Submit customer complaint with requested amount and altered POD fields",
+        "then": "Create scoped claim record only; no automatic evidence mutation/refund"
+      },
+      "proposal": {
+        "actors": [
+          "commercial",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Service partial POD or undelivered with customer damage report"
+        ],
+        "whenSteps": [
+          "Submit customer complaint with requested amount and altered POD fields",
+          "Partial POD with damage complaint and claimed money value"
+        ],
+        "dbOracle": "Complaint/claim stored scoped to service; POD original hash and monetary cost report unchanged, no refund",
+        "eventOracle": "Only ClaimOpened event, no Delivered or RefundGranted",
+        "httpUiOracle": "Complaint opened for separate review; does not assert full delivery",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [
+          "DEC-R0-05",
+          "DEC-R0-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.NEG_R0_047Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "Partial delivery 8/10 not eligible for completed-service private review."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-048",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-16R",
+      "ownerModule": "commercial",
+      "impactedPrs": [
+        "PR-16R"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Provider employee has Sales permission and can see customer records",
+        "when": "Submit private review as customer using forged customerAccountId",
+        "then": "DENY; only verified customer feedback capability on eligible completed service"
+      },
+      "proposal": {
+        "actors": [
+          "commercial",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Provider employee has Sales permission and can see customer records"
+        ],
+        "whenSteps": [
+          "Submit private review as customer using forged customerAccountId",
+          "Provider sales user with customer records forges customerAccountId to publish feedback"
+        ],
+        "dbOracle": "No private ServiceReview or public reputation; verified customer role required and full completion eligibility not satisfied",
+        "eventOracle": "No ReputationChanged/ReviewPublished",
+        "httpUiOracle": "403, existing service evidence immutable",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [
+          "DEC-R0-05"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.NEG_R0_048Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-04",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-16"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Cargo conservation and original proof immutable; track customer-safe statuses"
+      },
+      "proposal": {
+        "actors": [
+          "assigned-driver",
+          "receiver",
+          "provider-operator",
+          "customer-org-x"
+        ],
+        "given": [
+          "Trip and driver assignment are verified and not revoked",
+          "Exactly 10 immutable HandlingUnit IDs exist; no previous custody receipt",
+          "Receiver has narrow delivery-attempt scope; offline event IDs are globally unique within correct tenant"
+        ],
+        "whenSteps": [
+          "Driver scans 10 units and commits online custody pickup with original evidence",
+          "Driver goes offline; stores signed-scoped movement event and reopens local pending queue",
+          "Receiver accepts exactly 8 units; marks remaining 2 refused/return-pending with named custodian",
+          "Replay same and changed-digest offline eventIds while network recovers",
+          "Record return/disposition of 2 units under authorized custody transition, never overwrite original POD"
+        ],
+        "dbOracle": "Document package references original signed POD with 8+2 stable IDs; full-completion review not eligible",
+        "eventOracle": "No ShipmentDelivered or ReviewEligible on partial outcome",
+        "httpUiOracle": "Partial 8/10, evidence originals, no review control",
+        "negativeVariants": [
+          "Revoked driver assignment with forged observedAt DENY",
+          "Duplicate offline event with different payload hash quarantined"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "BR-10",
+          "BR-04",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.TDD_R0_E2E_04Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "Partial delivery 8/10 not eligible for completed-service private review."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-09",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-15",
+        "PR-16"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Future protected API denies; signed URL TTL semantics explicit"
+      },
+      "proposal": {
+        "actors": [
+          "customer-org-x-user",
+          "provider-relationship-owner",
+          "customer-org-y-user"
+        ],
+        "given": [
+          "Tenant-A has two separately scoped CustomerAccounts X/Y",
+          "Customer-X has cached list/detail and a signed document link with explicit original TTL",
+          "The authoritative grant can be revoked while JWT remains signed and unexpired"
+        ],
+        "whenSteps": [
+          "Customer-X reads authorized resources and obtains a bounded signed URL",
+          "Provider revokes only Customer-X grant",
+          "Customer-X reuses same JWT against list/count/detail/export",
+          "Customer-X tries new signed link and old link before/after documented TTL",
+          "Customer-Y independently repeats its allowed read"
+        ],
+        "dbOracle": "Protected tracking & documents views reauthorize per request; X denied after revoke, Y unaffected",
+        "eventOracle": "No new URL, tracking stream or export for X; old URL remains subject to issued TTL",
+        "httpUiOracle": "X sees revoked, no cached protected content; Y sees own",
+        "negativeVariants": [
+          "Warm cache served after grant revoke",
+          "Signed URL remaining TTL cannot exceed reviewed policy"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.TDD_R0_E2E_09Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "Already-issued signed URL cannot be claimed immediately revoked without proven proxy/token invalidation."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-005",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-03",
+      "ownerModule": "tenancy",
+      "impactedPrs": [
+        "PR-15"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Customer-X and Y share provider Tenant-A; X has 11 private orders, Y has 0",
+        "when": "Request filtered list/sort/pagination with X ID and cursor",
+        "then": "DENY cross-account data including totals/facets, not only item content"
+      },
+      "proposal": {
+        "actors": [
+          "tenancy",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Customer-X and Y share provider Tenant-A; X has 11 private orders, Y has 0"
+        ],
+        "whenSteps": [
+          "Request filtered list/sort/pagination with X ID and cursor",
+          "Same provider customer X/Y; query tracking with foreign cursor"
+        ],
+        "dbOracle": "Tenant & CustomerAccount filters before count/facet/range queries; no foreign GPS or order list",
+        "eventOracle": "No new export or cached projected foreign results",
+        "httpUiOracle": "Empty or nondisclosing rejection",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03",
+          "DEC-R0-02",
+          "DEC-R0-03"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.NEG_R0_005Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-006",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-03",
+      "ownerModule": "tenancy",
+      "impactedPrs": [
+        "PR-15",
+        "PR-16"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "EXC receives order list but grant is revoked before detail/POD request",
+        "when": "Use previously received orderId and old session for detail/download",
+        "then": "DENY every new protected read after committed revoke"
+      },
+      "proposal": {
+        "actors": [
+          "tenancy",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "EXC receives order list but grant is revoked before detail/POD request"
+        ],
+        "whenSteps": [
+          "Use previously received orderId and old session for detail/download",
+          "Previously received orderId/POD and old JWT after grant revoke"
+        ],
+        "dbOracle": "No new protected POD or tracking detail read; cache cannot bypass grants",
+        "eventOracle": "No newly issued document link or customer alert",
+        "httpUiOracle": "Access revoked, no stale old data",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.NEG_R0_006Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-008",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-03C",
+      "ownerModule": "commercial",
+      "impactedPrs": [
+        "PR-17"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Same principal holds multiple explicit customer/provider contexts",
+        "when": "Switch from carrier view to buyer export using stale active context/cache key",
+        "then": "DENY field/context confusion; context derived from verified grant per request"
+      },
+      "proposal": {
+        "actors": [
+          "commercial",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Same principal holds multiple explicit customer/provider contexts"
+        ],
+        "whenSteps": [
+          "Switch from carrier view to buyer export using stale active context/cache key",
+          "Principal switches carrier to customer projection with stale cache identity"
+        ],
+        "dbOracle": "Sensitive buy rate/driver PII/provider margin not included in customer export, count or fields",
+        "eventOracle": "No cross-role CSV export",
+        "httpUiOracle": "Customer-safe data only, no hidden rate fields",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03",
+          "DEC-R0-02",
+          "DEC-R0-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.NEG_R0_008Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-029",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-16"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "One-time proof link bound to DeliveryAttempt-1 and recipient",
+        "when": "Reuse link for DeliveryAttempt-2 or after expiration",
+        "then": "DENY outside exact attempt/validity, no equivalent company-wide access"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "One-time proof link bound to DeliveryAttempt-1 and recipient"
+        ],
+        "whenSteps": [
+          "Reuse link for DeliveryAttempt-2 or after expiration",
+          "Guest POD link for attempt A reused for B"
+        ],
+        "dbOracle": "No evidence link/foreign cargo read or signed POD under wrong attempt",
+        "eventOracle": "No DeliveryAccepted or foreign link issuance",
+        "httpUiOracle": "Invalid scoped link",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.NEG_R0_029Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-031",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-14",
+      "ownerModule": "execution",
+      "impactedPrs": [
+        "PR-16"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Signed original POD and photo hash already stored; damage reported later",
+        "when": "Update original signed document bytes/receiver/date instead of append correction",
+        "then": "DENY overwrite; immutable original, separate correction/dispute record"
+      },
+      "proposal": {
+        "actors": [
+          "execution",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Signed original POD and photo hash already stored; damage reported later"
+        ],
+        "whenSteps": [
+          "Update original signed document bytes/receiver/date instead of append correction",
+          "Document admin edits signed POD bytes/date after issuance"
+        ],
+        "dbOracle": "Immutable object hash/version; append separate Correction/Dispute with provenance, never alter original",
+        "eventOracle": "Only authorized CorrectionAdded, no rewritten DeliveryAccepted",
+        "httpUiOracle": "Original and appended correction both visible",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [
+          "BR-10"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "qualification.NEG_R0_031Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "PR17-COST-01",
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "primaryPr": "PR-17",
+      "ownerModule": "finance",
+      "impactedPrs": [
+        "PR-17"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Approved immutable pricing inputs and currency scale known",
+        "when": "Calculate cost estimate and commercial margin",
+        "then": "Deterministic rounded report without losing currency precision"
+      },
+      "proposal": {
+        "actors": [
+          "verified provider finance role",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Approved immutable pricing inputs and currency scale known"
+        ],
+        "whenSteps": [
+          "Calculate cost estimate and commercial margin",
+          "Immutable accepted price, currency and versioned cost inputs"
+        ],
+        "dbOracle": "Money amounts use decimal precision and explicit currency, rounding per approved policy, no implicit FX or payment status",
+        "eventOracle": "CostCalculated analytical only, never AR/AP/PaymentSettled",
+        "httpUiOracle": "Cost and margin visible only to permitted role",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "qualification.PR17_COST_01Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "R0 cost analytics only; NO payments, internal invoice issuer, AR/AP or PAID/SETTLED states."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "PR17-COST-02",
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "primaryPr": "PR-17",
+      "ownerModule": "finance",
+      "impactedPrs": [
+        "PR-17"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Tenant-A provider has Customer-X and unrelated Carrier-Y",
+        "when": "Request buyer/sell/margin projections from insufficient role",
+        "then": "DENY hidden price/margin without count/search leakage"
+      },
+      "proposal": {
+        "actors": [
+          "verified provider finance role",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "Tenant-A provider has Customer-X and unrelated Carrier-Y"
+        ],
+        "whenSteps": [
+          "Request buyer/sell/margin projections from insufficient role",
+          "Provider operator tries margin read in Customer-X/Carrier role"
+        ],
+        "dbOracle": "Customer and carrier projections exclude private buy/sell margin before cursor/aggregation",
+        "eventOracle": "No leaked export/notification job",
+        "httpUiOracle": "403/field-protected projection without counts leakage",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "qualification.PR17_COST_02Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "R0 cost analytics only; NO payments, internal invoice issuer, AR/AP or PAID/SETTLED states."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "PR17-COST-03",
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "primaryPr": "PR-17",
+      "ownerModule": "finance",
+      "impactedPrs": [
+        "PR-17"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "External accounting independently issued a document identifier",
+        "when": "Attach opaque reference to CommercialCostReport",
+        "then": "Store immutable external document reference without issuing local tax invoice"
+      },
+      "proposal": {
+        "actors": [
+          "verified provider finance role",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "External accounting independently issued a document identifier"
+        ],
+        "whenSteps": [
+          "Attach opaque reference to CommercialCostReport",
+          "Attach externally issued accounting document reference to report"
+        ],
+        "dbOracle": "Opaque verified source reference stored against report version, not local invoice issuer, unchanged after append",
+        "eventOracle": "No InvoiceIssued/PaymentCaptured/RefundGranted",
+        "httpUiOracle": "External reference display as read-only, no payment action",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "qualification.PR17_COST_03Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "R0 cost analytics only; NO payments, internal invoice issuer, AR/AP or PAID/SETTLED states."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "PR17-COST-04",
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "primaryPr": "PR-17",
+      "ownerModule": "finance",
+      "impactedPrs": [
+        "PR-17"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "QuoteVersion and report version are immutable",
+        "when": "Replay same calculation key with changed inputs",
+        "then": "Idempotent if same digest; conflict or new version for changed inputs"
+      },
+      "proposal": {
+        "actors": [
+          "verified provider finance role",
+          "scoped customer/operator as applicable"
+        ],
+        "given": [
+          "QuoteVersion and report version are immutable"
+        ],
+        "whenSteps": [
+          "Replay same calculation key with changed inputs",
+          "Replay same costIdempotencyKey with changed quote inputs"
+        ],
+        "dbOracle": "Same digest returns same calculation; changed digest conflicts or makes reviewed new version, preserving old snapshot",
+        "eventOracle": "At most one logical CostCalculated per version, zero payment effects",
+        "httpUiOracle": "Version/CONFLICT explicit, not silent recompute",
+        "negativeVariants": [
+          "cross-tenant or wrong CustomerAccount context denied",
+          "replay/stale grant or altered original cannot silently succeed"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "qualification.PR17_COST_04Test#contract",
+        "failureInjection": "revocation/cache-reuse/late event/object store failure or duplicate cost digest, as applicable"
+      },
+      "safetyReviewPoints": [
+        "R0 cost analytics only; NO payments, internal invoice issuer, AR/AP or PAID/SETTLED states."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    }
+  ]
+}
