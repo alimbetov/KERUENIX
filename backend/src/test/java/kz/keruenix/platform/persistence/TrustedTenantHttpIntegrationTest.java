@@ -528,7 +528,7 @@ class TrustedTenantHttpIntegrationTest {
                 java.util.List<String> rows = jdbc.query(query,
                         (rs, index) -> rs.getString(1), args);
                 return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv"))
-                        .body("audit_id\\n" + String.join("\\n", rows) + "\\n");
+                        .body("audit_id\n" + String.join("\n", rows) + "\n");
             });
         }
 
