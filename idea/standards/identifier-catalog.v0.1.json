@@ -1,0 +1,148 @@
+{
+  "catalogVersion": "0.1",
+  "status": "PROPOSED_DESIGN_REFERENCE_NOT_REGULATORY_APPROVAL",
+  "lastReviewed": "2026-11-07",
+  "purpose": "typed external identification namespaces for KERUENIX; patterns alone do not prove authority or regulatory validity",
+  "namespaces": [
+    {
+      "code": "GS1_SSCC",
+      "object": "HandlingUnit",
+      "pattern": "^[0-9]{18}$",
+      "checkDigit": "GS1_MOD10",
+      "issuer": "authorized GS1 prefix/license holder",
+      "normalization": "preserve all digits and leading zeros",
+      "authority": "https://ref.gs1.org/standards/genspecs/",
+      "note": "AI (00) in GS1-128; check-digit and prefix rights required"
+    },
+    {
+      "code": "GS1_GTIN",
+      "object": "TradeItem",
+      "pattern": "^(?:[0-9]{8}|[0-9]{12}|[0-9]{13}|[0-9]{14})$",
+      "checkDigit": "GS1_MOD10",
+      "issuer": "authorized brand owner/GS1 allocation",
+      "normalization": "preserve leading zeros",
+      "authority": "https://ref.gs1.org/standards/genspecs/",
+      "note": "GTIN is product identity, not a unique logistics unit"
+    },
+    {
+      "code": "GS1_GLN",
+      "object": "PartyOrLocation",
+      "pattern": "^[0-9]{13}$",
+      "checkDigit": "GS1_MOD10",
+      "issuer": "authorized GS1 holder",
+      "normalization": "preserve leading zeros",
+      "authority": "https://ref.gs1.org/standards/genspecs/",
+      "note": "GLN does not grant system permissions"
+    },
+    {
+      "code": "GS1_GSIN",
+      "object": "Shipment",
+      "pattern": null,
+      "checkDigit": "PER_GS1_SPEC",
+      "issuer": "authorized GS1 holder",
+      "normalization": "preserve exact value",
+      "authority": "https://ref.gs1.org/standards/genspecs/",
+      "note": "optional; implement detailed format only after verified usage scenario"
+    },
+    {
+      "code": "GS1_GINC",
+      "object": "Consignment",
+      "pattern": null,
+      "checkDigit": "PER_GS1_SPEC",
+      "issuer": "authorized GS1 holder",
+      "normalization": "preserve exact value",
+      "authority": "https://ref.gs1.org/standards/genspecs/",
+      "note": "optional; must not be confused with shipment UUID"
+    },
+    {
+      "code": "ISO6346_CONTAINER",
+      "object": "FreightContainer",
+      "pattern": "^[A-Z]{3}[UJZ][0-9]{7}$",
+      "checkDigit": "ISO6346",
+      "issuer": "container owner/operator with registered BIC owner code",
+      "normalization": "remove presentation whitespace only; uppercase",
+      "authority": "https://www.bic-code.org/bic-codes/",
+      "note": "validate registered prefix, equipment category and check digit; 2026 standard replacement publication status to verify"
+    },
+    {
+      "code": "UNECE_UNLOCODE",
+      "object": "TradeTransportLocation",
+      "pattern": "^[A-Z]{2}[A-Z0-9]{3}$",
+      "checkDigit": "NONE",
+      "issuer": "UNECE",
+      "normalization": "remove presentation spaces and uppercase",
+      "authority": "https://unlocode.unece.org/",
+      "note": "must exist in pinned official release; not street address"
+    },
+    {
+      "code": "WCO_HS6",
+      "object": "CommodityTariffClassification",
+      "pattern": "^[0-9]{6}$",
+      "checkDigit": "NONE",
+      "issuer": "WCO/national classification authority",
+      "normalization": "preserve leading zeros",
+      "authority": "https://www.wcoomd.org/en/topics/nomenclature/instrument-and-tools/hs_convention.aspx",
+      "note": "classification verified against revision and tariff notes"
+    },
+    {
+      "code": "EAEU_TNVED10",
+      "object": "CommodityTariffClassification",
+      "pattern": "^[0-9]{10}$",
+      "checkDigit": "NONE",
+      "issuer": "EAEU and authorized customs classification",
+      "normalization": "preserve leading zeros",
+      "authority": "https://www.gov.kz/org/kgd-vko/press/news/details/306165",
+      "note": "ten-digit tariff classification; not product identity"
+    },
+    {
+      "code": "UN_DANGEROUS_GOODS",
+      "object": "DangerousGoodsDeclaration",
+      "pattern": "^[0-9]{4}$",
+      "checkDigit": "NONE",
+      "issuer": "UN dangerous goods lists under applicable mode/regulations",
+      "normalization": "store four digits, display UN + digits",
+      "authority": "https://unece.org/adr-2025-files",
+      "note": "valid 4 digits do not prove correct proper shipping name/class/quantity"
+    },
+    {
+      "code": "ISO3166_ALPHA2",
+      "object": "Country",
+      "pattern": "^[A-Z]{2}$",
+      "checkDigit": "NONE",
+      "issuer": "ISO",
+      "normalization": "uppercase",
+      "authority": "https://www.iso.org/iso-3166-country-codes.html",
+      "note": "requires versioned code list"
+    },
+    {
+      "code": "ISO4217_CURRENCY",
+      "object": "MoneyCurrency",
+      "pattern": "^[A-Z]{3}$",
+      "checkDigit": "NONE",
+      "issuer": "ISO",
+      "normalization": "uppercase",
+      "authority": "https://www.six-group.com/en/products-services/financial-information/data-standards.html",
+      "note": "requires versioned code list"
+    },
+    {
+      "code": "KERUENIX_INTERNAL_LPN",
+      "object": "HandlingUnit",
+      "pattern": "^KUHU:[0-9a-fA-F-]{36}$",
+      "checkDigit": "UUID_FORMAT",
+      "issuer": "KERUENIX tenant/operator",
+      "normalization": "canonical UUID",
+      "authority": null,
+      "note": "own namespace; never encode with GS1 AI (00) or market as GS1 SSCC"
+    }
+  ],
+  "validationSteps": [
+    "format",
+    "check_digit_when_applicable",
+    "issuer_and_prefix_rights",
+    "existence_in_versioned_code_list",
+    "contextual_applicability",
+    "tenant_and_owner_permission",
+    "evidence_verification"
+  ],
+  "notAnAuthoritativeSource": true
+}

@@ -1,0 +1,1094 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "DESIGN_REVIEW_SIMULATIONS_NOT_EXECUTED",
+  "date": "2026-11-07",
+  "source": "docs/26-role-process-simulation-and-gap-audit.md",
+  "canonicalUserStories": "docs/21-user-story-book.md",
+  "businessScenarios": "docs/25-business-scenario-book.md",
+  "securityPolicies": "docs/contracts/access-policy-matrix.v2.json",
+  "methodology": "role walk-through with realistic two+ organizations, state invariants, negative/retry/security branches, not exhaustive production validation",
+  "fixtures": [
+    "Tenant-A forwarder with legal entities/branches 1 and 2",
+    "CustomerOrg-X and CustomerOrg-Y without paid tenants",
+    "Tenant-B shipper with its own subscription and explicit PartnerGrant",
+    "Tenant-C carrier with fleet and driver",
+    "Tenant-Z forbidden company with no grants",
+    "10 identified CargoUnits, 8 accepted + 2 returned",
+    "Two overlapping VehicleCombination reservations",
+    "Two versions of Quote, one expired and one over-limit",
+    "Document proof/POD, surcharge, advance, verified payment and duplicate callback",
+    "One expired customer invite, revoked membership, stale JWT and signed URL"
+  ],
+  "roleCatalog": [
+    "PSA",
+    "TNO",
+    "TEN",
+    "EXC",
+    "SHP",
+    "SAL",
+    "APR",
+    "PRC",
+    "CAR",
+    "PLN",
+    "DSP",
+    "DRV",
+    "RCV",
+    "DOC",
+    "FIN",
+    "FAP",
+    "SUP",
+    "COM",
+    "WHS",
+    "OWN",
+    "MKT",
+    "MLS"
+  ],
+  "releaseDefinitions": {
+    "R0_MUST": "critical R0 acceptance candidate",
+    "R0_EXCEPTION_RISK": "R0 safety/exception handling design, scope review required before implementation",
+    "R1": "subsequent operations capability",
+    "R2": "marketplace or intelligence advanced capability"
+  },
+  "entries": [
+    {
+      "id": "SIM-01",
+      "primaryRole": "PSA",
+      "counterpartyRole": "TNO",
+      "process": "Tenant onboarding and first owner",
+      "release": "R0_MUST",
+      "owner": "SaaS Control + Tenancy",
+      "stories": [
+        "USB-PSA-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-TEN-001",
+        "002"
+      ],
+      "expected": "Verified organization obtains precisely one active invited owner after acceptance",
+      "adversarialVariations": [
+        "invalid invite",
+        "duplicate request",
+        "forged platform role"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-01"
+    },
+    {
+      "id": "SIM-02",
+      "primaryRole": "PSA",
+      "counterpartyRole": "TNO",
+      "process": "Lost tenant owner recovery",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Platform + Tenancy",
+      "stories": [
+        "USB-PSA-002"
+      ],
+      "relatedAcceptance": [
+        "AUTH-TEN-004"
+      ],
+      "expected": "Recovery only with independent verification, MFA, two distinct approvals and immutable audit",
+      "adversarialVariations": [
+        "one approver",
+        "wrong tenant",
+        "last owner disappeared"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-02"
+    },
+    {
+      "id": "SIM-03",
+      "primaryRole": "TNO",
+      "counterpartyRole": "TEN",
+      "process": "Tenant staff invitation and delegation",
+      "release": "R0_MUST",
+      "owner": "Tenancy",
+      "stories": [
+        "USB-TNO-001",
+        "USB-TEN-002",
+        "USB-TEN-003"
+      ],
+      "relatedAcceptance": [
+        "AUTH-TEN-005",
+        "007",
+        "008"
+      ],
+      "expected": "Only delegated role sets assigned within legal entity/branch; owner remains protected",
+      "adversarialVariations": [
+        "self-escalation",
+        "last-owner removal",
+        "expired invitation"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-03"
+    },
+    {
+      "id": "SIM-04",
+      "primaryRole": "TEN",
+      "counterpartyRole": "EXC",
+      "process": "Invite non-tenant external customer",
+      "release": "R0_MUST",
+      "owner": "Tenancy",
+      "stories": [
+        "USB-TEN-005",
+        "USB-EXC-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-TEN-012",
+        "AUTH-EXT-001"
+      ],
+      "expected": "Verified CustomerAccount grant without provider employee Membership",
+      "adversarialVariations": [
+        "wrong organization",
+        "shared email domain",
+        "replayed invite"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-04"
+    },
+    {
+      "id": "SIM-05",
+      "primaryRole": "SHP",
+      "counterpartyRole": "EXC",
+      "process": "Customer company owns tenant and also buys transport",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Tenancy + Commercial",
+      "stories": [
+        "USB-SHP-001",
+        "USB-EXC-003"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXT-003",
+        "004",
+        "AUTH-X-001"
+      ],
+      "expected": "Independent B2B PartnerGrant, never implicit membership in provider Tenant",
+      "adversarialVariations": [
+        "carrier/customer multiple identities",
+        "tenant switching",
+        "unauthorized foreign provider"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-05"
+    },
+    {
+      "id": "SIM-06",
+      "primaryRole": "EXC",
+      "counterpartyRole": "SAL",
+      "process": "Customer view-only versus requester/signatory/feedback actor",
+      "release": "R0_MUST",
+      "owner": "Tenancy + Commercial",
+      "stories": [
+        "USB-EXC-003",
+        "USB-EXC-004"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXT-003",
+        "006",
+        "AUTH-X-025"
+      ],
+      "expected": "Each capability individually granted and rechecked for exact customer organization",
+      "adversarialVariations": [
+        "viewer attempts signature",
+        "non-signatory accepts",
+        "reviewer posts foreign service"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-06"
+    },
+    {
+      "id": "SIM-07",
+      "primaryRole": "EXC",
+      "counterpartyRole": "SAL",
+      "process": "RFQ submit, duplicate, missing cargo",
+      "release": "R0_MUST",
+      "owner": "Commercial",
+      "stories": [
+        "USB-EXC-002"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXT-002",
+        "LFC-002",
+        "LFC-036"
+      ],
+      "expected": "One logical SUBMITTED RFQ, customer sees My RFQs and provider sees authorized inbound",
+      "adversarialVariations": [
+        "duplicate idempotency altered payload",
+        "incomplete weight/route",
+        "exhausted deadline"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-07"
+    },
+    {
+      "id": "SIM-08",
+      "primaryRole": "SAL",
+      "counterpartyRole": "SAL",
+      "process": "Concurrent provider inbox assignment",
+      "release": "R0_MUST",
+      "owner": "Commercial",
+      "stories": [
+        "USB-SAL-003",
+        "USB-SAL-007"
+      ],
+      "relatedAcceptance": [
+        "AUTH-COM-014",
+        "018",
+        "AUTH-X-022"
+      ],
+      "expected": "One responsible assignee under expectedVersion; wrong branch denied",
+      "adversarialVariations": [
+        "simultaneous assignments",
+        "reassignment after employee leave"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-08"
+    },
+    {
+      "id": "SIM-09",
+      "primaryRole": "SAL",
+      "counterpartyRole": "EXC",
+      "process": "RFQ needs-info clarification",
+      "release": "R0_MUST",
+      "owner": "Commercial",
+      "stories": [
+        "USB-SAL-006",
+        "USB-EXC-011"
+      ],
+      "relatedAcceptance": [
+        "AUTH-COM-019",
+        "AUTH-EXT-015"
+      ],
+      "expected": "No binding Quote until required cargo and operating constraints qualified",
+      "adversarialVariations": [
+        "late amendment after Quote issued",
+        "endless clarification",
+        "missing safety fields"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-09"
+    },
+    {
+      "id": "SIM-10",
+      "primaryRole": "EXC",
+      "counterpartyRole": "SAL",
+      "process": "Edit submitted RFQ and re-qualification",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Commercial",
+      "stories": [
+        "USB-EXC-011",
+        "USB-SAL-002"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXT-010",
+        "AUTH-COM-012"
+      ],
+      "expected": "Material edit creates explicit revision and invalidates stale commercial assumptions",
+      "adversarialVariations": [
+        "client changes address after accepted quote",
+        "stale quote on screen"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-10"
+    },
+    {
+      "id": "SIM-11",
+      "primaryRole": "SAL",
+      "counterpartyRole": "EXC",
+      "process": "Within-limit immutable quote issue",
+      "release": "R0_MUST",
+      "owner": "Commercial",
+      "stories": [
+        "USB-SAL-002",
+        "USB-EXC-004"
+      ],
+      "relatedAcceptance": [
+        "AUTH-COM-005",
+        "AUTH-EXT-005"
+      ],
+      "expected": "Exact immutable issued version with expiry and customer-facing fields only",
+      "adversarialVariations": [
+        "incorrect currency/tax snapshot",
+        "stale prior version"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-11"
+    },
+    {
+      "id": "SIM-12",
+      "primaryRole": "APR",
+      "counterpartyRole": "SAL",
+      "process": "Over-limit approval and segregation of duty",
+      "release": "R0_MUST",
+      "owner": "Commercial",
+      "stories": [
+        "USB-APR-001",
+        "USB-APR-002"
+      ],
+      "relatedAcceptance": [
+        "AUTH-COM-006",
+        "AUTH-X-005"
+      ],
+      "expected": "Independent approver approves only matching quote version/terms within authority",
+      "adversarialVariations": [
+        "self-approval through combined roles",
+        "quote modified after signoff"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-12"
+    },
+    {
+      "id": "SIM-13",
+      "primaryRole": "EXC",
+      "counterpartyRole": "SAL",
+      "process": "Quote decline/expiry/acceptance races",
+      "release": "R0_MUST",
+      "owner": "Commercial",
+      "stories": [
+        "USB-EXC-014",
+        "USB-EXC-004"
+      ],
+      "relatedAcceptance": [
+        "AUTH-COM-008",
+        "AUTH-EXT-006",
+        "AUTH-X-006",
+        "019"
+      ],
+      "expected": "Read-only actor cannot decline/accept; one valid version transition; no Booking confirmation",
+      "adversarialVariations": [
+        "race at expiry",
+        "superseded quote",
+        "wrong legal signatory"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-13"
+    },
+    {
+      "id": "SIM-14",
+      "primaryRole": "EXC",
+      "counterpartyRole": "DSP",
+      "process": "Accepted terms but no capacity",
+      "release": "R0_MUST",
+      "owner": "Booking + Fleet",
+      "stories": [
+        "USB-DSP-001",
+        "USB-EXC-004"
+      ],
+      "relatedAcceptance": [
+        "LFC-005",
+        "AUTH-BKG-001"
+      ],
+      "expected": "Customer sees awaiting resource confirmation; no false confirmed booking",
+      "adversarialVariations": [
+        "notification arrives early",
+        "stale capacity hold",
+        "failed outbox"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-14"
+    },
+    {
+      "id": "SIM-15",
+      "primaryRole": "PRC",
+      "counterpartyRole": "CAR",
+      "process": "Request carrier offer via scoped partnership",
+      "release": "R0_MUST",
+      "owner": "Commercial",
+      "stories": [
+        "USB-PRC-001",
+        "USB-CAR-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-COM-009",
+        "010",
+        "AUTH-X-001"
+      ],
+      "expected": "Carrier sees only authorized buy-side details; no forwarder customer sell price or margin",
+      "adversarialVariations": [
+        "carrier without paid tenant",
+        "revoked grant",
+        "quote rate leak"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-15"
+    },
+    {
+      "id": "SIM-16",
+      "primaryRole": "CAR",
+      "counterpartyRole": "PRC",
+      "process": "Offer refusal/withdrawal before resource commitment",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Commercial + Fleet",
+      "stories": [
+        "USB-CAR-003",
+        "USB-PRC-003"
+      ],
+      "relatedAcceptance": [
+        "AUTH-COM-011",
+        "LFC-006"
+      ],
+      "expected": "No capacity/booking inferred from carrier SELECTED; replacement sourcing audited",
+      "adversarialVariations": [
+        "offer expiry vs selection",
+        "carrier rejection after selected"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-16"
+    },
+    {
+      "id": "SIM-17",
+      "primaryRole": "PLN",
+      "counterpartyRole": "DSP",
+      "process": "Own-fleet reservation without CarrierOffer",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Fleet + Booking",
+      "stories": [
+        "USB-PLN-003",
+        "USB-DSP-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-FLT-001",
+        "AUTH-BKG-001"
+      ],
+      "expected": "Own vehicle follows exclusive resource proof and no fabricated external carrier offer",
+      "adversarialVariations": [
+        "vehicle assigned to another booking",
+        "unavailable driver/trailer"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-17"
+    },
+    {
+      "id": "SIM-18",
+      "primaryRole": "PLN",
+      "counterpartyRole": "DSP",
+      "process": "Double-booking race for same truck/time window",
+      "release": "R0_MUST",
+      "owner": "Fleet",
+      "stories": [
+        "USB-PLN-001",
+        "USB-DSP-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-FLT-001",
+        "LFC-007"
+      ],
+      "expected": "At most one indivisible capacity hold/confirmation despite concurrent commands",
+      "adversarialVariations": [
+        "overlapping slot",
+        "expiry/confirmation race",
+        "stale job"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-18"
+    },
+    {
+      "id": "SIM-19",
+      "primaryRole": "COM",
+      "counterpartyRole": "PLN",
+      "process": "Compliance critical UNKNOWN or DENY",
+      "release": "R0_MUST",
+      "owner": "Compliance + Cargo + Fleet",
+      "stories": [
+        "USB-COM-001",
+        "USB-COM-002"
+      ],
+      "relatedAcceptance": [
+        "LFC-009"
+      ],
+      "expected": "No ready/confirmed capacity or illegal route auto-allow; independent evidence needed",
+      "adversarialVariations": [
+        "dangerous cargo",
+        "permit expired",
+        "manual bypass attempt"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-19"
+    },
+    {
+      "id": "SIM-20",
+      "primaryRole": "DSP",
+      "counterpartyRole": "CAR",
+      "process": "Booking confirm after verified capacity and compliance",
+      "release": "R0_MUST",
+      "owner": "Booking",
+      "stories": [
+        "USB-DSP-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-BKG-001",
+        "LFC-005",
+        "006"
+      ],
+      "expected": "Confirmed only when commercial/legal/resource facts all valid and authoritative",
+      "adversarialVariations": [
+        "carrier withdraw",
+        "purchase/sales timing mismatch",
+        "lost ack"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-20"
+    },
+    {
+      "id": "SIM-21",
+      "primaryRole": "EXC",
+      "counterpartyRole": "DSP",
+      "process": "Request-only cancellation before departure",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Booking",
+      "stories": [
+        "USB-EXC-009",
+        "USB-DSP-003"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXT-013",
+        "AUTH-BKG-003"
+      ],
+      "expected": "Cancellation request recorded; Booking remains until authorized decision and cost rules",
+      "adversarialVariations": [
+        "double cancel",
+        "invoice already issued",
+        "approval unavailable"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-21"
+    },
+    {
+      "id": "SIM-22",
+      "primaryRole": "EXC",
+      "counterpartyRole": "DSP",
+      "process": "Cancellation after pickup",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Booking + Execution",
+      "stories": [
+        "USB-DSP-003",
+        "USB-DSP-004"
+      ],
+      "relatedAcceptance": [
+        "LFC-034"
+      ],
+      "expected": "Cannot directly terminal-CANCELLED Trip in custody; controlled exception/return and financial impact",
+      "adversarialVariations": [
+        "in-flight carrier",
+        "missing custody receiver",
+        "active claim"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-22"
+    },
+    {
+      "id": "SIM-23",
+      "primaryRole": "DRV",
+      "counterpartyRole": "DSP",
+      "process": "Pickup cargo mismatch and refusal",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Execution + Cargo",
+      "stories": [
+        "USB-DRV-003",
+        "USB-DRV-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXE-002"
+      ],
+      "expected": "Pickup cannot confirm wrong units/weight/damage; operator sees exception",
+      "adversarialVariations": [
+        "mismatched seal",
+        "unauthorized substitute driver",
+        "unsafe load"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-23"
+    },
+    {
+      "id": "SIM-24",
+      "primaryRole": "DRV",
+      "counterpartyRole": "DSP",
+      "process": "Offline pickup replay and accurate custody ledger",
+      "release": "R0_MUST",
+      "owner": "Execution",
+      "stories": [
+        "USB-DRV-002",
+        "USB-DRV-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXE-002",
+        "LFC-011",
+        "032"
+      ],
+      "expected": "One custody transfer with observedAt/receivedAt; Trip start not pickup",
+      "adversarialVariations": [
+        "duplicate offline submit",
+        "out-of-order event",
+        "server crash"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-24"
+    },
+    {
+      "id": "SIM-25",
+      "primaryRole": "DRV",
+      "counterpartyRole": "DSP",
+      "process": "Breakdown or mid-trip driver/trailer replacement",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Execution + Recovery",
+      "stories": [
+        "USB-DRV-004",
+        "USB-DSP-006"
+      ],
+      "relatedAcceptance": [
+        "LFC-032"
+      ],
+      "expected": "Custody explicitly handed over, original leg/driver evidence immutable",
+      "adversarialVariations": [
+        "breakdown with cargo held",
+        "chain-of-custody gap",
+        "insurer notice"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-25"
+    },
+    {
+      "id": "SIM-26",
+      "primaryRole": "DSP",
+      "counterpartyRole": "EXC",
+      "process": "Tracking stale GPS and customer projection",
+      "release": "R0_MUST",
+      "owner": "Tracking",
+      "stories": [
+        "USB-DSP-002",
+        "USB-EXC-005"
+      ],
+      "relatedAcceptance": [
+        "AUTH-TRK-001",
+        "AUTH-EXT-007",
+        "LFC-012"
+      ],
+      "expected": "ETA freshness explicit; no raw other-customer GPS, GPS alone not delivery",
+      "adversarialVariations": [
+        "GPS offline",
+        "provider disclosure",
+        "stale cached grant"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-26"
+    },
+    {
+      "id": "SIM-27",
+      "primaryRole": "RCV",
+      "counterpartyRole": "DSP",
+      "process": "Receiver absent or refuses to sign",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Execution",
+      "stories": [
+        "USB-RCV-003",
+        "USB-DSP-007"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXE-003"
+      ],
+      "expected": "Failed attempt with reason and continued custody; not delivered",
+      "adversarialVariations": [
+        "receiver unreachable",
+        "expired one-time token",
+        "wrong representative"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-27"
+    },
+    {
+      "id": "SIM-28",
+      "primaryRole": "RCV",
+      "counterpartyRole": "DRV",
+      "process": "8/10 partial POD and remaining cargo",
+      "release": "R0_MUST",
+      "owner": "Execution",
+      "stories": [
+        "USB-RCV-002"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXE-003",
+        "LFC-013",
+        "035"
+      ],
+      "expected": "Delivered only 8; other 2 have custodian and documented disposition/reattempt",
+      "adversarialVariations": [
+        "mixed damage/return",
+        "late POD",
+        "duplicate signature"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-28"
+    },
+    {
+      "id": "SIM-29",
+      "primaryRole": "EXC",
+      "counterpartyRole": "RCV",
+      "process": "POD dispute and claim evidence correction",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Execution + Documents",
+      "stories": [
+        "USB-EXC-010",
+        "USB-RCV-002"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXT-016",
+        "LFC-014",
+        "015"
+      ],
+      "expected": "Append claim/correction, never silently rewrite signed evidence",
+      "adversarialVariations": [
+        "photo missing",
+        "wrong consignee",
+        "damage discovered later"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-29"
+    },
+    {
+      "id": "SIM-30",
+      "primaryRole": "DOC",
+      "counterpartyRole": "EXC",
+      "process": "Document verification and authorized POD publication",
+      "release": "R0_MUST",
+      "owner": "Documents",
+      "stories": [
+        "USB-DOC-002",
+        "USB-DOC-003"
+      ],
+      "relatedAcceptance": [
+        "AUTH-DOC-001",
+        "AUTH-EXT-008"
+      ],
+      "expected": "Versioned evidence review, permitted customer-only release after server authorization",
+      "adversarialVariations": [
+        "rejected package",
+        "stale signed URL",
+        "document not yet complete"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-30"
+    },
+    {
+      "id": "SIM-31",
+      "primaryRole": "FIN",
+      "counterpartyRole": "EXC",
+      "process": "Invoice, receivable, payable without status collapse",
+      "release": "R0_MUST",
+      "owner": "Finance",
+      "stories": [
+        "USB-FIN-001",
+        "USB-FIN-004"
+      ],
+      "relatedAcceptance": [
+        "AUTH-FIN-001",
+        "AUTH-FIN-004"
+      ],
+      "expected": "Issued invoice and independent AR/AP, no delivery=paid or approval=settled shortcut",
+      "adversarialVariations": [
+        "credit note needed",
+        "corrected tax",
+        "customer partial payment"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-31"
+    },
+    {
+      "id": "SIM-32",
+      "primaryRole": "FAP",
+      "counterpartyRole": "FIN",
+      "process": "Payment approval versus bank settlement",
+      "release": "R0_MUST",
+      "owner": "Finance",
+      "stories": [
+        "USB-FAP-002",
+        "USB-FIN-003"
+      ],
+      "relatedAcceptance": [
+        "AUTH-FIN-003",
+        "004",
+        "AUTH-X-024"
+      ],
+      "expected": "Different approver, bank/ERP verified unique allocations and no false settlement",
+      "adversarialVariations": [
+        "same person initiates/approves",
+        "duplicate payment callback",
+        "disputed surcharge"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-32"
+    },
+    {
+      "id": "SIM-33",
+      "primaryRole": "EXC",
+      "counterpartyRole": "SAL",
+      "process": "Private feedback eligibility and provider visibility",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Commercial",
+      "stories": [
+        "USB-EXC-006",
+        "USB-SAL-005"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXT-009",
+        "AUTH-COM-017"
+      ],
+      "expected": "One service-backed private review, no public star rating or self-review",
+      "adversarialVariations": [
+        "partial/disputed POD",
+        "deleted customer membership",
+        "repeated rating"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-33"
+    },
+    {
+      "id": "SIM-34",
+      "primaryRole": "TEN",
+      "counterpartyRole": "EXC",
+      "process": "Customer self-revocation vs colleague access",
+      "release": "R0_MUST",
+      "owner": "Tenancy",
+      "stories": [
+        "USB-TEN-006",
+        "USB-EXC-008"
+      ],
+      "relatedAcceptance": [
+        "AUTH-EXT-012",
+        "AUTH-TEN-013",
+        "AUTH-X-021"
+      ],
+      "expected": "Revoke only selected membership, other authorized CustomerOrg users stay active",
+      "adversarialVariations": [
+        "warm Redis cache",
+        "old JWT",
+        "signed URL residual TTL"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-34"
+    },
+    {
+      "id": "SIM-35",
+      "primaryRole": "SUP",
+      "counterpartyRole": "TEN",
+      "process": "Scoped job replay and identity revocation",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Platform Jobs",
+      "stories": [
+        "USB-SUP-001"
+      ],
+      "relatedAcceptance": [
+        "AUTH-SUP-001",
+        "002",
+        "AUTH-X-010",
+        "027"
+      ],
+      "expected": "Redacted job metadata, authorized replay only with active scope and idempotency",
+      "adversarialVariations": [
+        "crash between effect and ack",
+        "admin revoked while worker runs"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-35"
+    },
+    {
+      "id": "SIM-36",
+      "primaryRole": "WHS",
+      "counterpartyRole": "DRV",
+      "process": "Warehouse transfer/crossdock custody",
+      "release": "R1",
+      "owner": "Warehouse + Execution",
+      "stories": [
+        "USB-WHS-002"
+      ],
+      "relatedAcceptance": [
+        "LFC-032"
+      ],
+      "expected": "Stock ledger and custody transfer reconcile per cargo unit and tenant",
+      "adversarialVariations": [
+        "cross-dock partial",
+        "late scan",
+        "lost pallet"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-36"
+    },
+    {
+      "id": "SIM-37",
+      "primaryRole": "OWN",
+      "counterpartyRole": "FIN",
+      "process": "Executive KPIs and financial/privacy scoping",
+      "release": "R1",
+      "owner": "Finance + Reporting",
+      "stories": [
+        "USB-OWN-001"
+      ],
+      "relatedAcceptance": [
+        "PENDING_POLICY"
+      ],
+      "expected": "Only authorized aggregate performance, confidential cost/driver data hidden",
+      "adversarialVariations": [
+        "branch denied",
+        "report from stale projections",
+        "wrong customer"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-37"
+    },
+    {
+      "id": "SIM-38",
+      "primaryRole": "EXC",
+      "counterpartyRole": "TEN",
+      "process": "Switch customer provider or organization",
+      "release": "R1",
+      "owner": "Tenancy + Customer Portal",
+      "stories": [
+        "USB-EXC-015"
+      ],
+      "relatedAcceptance": [
+        "AUTH-X-001",
+        "015"
+      ],
+      "expected": "Explicit authorized relationship selected; one provider cannot read another's data",
+      "adversarialVariations": [
+        "shared person across orgs",
+        "wrong default provider scope"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-38"
+    },
+    {
+      "id": "SIM-39",
+      "primaryRole": "MKT",
+      "counterpartyRole": "CAR",
+      "process": "Marketplace tender/listing, partner visibility",
+      "release": "R2",
+      "owner": "Marketplace",
+      "stories": [
+        "USB-MKT-001"
+      ],
+      "relatedAcceptance": [
+        "PENDING_POLICY"
+      ],
+      "expected": "Only owner can manage listing; moderation and public reputation independently reviewed",
+      "adversarialVariations": [
+        "anonymous spam",
+        "rate leak",
+        "fake partner capacity"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-39"
+    },
+    {
+      "id": "SIM-40",
+      "primaryRole": "MLS",
+      "counterpartyRole": "OWN",
+      "process": "Intelligence ML dataset permission and lineage",
+      "release": "R2",
+      "owner": "Intelligence",
+      "stories": [
+        "USB-MLS-001"
+      ],
+      "relatedAcceptance": [
+        "PENDING_POLICY"
+      ],
+      "expected": "Source lineage/tenant opt-in and point-in-time separation, no cross-tenant training by default",
+      "adversarialVariations": [
+        "training uses private customer data",
+        "leaked GPS",
+        "stale ETA label"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-40"
+    },
+    {
+      "id": "SIM-41",
+      "primaryRole": "TNO",
+      "counterpartyRole": "DSP",
+      "process": "Subscription suspended during active shipment",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "SaaS Control + Booking + Execution",
+      "stories": [
+        "USB-TNO-004",
+        "USB-DSP-001"
+      ],
+      "relatedAcceptance": [
+        "PENDING_POLICY",
+        "LFC-005"
+      ],
+      "expected": "No new paid actions by default but active cargo safety, custody evidence, notifications and access to critical POD cannot disappear; exact continuity/retention policy needs contract signoff",
+      "adversarialVariations": [
+        "tenant subscription expires during Trip.STARTED",
+        "invoice overdue while POD pending",
+        "platform billing outage"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-41"
+    },
+    {
+      "id": "SIM-42",
+      "primaryRole": "SAL",
+      "counterpartyRole": "EXC",
+      "process": "RFQ captured by provider staff from phone/email without customer portal login",
+      "release": "R0_EXCEPTION_RISK",
+      "owner": "Commercial + Tenancy",
+      "stories": [
+        "USB-SAL-009",
+        "USB-EXC-004"
+      ],
+      "relatedAcceptance": [
+        "PENDING_POLICY",
+        "LFC-002,004"
+      ],
+      "expected": "Sales may record request with verifiable origin/attribution and notify customer; cannot forge customer signature or pretend acceptance; quote requires separately authorized customer agreement",
+      "adversarialVariations": [
+        "phone request from unverified caller",
+        "duplicate phone/email and portal RFQ",
+        "employee tries to accept quote for customer"
+      ],
+      "status": "SIMULATED_ON_PAPER_ONLY",
+      "execution": "NOT_EXECUTED",
+      "testSuiteCandidate": "TDD-42"
+    }
+  ],
+  "revisionNote": "Additional uncovered cross-functional processes: subscription continuity for cargo in execution, and sales-assisted offline RFQ capture without faking customer signature"
+}

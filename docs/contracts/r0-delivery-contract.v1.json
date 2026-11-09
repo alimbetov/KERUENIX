@@ -1,0 +1,223 @@
+{
+  "schemaVersion": "1.2.0",
+  "status": "USER_REQUESTED_NO_PAYMENTS_WITH_EXTERNAL_EDS_PROPOSAL_SIGNOFF_PENDING",
+  "roadmap": "docs/33-tdd-development-roadmap-v1.md",
+  "handbook": "docs/35-r0-developer-handbook.md",
+  "date": "2026-11-08",
+  "normativeTruthHierarchy": [
+    "R0 product scope: NO payment mechanism, external accounting solely for fiscal settlement; NCA EDS as optional external signer adapter",
+    "actual applicable signed business/legal decisions and real contract evidence",
+    "machine-readable authoritative lifecycle/role/module contracts with explicit versions",
+    "doc 35 R0 developer handbook and roadmap PR cuts",
+    "supporting story and simulation books"
+  ],
+  "onConflict": "Stop irreversible mutation, register ADR/BR conflict, revise machine and human docs together; never auto-enable rights",
+  "singleR0Journey": {
+    "fixture": "FIX-R0-TRANSPORT-001",
+    "actors": [
+      "External CustomerAccount X",
+      "Provider tenant sales",
+      "Customer authorized signatory",
+      "Carrier Manager or own-fleet planner",
+      "Driver",
+      "Receiver",
+      "Commercial Price Analyst",
+      "Authorized EDS Signatory"
+    ],
+    "chain": [
+      "verified customer relationship and grant",
+      "RFQ DRAFT→SUBMITTED (permission gate)",
+      "provider Inbox and clarified RFQ",
+      "immutable QuoteVersion and verified legal acceptance",
+      "CarrierOffer or own-fleet capacity + compliance confirmed",
+      "Booking CONFIRMED only after authoritative resource proof",
+      "pickup and proof-backed custody",
+      "partial delivery 8/10 with residual custodian",
+      "Documents verified POD package",
+      "commercial sell/buy costs and margin report; optional reference to accounting document issued outside KERUENIX; NO payments",
+      "private eligible review ONLY on separate verified completed/uncontested service branch; 8/10 partial case remains INELIGIBLE unless explicit accepted policy says otherwise"
+    ],
+    "noGo": [
+      "Quote ACCEPTED is not Booking CONFIRMED",
+      "CarrierOffer SELECTED is not Capacity CONFIRMED",
+      "GPS arrival is not POD",
+      "8/10 accepted is not all delivered",
+      "Invoice approved is not PAID",
+      "No payment transaction, PaymentAllocation, refund, paid/settled state or bank API inside KERUENIX",
+      "Signature existence does not prove legal entity authority without server verification"
+    ],
+    "branches": [
+      {
+        "id": "PARTIAL_POD_DENIAL",
+        "description": "10 CargoUnits; 8 accepted, 2 refused/outstanding; preserves current custodian and partial state",
+        "expected": "no full DELIVERED, no automatic private review eligibility, no incorrect full-service invoice",
+        "caseAnchors": [
+          "NEG-R0-030",
+          "NEG-R0-047",
+          "NEG-R0-048"
+        ]
+      },
+      {
+        "id": "VERIFIED_COMPLETION",
+        "description": "same service fully reconciled with separately verified last-two-unit disposition OR a second completed all-accepted shipment fixture; follow approved eligibility rule",
+        "expected": "verified completed eligible service can receive one private CustomerAccount review only; no provider self-review",
+        "caseAnchors": [
+          "NEG-R0-048",
+          "TDD-R0-E2E-04"
+        ]
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "DEC-R0-01",
+      "topic": "Order source of truth",
+      "status": "PROPOSED_ADR_PENDING",
+      "owner": "Booking + Commercial + Execution",
+      "proposal": "Order is a read-only customer-facing composition over RFQ/QuoteVersion/Booking/Trip/POD/Finance; no separate mutable Order aggregate in R0",
+      "mustDecideBy": "PR-12",
+      "failSafe": "No /orders write endpoint; only scoped projections; no extra canonical order table",
+      "checks": [
+        "No mutable Order JPA entity",
+        "Order state derived only from authoritative sourced facts",
+        "tenant+CustomerAccount+grant in query/count/export"
+      ]
+    },
+    {
+      "id": "DEC-R0-02",
+      "topic": "CustomerAccount ownership",
+      "status": "PROPOSED_ADR_PENDING",
+      "owner": "Commercial / Tenancy",
+      "proposal": "Commercial owns provider-customer business relationship; Tenancy owns identity and access grants, delivered from schema-versioned neutral outbox event",
+      "mustDecideBy": "PR-03C",
+      "failSafe": "No foreign grant or implicit provider-employee membership",
+      "checks": [
+        "Commercial→Tenancy exported security only",
+        "Tenancy no dependency on Commercial package",
+        "missing/out-of-order AccountRegistered event denies grants",
+        "two CustomerOrg same tenant isolated"
+      ]
+    },
+    {
+      "id": "DEC-R0-03",
+      "topic": "RFQ submit authorization",
+      "status": "PERMISSION_POLICY_PENDING",
+      "owner": "Commercial + Security + customer organization",
+      "proposal": "Introduce dedicated customer:rfq:submit only after actor/customer organization/provider Tenant scope, DRAFT state and idempotency contract are approved",
+      "mustDecideBy": "PR-05",
+      "failSafe": "POST /submit forbidden; RFQ DRAFT remains editable with approved rfq:create",
+      "checks": [
+        "viewer can't submit",
+        "revoked grant old JWT denied",
+        "duplicate same key+hash returns prior result",
+        "same key changed hash CONFLICT",
+        "success writes RFQ+audit+Outbox once"
+      ]
+    },
+    {
+      "id": "DEC-R0-04",
+      "topic": "Booking cancellation cutoff and cargo duty",
+      "status": "BR_11_PENDING",
+      "owner": "Booking + Operations + Finance + Legal",
+      "proposal": "Customer can only request cancellation; Booking module validates cutoff and owner approval; after Trip.STARTED route into interruption/recovery, never direct cancellation",
+      "mustDecideBy": "PR-12C",
+      "failSafe": "No automatic fee or resource release from customer input",
+      "checks": [
+        "request not CANCELLED",
+        "race with Trip.STARTED one winner",
+        "active custody never released",
+        "Cancellation charge changes contractual commercial cost only; no refund or payment ledger in KERUENIX"
+      ]
+    },
+    {
+      "id": "DEC-R0-05",
+      "topic": "Private verified service review",
+      "status": "PRODUCT_POLICY_PENDING",
+      "owner": "Commercial + Customer + Provider",
+      "proposal": "Commercial owns one private review per verified eligible completed service with customer grant; no public rating, self-review or review after partial/disputed unresolved service",
+      "mustDecideBy": "PR-16R",
+      "failSafe": "Review submit disabled or pending eligibility until policy accepted",
+      "checks": [
+        "one per service+customer unique index",
+        "provider self-review DENY",
+        "partial/damaged service eligibility requires decision",
+        "revoked customer access DENY",
+        "review event not public reputation"
+      ]
+    },
+    {
+      "id": "DEC-R0-06",
+      "topic": "Fleet registry versus commitment",
+      "status": "TECHNICAL_ARCHITECTURE_PROPOSAL",
+      "owner": "Fleet",
+      "proposal": "Vehicle/driver/trailer CRUD/eligibility registry in PR-10V separate from cargo/compliance-sensitive exclusive capacity hold PR-10",
+      "mustDecideBy": "PR-10V",
+      "failSafe": "Unverified or expired registry items cannot support CONFIRMED booking",
+      "checks": [
+        "duplicate registration scope guarded",
+        "one resource cannot overlap across branches",
+        "archived/inactive resource cannot be held",
+        "hold expiry versus confirmation guarded by PG"
+      ]
+    },
+    {
+      "id": "DEC-R0-07",
+      "topic": "Commercial contract costing and external accounting boundary",
+      "status": "BUSINESS_SCOPE_ACKNOWLEDGMENT_PENDING",
+      "owner": "Commercial + Finance/Accounting + Product Owner",
+      "proposal": "KERUENIX owns versioned sell/buy price, cost estimate, margin and opaque external accounting document reference only. External business/accounting systems issue invoices/ESF, receive payments, perform reconciliation and refunds. Online EDS signs legal documents but is not a payment facility.",
+      "mustDecideBy": "PR-17",
+      "failSafe": "No internal invoice issuance, PAID/SETTLED/REFUNDED state, banking connection, PaymentAllocation, tax ESF generation or payment endpoint.",
+      "checks": [
+        "commercial price version and currency precise",
+        "external accounting document reference is not payment proof",
+        "no bank/ERP settlement adapters or payment tables",
+        "no fiscal invoice/ESF claiming KERUENIX as issuer"
+      ]
+    },
+    {
+      "id": "DEC-R0-08",
+      "topic": "Custody evidence staging and publication",
+      "status": "ADR_QUALITY_PENDING",
+      "owner": "Execution + Documents + Security/Operations",
+      "proposal": "Infrastructure EvidenceBlobGateway stages/verifies original bytes; Execution commits ProofReceipt+custody+Outbox; Documents consumes exported event and publishes immutable versioned package, orphan blob reconcile",
+      "mustDecideBy": "PR-13",
+      "failSafe": "Unverified object URL/empty bytes never proves pickup/POD",
+      "checks": [
+        "object checksum+size+content-type+malware policy",
+        "late/revoked actor evidence quarantined",
+        "orphan cleanup via scoped reconciliation",
+        "8/10 partial POD preserves 2 units",
+        "no Execution→Documents package import"
+      ]
+    }
+  ],
+  "apiConventions": {
+    "pagination": "offset + stable tie-breaker and scope-before-count for RFQ; cursor+signed scope for immutable timeline",
+    "errors": "RFC9457 stable KX-* and generated requestId",
+    "idempotency": "key bound to verified principal+tenant+resource+canonical payload hash, TTL/history contract must be agreed",
+    "requestContext": "No tenantId/trustedRole/approvalState/paid from body; verified context from auth",
+    "security": "tenant RLS plus account-grant predicate, not tenant RLS alone",
+    "writes": "aggregate version guard + audit + Outbox in same PG transaction"
+  },
+  "deliveryDefinition": {
+    "codeReady": "typed command/DTO/schema/API/event/negative-case names approved for affected slice",
+    "testReady": "real JUnit red→green→refactor, Modulith verify, Testcontainers PostgreSQL+RLS+concurrency/outbox, HTTP+UI if applicable",
+    "done": "green exact SHA CI, no P0, no silent skips, signed relevant BR/ADR before irreversible command Payment scope cannot be implicitly expanded from accounting document reference.",
+    "partialDone": "safe DENY/pending or API-QUALIFIED but not business journey certified"
+  },
+  "releaseMinimum": {
+    "backend": "single runtime, no unapproved service split",
+    "realData": "two providers/tenants, two separate customer accounts on same provider, real carrier and guest receiver; plus a distinct completed/verified service fixture for private review (8/10 partial alone is not complete)",
+    "failure": "restart/crash/replay/permission revoke/tenant context reuse/partial delivery/finance reversal",
+    "ops": "secrets, SBOM, container smoke, backup/restore, runbook and measurement profile; legal EDS qualified where binding contract needs it, no payment operations in runtime"
+  },
+  "edsSigningContract": "docs/contracts/r0-scope-eds-signing.v1.json",
+  "scopeConsistency": {
+    "version": "1.7.0",
+    "source": "docs/40-r0-contract-consistency-business-readiness-v1-7.md",
+    "noPayments": true,
+    "approvalStatus": "PENDING_REAL_STAKEHOLDER",
+    "noAutoApproval": true
+  }
+}

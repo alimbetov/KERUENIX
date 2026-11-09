@@ -1,0 +1,94 @@
+name: TDD Roadmap Contract
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'scripts/validate_tdd_roadmap.py'
+      - 'scripts/test_validate_tdd_roadmap.py'
+      - 'scripts/validate_pr_acceptance.py'
+      - 'scripts/test_pr_acceptance.py'
+      - 'scripts/validate_layered_development.py'
+      - 'scripts/test_layered_development.py'
+      - 'scripts/validate_scenario_first.py'
+      - 'scripts/test_scenario_first.py'
+      - 'scripts/validate_s0_scenario_allocation.py'
+      - 'scripts/test_s0_scenario_allocation.py'
+      - 'scripts/validate_s0_e2e.py'
+      - 'scripts/test_s0_e2e.py'
+      - 'scripts/validate_s0_extension_gwt.py'
+      - 'scripts/test_s0_extension_gwt.py'
+      - 'scripts/validate_s0_platform_tenancy.py'
+      - 'scripts/test_s0_platform_tenancy.py'
+      - 'scripts/validate_s0_commercial.py'
+      - 'scripts/test_s0_commercial.py'
+      - 'scripts/validate_s0_cargo_booking.py'
+      - 'scripts/test_s0_cargo_booking.py'
+      - 'scripts/validate_s0_delivery_batches.py'
+      - 'scripts/test_s0_delivery_batches.py'
+      - 'scripts/validate_s0_full_coverage.py'
+      - 'scripts/test_s0_full_coverage.py'
+      - 'scripts/validate_decision_readiness.py'
+      - 'scripts/test_decision_readiness.py'
+      - '.github/workflows/tdd-roadmap-contract.yml'
+  push:
+    branches: [main, docs/idea-multitenant-foundation]
+    paths:
+      - 'docs/**'
+      - 'scripts/validate_tdd_roadmap.py'
+      - 'scripts/test_validate_tdd_roadmap.py'
+      - 'scripts/validate_pr_acceptance.py'
+      - 'scripts/test_pr_acceptance.py'
+      - 'scripts/validate_layered_development.py'
+      - 'scripts/test_layered_development.py'
+      - 'scripts/validate_scenario_first.py'
+      - 'scripts/test_scenario_first.py'
+      - 'scripts/validate_s0_scenario_allocation.py'
+      - 'scripts/test_s0_scenario_allocation.py'
+      - 'scripts/validate_s0_e2e.py'
+      - 'scripts/test_s0_e2e.py'
+      - 'scripts/validate_s0_extension_gwt.py'
+      - 'scripts/test_s0_extension_gwt.py'
+      - 'scripts/validate_s0_platform_tenancy.py'
+      - 'scripts/test_s0_platform_tenancy.py'
+      - 'scripts/validate_s0_commercial.py'
+      - 'scripts/test_s0_commercial.py'
+      - 'scripts/validate_s0_cargo_booking.py'
+      - 'scripts/test_s0_cargo_booking.py'
+      - 'scripts/validate_s0_delivery_batches.py'
+      - 'scripts/test_s0_delivery_batches.py'
+      - 'scripts/validate_s0_full_coverage.py'
+      - 'scripts/test_s0_full_coverage.py'
+      - 'scripts/validate_decision_readiness.py'
+      - 'scripts/test_decision_readiness.py'
+      - '.github/workflows/tdd-roadmap-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-roadmap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test roadmap validator failure detection
+        run: python3 -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Validate roadmap graph, per-PR test/permission/UI and Markdown parity
+        run: |
+          python3 scripts/validate_tdd_roadmap.py
+          python3 scripts/validate_decision_readiness.py
+          python3 scripts/validate_pr_acceptance.py
+          python3 scripts/validate_layered_development.py
+          python3 scripts/validate_scenario_first.py
+          python3 scripts/validate_s0_scenario_allocation.py
+          python3 scripts/validate_s0_e2e.py
+          python3 scripts/validate_s0_extension_gwt.py
+          python3 scripts/validate_s0_platform_tenancy.py
+          python3 scripts/validate_s0_commercial.py
+          python3 scripts/validate_s0_cargo_booking.py
+          python3 scripts/validate_s0_delivery_batches.py execution_custody_pod
+          python3 scripts/validate_s0_delivery_batches.py tracking_documents_cost
+          python3 scripts/validate_s0_delivery_batches.py resilience_release
+          python3 scripts/validate_s0_full_coverage.py

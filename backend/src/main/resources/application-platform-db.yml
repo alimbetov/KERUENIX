@@ -1,0 +1,12 @@
+# Restricted, long-lived application profile. Only the application principal is
+# available to the process. NO privileged Liquibase/migrator secrets at runtime.
+# Schema changes run in a separate ephemeral deployment/CI migration process.
+spring:
+  datasource:
+    url: ${KERUENIX_DB_URL}
+    username: ${KERUENIX_DB_APP_USER}
+    password: ${KERUENIX_DB_APP_PASSWORD}
+    hikari:
+      maximum-pool-size: 4
+  liquibase:
+    enabled: false

@@ -1,0 +1,280 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PROPOSED_DESIGN_NOT_IMPLEMENTED",
+  "owner": "KERUENIX backend architecture",
+  "source": "docs/32-scenario-driven-backend-design-v1.md",
+  "inheritance": [
+    "docs/contracts/module-boundaries.v1.json",
+    "docs/contracts/access-policy-matrix.v2.json",
+    "docs/contracts/api-error-catalog.v1.json"
+  ],
+  "release": "R0-first vertical slice; no automatic business permission or schema creation",
+  "conventions": {
+    "readArchitecture": "CQRS_LIGHT_SAME_POSTGRES_TRANSACTIONAL_WRITE_AND_MODULE_OWNED_READ",
+    "runtime": "ONE_SPRING_BOOT_MODULAR_MONOLITH",
+    "tenantResolution": "TRUSTED_PRINCIPAL_AND_ACTIVE_MEMBERSHIP_OR_SCOPED_EXTERNAL_CUSTOMER_GRANT",
+    "defaultAuthorization": "DENY",
+    "filterSyntax": "EXPLICIT_TYPED_QUERY_PARAMS_AND_SERVER_SIDE_ALLOWLIST",
+    "filteringPolicy": "AUTH_SCOPE_APPLIED_IN_DB_BEFORE_USER_FILTERS_COUNTS_AND_PAGINATION",
+    "time": "UTC_INSTANT_BOUNDS_FROM_INCLUSIVE_TO_EXCLUSIVE",
+    "sortPolicy": "EXPLICIT_ALLOWLIST_AND_STABLE_ID_TIE_BREAK",
+    "pagination": {
+      "offset": {
+        "pageBase": 0,
+        "defaultSize": 20,
+        "maxSize": 100,
+        "maxOffsetWindow": "TUNABLE_AND_BENCHMARKED",
+        "totalCount": "OPT_IN_OR_ONLY_WHEN_CHEAP",
+        "hasNext": "FETCH_LIMIT_PLUS_ONE"
+      },
+      "cursor": {
+        "opaque": true,
+        "versioned": true,
+        "signed": true,
+        "expiryRequired": true,
+        "bindTo": [
+          "principal scope revision",
+          "tenant/provider/customer account",
+          "filter fingerprint",
+          "sort fingerprint",
+          "last unique sort tuple"
+        ],
+        "limitPlusOne": true,
+        "noDefaultTotal": true
+      }
+    },
+    "errors": "RFC9457_PROBLEM_DETAIL_INHERITS_ERROR_CATALOG",
+    "mapstruct": "OWNING_MODULE_ONLY_COMPILE_TIME_STRICT_NO_AUTHORIZATION_OR_AGGREGATE_MUTATION",
+    "indexGate": "EXPLAIN_ANALYZE_WITH_RLS_MULTI_TENANT_FIXTURES_AND_QUERY_PERFORMANCE_BUDGET"
+  },
+  "softDelete": {
+    "strategy": "ENTITY_POLICY_OPT_IN",
+    "physicalFields": [
+      "deleted_at",
+      "deleted_by",
+      "deletion_reason_code",
+      "version"
+    ],
+    "archivedIsNotDeleted": true,
+    "cancelledIsNotDeleted": true,
+    "retentionErasureIsNotSoftDelete": true,
+    "defaultRead": "EXCLUDE_DELETED_BEFORE_FILTER_SORT_COUNT_AND_PAGINATION",
+    "modeValues": [
+      "NOT_APPLICABLE",
+      "ARCHIVE_ONLY",
+      "SOFT_DELETE_DRAFT_ONLY",
+      "SOFT_DELETE_BY_APPROVED_POLICY"
+    ],
+    "entityPolicies": [
+      {
+        "owner": "commercial",
+        "resource": "RFQ",
+        "mode": "SOFT_DELETE_DRAFT_ONLY",
+        "preconditions": [
+          "DRAFT",
+          "NO_BINDING_QUOTE",
+          "NO_EXTERNAL_LEGAL_RETENTION"
+        ],
+        "restore": "POLICY_AND_CONFLICT_CHECK"
+      },
+      {
+        "owner": "commercial",
+        "resource": "QuoteVersion",
+        "mode": "NOT_APPLICABLE",
+        "reason": "IMMUTABLE_CONTRACT_EVIDENCE"
+      },
+      {
+        "owner": "booking",
+        "resource": "Booking",
+        "mode": "NOT_APPLICABLE",
+        "reason": "CANCELLATION_TERMINATION_IS_BUSINESS_STATE"
+      },
+      {
+        "owner": "fleet",
+        "resource": "CapacityReservation",
+        "mode": "NOT_APPLICABLE",
+        "reason": "RELEASE_EXPIRE_CONSUME_WITH_REAL_EXCLUSIVITY"
+      },
+      {
+        "owner": "execution",
+        "resource": "Shipment/Trip/CustodyHandover/POD",
+        "mode": "NOT_APPLICABLE",
+        "reason": "PHYSICAL_AND_EVIDENCE_LEDGER"
+      },
+      {
+        "owner": "documents",
+        "resource": "SignedProofDocument/DocumentPackageVersion",
+        "mode": "NOT_APPLICABLE",
+        "reason": "IMMUTABLE_EVIDENCE_RETENTION"
+      },
+      {
+        "owner": "finance",
+        "resource": "Invoice/Payable/Receivable/PaymentAllocation",
+        "mode": "NOT_APPLICABLE",
+        "reason": "ACCOUNTING_EVIDENCE_AND_REVERSAL_PROCESSES"
+      },
+      {
+        "owner": "fleet",
+        "resource": "VehicleMaster",
+        "mode": "ARCHIVE_ONLY",
+        "reason": "DO_NOT_HIDE_ACTIVE_ASSIGNMENTS"
+      },
+      {
+        "owner": "tenancy",
+        "resource": "Membership",
+        "mode": "ARCHIVE_ONLY",
+        "reason": "REVOKE_ACCESS_NOT_DELETE_EVIDENCE"
+      },
+      {
+        "owner": "commercial",
+        "resource": "CustomerAccount",
+        "mode": "ARCHIVE_ONLY",
+        "reason": "SUSPEND_RELATIONSHIP_NOT_EXISTING_ORDERS"
+      },
+      {
+        "owner": "tracking",
+        "resource": "CustomerTrackingSnapshot",
+        "mode": "NOT_APPLICABLE",
+        "reason": "DERIVED_PROJECTION_TOMBSTONE_REBUILD"
+      },
+      {
+        "owner": "saas-control",
+        "resource": "Tenant",
+        "mode": "NOT_APPLICABLE",
+        "reason": "SUSPEND_OFFBOARD_WITH_RETENTION_AND_LEGAL_GATES"
+      }
+    ],
+    "behavior": {
+      "authorizeBeforeExistenceDisclosure": true,
+      "forbidGenericCascade": true,
+      "outboxAndAuditInSameTransaction": true,
+      "optimisticVersionGuard": true,
+      "restoredWithNewAuditEvent": true,
+      "uniqueness": "PARTIAL_UNIQUE_INDEX_ONLY_IF_BUSINESS_REUSE_ALLOWED; ELSE_LIFETIME_UNIQUENESS",
+      "rls": "REMAINS_MANDATORY_SOFT_DELETE_IS_NOT_A_TENANT_SECURITY_BOUNDARY",
+      "presignedUrlRevocation": "SIGNED_URL_TTL_OR_AUTH_BROKER_POLICY_REQUIRED",
+      "legalHold": "BLOCK_ERASURE_AND_RETENTION_PURGE",
+      "activeObligations": "BLOCK_SOFT_DELETE_OR_ARCHIVE_UNLESS_EXPLICIT_POLICY",
+      "purge": "SEPARATE_AUTHORIZED_RETENTION_JOB_WITH_BACKUP_AND_LEGAL_APPROVAL"
+    }
+  },
+  "firstVerticalSlice": {
+    "scenarioIds": [
+      "BSC-001",
+      "BSC-002"
+    ],
+    "ownerModules": [
+      "tenancy",
+      "commercial"
+    ],
+    "resources": [
+      "ExternalCustomerRelationship",
+      "CustomerAccount",
+      "RFQ",
+      "ProviderInboxReadModel"
+    ],
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/api/v1/customer/rfqs",
+        "permission": "customer:rfq:create",
+        "idempotency": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/customer/rfqs",
+        "permission": "customer:rfq:list",
+        "pagination": "offset",
+        "scope": "customer account + provider tenant"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/provider/rfqs",
+        "permission": "rfq:inbox:read",
+        "pagination": "offset",
+        "scope": "provider tenant + assignee/branch"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/customer/rfqs/{rfqId}",
+        "permission": "customer:rfq:read",
+        "scope": "customer account + provider tenant"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/customer/rfqs/{rfqId}/submit",
+        "permission": "PENDING_SPECIFIC_RFQ_SUBMIT_POLICY",
+        "idempotency": true,
+        "expectedVersion": true,
+        "status": "DESIGN_CANDIDATE_NOT_ACTIVE_UNTIL_PERMISSION_CONFIRMED"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/customer/rfqs/{rfqId}/discard-draft",
+        "permission": "PENDING_SPECIFIC_COMMAND_PERMISSION",
+        "expectedVersion": true,
+        "guard": "DRAFT_ONLY",
+        "status": "DESIGN_CANDIDATE_NOT_ACTIVE"
+      }
+    ],
+    "filters": {
+      "providerInbox": {
+        "allowed": [
+          "status",
+          "createdFrom",
+          "createdTo",
+          "assignedTo",
+          "customerRef",
+          "q"
+        ],
+        "sorts": [
+          "createdAt",
+          "updatedAt",
+          "status"
+        ],
+        "defaultSort": [
+          "createdAt:desc",
+          "id:desc"
+        ]
+      },
+      "customerRfqs": {
+        "allowed": [
+          "status",
+          "createdFrom",
+          "createdTo",
+          "q"
+        ],
+        "sorts": [
+          "createdAt",
+          "updatedAt"
+        ],
+        "defaultSort": [
+          "createdAt:desc",
+          "id:desc"
+        ]
+      }
+    }
+  },
+  "plannedAcceptance": [
+    "SDB-001_STORY_TO_CONTRACT_TRACEABILITY",
+    "SDB-002_MODULE_BOUNDARY_VERIFY",
+    "SDB-003_MAPPER_NO_OVERPOSTING",
+    "SDB-004_SCOPE_AND_RLS_NO_LEAK",
+    "SDB-005_OFFSET_STABLE_ORDER_AND_LIMIT",
+    "SDB-006_CURSOR_DUPLICATE_SKIP_NO_CROSS_SCOPE",
+    "SDB-007_FILTER_SORT_ALLOWLIST",
+    "SDB-008_INDEX_QUERY_PLAN_BENCH",
+    "SDB-009_SOFT_DELETE_EXCLUDED_LIST_COUNT",
+    "SDB-010_SOFT_DELETE_OPTIMISTIC_RACE",
+    "SDB-011_SOFT_DELETE_RESTORE_UNIQUENESS",
+    "SDB-012_NO_DELETE_OF_ACTIVE_BOOKING_POD_PAYMENT",
+    "SDB-013_NO_CROSS_TENANT_DELETE_RESTORE",
+    "SDB-014_OUTBOX_AUDIT_ATOMIC_AND_REPLAY",
+    "SDB-015_PROJECTION_TOMBSTONE_REBUILD",
+    "SDB-016_RETENTION_LEGAL_HOLD_PURGE",
+    "SDB-017_RFC9457_ERROR_PARITY",
+    "SDB-018_REVOKE_CACHE_CURSOR_PRESIGNED_URL",
+    "SDB-019_OFFLINE_LATE_COMMAND_RECHECK",
+    "SDB-020_EXACT_SHA_CI_E2E_TWO_TENANTS"
+  ]
+}

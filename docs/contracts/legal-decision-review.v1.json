@@ -1,0 +1,853 @@
+{
+  "schemaVersion": "1.1.0",
+  "status": "LEGAL_DESIGN_RECOMMENDATIONS_ONLY_NOT_LEGAL_OPINION_NOT_APPROVED",
+  "asOf": "2026-11-08",
+  "jurisdiction": "Republic of Kazakhstan",
+  "pilotAssumption": "Domestic B2B road-freight forwarding and carriage. International CMR/cross-border movement and dangerous goods are out of R0 until separate rule profile approved.",
+  "summary": {
+    "reviewedBr": 12,
+    "reviewedDec": 8,
+    "approvedNow": 0,
+    "defaultPolicy": "LEGAL_HOLD_FOR_BINDING_ACTIONS_WHILE_STAKEHOLDER_SIGNOFF_PENDING",
+    "doesNotChangeOriginalDecisionStates": true,
+    "productScopeUpdate": "No payment operations in KERUENIX R0; online NCA EDS proposed separately",
+    "edsApproval": "PENDING_EDS_PROVIDER_AND_COUNSEL"
+  },
+  "criticalNewRisks": [
+    {
+      "id": "LEG-X-01",
+      "title": "Who legally contracts?",
+      "owner": "Legal + Forwarder + Carrier",
+      "gateBefore": "PR-03C/PR-07/PR-11",
+      "finding": "SaaS platform, forwarding customer, forwarder acting own name or in customer's name, carrier and consignee are different legal subjects; get exact ContractParty + AgencyCapacity snapshot",
+      "default": "platform is only technical SaaS provider unless explicit contract proves different"
+    },
+    {
+      "id": "LEG-X-02",
+      "title": "Signature vs digital confirmation",
+      "owner": "Legal + Security",
+      "gateBefore": "PR-07/PR-13",
+      "finding": "Digital Code art44/47 distinguish multi-factor legal acts/digital confirmation from qualified EDS/electronic doc art49/62; legal method and authority vary by transaction",
+      "default": "no irreversible acceptance by generic click/OTP only"
+    },
+    {
+      "id": "LEG-X-03",
+      "title": "TTN/CMR and discrepancy transport forms",
+      "owner": "Carrier + Document Operations + Legal",
+      "gateBefore": "PR-13/PR-14",
+      "finding": "Cargo proof photo is not necessarily regulated transport waybill; legal document requirements differ domestic/international and for damage/discrepancy",
+      "default": "proof collected as supporting evidence; formal document status unknown until verified"
+    },
+    {
+      "id": "LEG-X-04",
+      "title": "Privacy and data localization",
+      "owner": "Data Protection Officer + Security + SaaS operator",
+      "gateBefore": "PR-02/PR-03/PR-13",
+      "finding": "driver GPS, name, phone, ID, signatures and photos may be personal data; KZ DB localization, lawful basis, cross-border subprocessors, roles and retention",
+      "default": "minimize personal data, KZ-hosted primary personal-data store, block unknown export/subprocessor"
+    },
+    {
+      "id": "LEG-X-05",
+      "title": "External accounting and ESF boundary",
+      "owner": "Tax + Accounting + Finance",
+      "gateBefore": "PR-17 (commercial costing/external reference only)",
+      "finding": "KERUENIX is not a bank, payer, payment service provider or ESF issuer. Keep only contract sell/buy/margin and external document link; the external accounting provider owns tax ESF and payment evidence.",
+      "default": "No payment/paid/settled/refund state or APIs; no bank callback and no official ESF issuance"
+    },
+    {
+      "id": "LEG-X-06",
+      "title": "Claims, damage and insurer",
+      "owner": "Forwarder + Carrier + Customer + Legal/Insurance",
+      "gateBefore": "PR-11/PR-14/PR-12C",
+      "finding": "Agree liability caps where lawful, declared cargo value, insurance, evidence/dispute notice process and custody obligations",
+      "default": "preserve incident record; no automatic waive/penalty/liability determination"
+    },
+    {
+      "id": "LEG-X-07",
+      "title": "Contract precedence and amendment evidence",
+      "owner": "Legal + Commercial",
+      "gateBefore": "PR-07",
+      "finding": "Master services agreement, order/quote, tariff/appendix, POD and platform terms need signed priority and versioned snapshots",
+      "default": "no silent clickthrough override of negotiated agreements"
+    },
+    {
+      "id": "LEG-X-08",
+      "title": "Retention, access revocation and litigation hold",
+      "owner": "Legal + DPO + Security + Operations",
+      "gateBefore": "PR-13/PR-16/PR-20",
+      "finding": "Soft delete and data subject requests coexist with evidence, accounting/tax and court preservation; deletion is not a generic lifecycle",
+      "default": "hold immutable legal originals per approved schedule, revoke new access, remove unrelated data when allowed"
+    }
+  ],
+  "sources": [
+    {
+      "id": "KZ-DIGITAL-44-47-49-61-62",
+      "title": "Kazakhstan Digital Code 255-VIII (in force 2026; digital confirmation differs from EDS; electronic document & authorized signatory)",
+      "url": "https://old.adilet.zan.kz/rus/docs/K2600000255",
+      "scope": "arts 44,47,49,50,61,62,106",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    },
+    {
+      "id": "KZ-CIVIL-152-395-397",
+      "title": "Civil Code General Part — written form, offer, acceptance, contract form",
+      "url": "https://old.adilet.zan.kz/rus/docs/K940001000_",
+      "scope": "arts 152, 394-397",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    },
+    {
+      "id": "KZ-FORWARDING-708-714",
+      "title": "Civil Code Special Part — freight forwarding role, party name, written form, authority, liability and withdrawal",
+      "url": "https://old.adilet.zan.kz/rus/docs/K990000409_",
+      "scope": "arts 708-714",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    },
+    {
+      "id": "KZ-FREIGHT-689",
+      "title": "Civil Code Special Part — freight carriage and transport document",
+      "url": "https://old.adilet.zan.kz/rus/docs/K990000409_",
+      "scope": "art 689",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    },
+    {
+      "id": "KZ-TRANSPORT-ROAD",
+      "title": "Law On Road Transport, amended 2026",
+      "url": "https://old.adilet.zan.kz/rus/docs/Z030000476_",
+      "scope": "contract and regulatory obligations by service class",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    },
+    {
+      "id": "KZ-TRANSPORT-RULES-546",
+      "title": "Road Freight Rules order No.546 updated 2026, documents, claims, amendments",
+      "url": "https://old.adilet.zan.kz/rus/docs/V1500012463",
+      "scope": "transport documents, consignee discrepancy acts, amendments; point 22 suspension to 2027 check",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    },
+    {
+      "id": "KZ-PERSONAL-12-16",
+      "title": "Law On Personal Data and Protection (2026 version)",
+      "url": "https://old.adilet.zan.kz/rus/docs/Z1300000094",
+      "scope": "data consent, localization, crossborder, retention and rights",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    },
+    {
+      "id": "KZ-TAX-ESF-2026",
+      "title": "Tax authority on 2026 ESF recipient approval rules",
+      "url": "https://www.gov.kz/org/kgd/press/news/details/1148778?lang=ru",
+      "scope": "official ESF correction/withdrawn/additional handling",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    },
+    {
+      "id": "KZ-GOV-ESF-2026",
+      "title": "Kazakhstan electronic invoice guidance 2026",
+      "url": "https://www.gov.kz/situations/816/1718?lang=ru",
+      "scope": "2026 Tax Code + issuing ESF rules conditional by entity/transaction",
+      "checkedOn": "2026-11-08",
+      "reviewStatus": "OFFICIAL_PRIMARY_SOURCE_LINK_REQUIRES_CLAUSE_SPECIFIC_LEGAL_COUNSEL_SIGNOFF"
+    }
+  ],
+  "decisionReviews": [
+    {
+      "id": "BR-01",
+      "legalReviewId": "LEG-R0-001",
+      "title": "Customer quote acceptance",
+      "scenario": "A portal click by a requester purports to bind the customer legal entity",
+      "options": [
+        "Any logged-in customer requester clicks Accept",
+        "Verified signatory plus legally approved electronic signature/evidence method",
+        "External wet signature for every order"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Require exact termsHash/QuoteVersion, verified entity representation, signing method and evidence; MFA digital confirmation is not automatically a Code art.62 EDS document; contract-specific validity must be reviewed",
+      "legalRiskArea": "IDENTITY_AND_SIGNING",
+      "untilApproved": "No binding ACCEPTED until authority and legal signing procedure confirmed",
+      "affectedPrs": [
+        "PR-07"
+      ],
+      "sourceIds": [
+        "KZ-CIVIL-152-395-397",
+        "KZ-DIGITAL-44-47-49-61-62"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-001",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-02",
+      "legalReviewId": "LEG-R0-002",
+      "title": "Decline of a quote",
+      "scenario": "A viewer can accidentally terminate a live quotation",
+      "options": [
+        "Signatory only",
+        "Every customer employee",
+        "Separate assigned decline authority and immutable decline receipt"
+      ],
+      "recommendedOption": "C",
+      "preferredPolicy": "Define decline's effects on offer validity; any new terms in refusal is counteroffer, not acceptance. Preserve rejected version, actor, reason and notification",
+      "legalRiskArea": "COMMERCIAL_AGENCY",
+      "untilApproved": "Decline disabled without explicit capability, remains ISSUED/EXPIRED by owner rule",
+      "affectedPrs": [
+        "PR-07"
+      ],
+      "sourceIds": [
+        "KZ-CIVIL-395-397"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-002",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-03",
+      "legalReviewId": "LEG-R0-003",
+      "title": "External customer relationship",
+      "scenario": "CustomerOrg-X user can read CustomerOrg-Y under one provider",
+      "options": [
+        "Every external user is provider employee",
+        "Customer gets a separate full Tenant",
+        "Verified business CustomerAccount and scoped user grant"
+      ],
+      "recommendedOption": "C",
+      "preferredPolicy": "Verify organization identity/agent authority; define SaaS controller/operator roles, KZ data localization, cross-border basis, subject erasure vs retention, least privilege",
+      "legalRiskArea": "PERSONAL_DATA_AND_REPRESENTATION",
+      "untilApproved": "No auto employee role, no foreign relationship grant; 404 safe non-enumerating",
+      "affectedPrs": [
+        "PR-03C",
+        "PR-03"
+      ],
+      "sourceIds": [
+        "KZ-PERSONAL-12-16",
+        "KZ-DIGITAL-40-44"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-003",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-04",
+      "legalReviewId": "LEG-R0-004",
+      "title": "Subscription suspend during active cargo",
+      "scenario": "SaaS billing failure interrupts custody or legally required evidence",
+      "options": [
+        "Hard-stop every feature",
+        "Permit all features indefinitely",
+        "SAFE_CONTINUITY for active cargo and minimum evidence/reporting"
+      ],
+      "recommendedOption": "C",
+      "preferredPolicy": "Define SaaS provider vs forwarder duties and active-cargo emergency action list; contractually specify duration/support/export and customer notification",
+      "legalRiskArea": "CARGO_CARE_AND_SAAS_CONTRACT",
+      "untilApproved": "No new discretionary bookings; never delete/hide active proof, preserve safety-critical flow",
+      "affectedPrs": [
+        "PR-18"
+      ],
+      "sourceIds": [
+        "KZ-TRANSPORT-ROAD",
+        "KZ-FORWARDING-708-714"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-004",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-05",
+      "legalReviewId": "LEG-R0-005",
+      "title": "Material amendment to accepted terms",
+      "scenario": "Cargo mass increases after customer accepts QuoteVersion",
+      "options": [
+        "Mutate original accepted quote",
+        "Versioned amendment and new acceptance/capacity validation",
+        "Auto-cancel all modifications"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Changes to material terms require party agreement and same applicable contractual form; no silence-as-consent; retain old and proposed terms and effective time",
+      "legalRiskArea": "CONTRACT_CHANGE",
+      "untilApproved": "Old accepted terms remain original truth; proposed change PENDING, no phantom cancel",
+      "affectedPrs": [
+        "PR-06",
+        "PR-07",
+        "PR-12"
+      ],
+      "sourceIds": [
+        "KZ-CIVIL-395-397",
+        "KZ-TRANSPORT-RULES-546"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-005",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-06",
+      "legalReviewId": "LEG-R0-006",
+      "title": "CarrierOffer binding commitment",
+      "scenario": "Forwarder marks carrier selected without actually obtaining committed vehicle",
+      "options": [
+        "Selected means confirmed",
+        "Independent signed carrier undertaking plus authoritative fleet hold",
+        "Oral call without verified evidence"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Distinguish acting in own name or on customer behalf, authority and carrier contract; subcontracting does not automatically erase forwarder liability",
+      "legalRiskArea": "THREE_PARTY_CONTRACTS",
+      "untilApproved": "SELECTED does not confirm booking or cargo undertaking",
+      "affectedPrs": [
+        "PR-11",
+        "PR-12"
+      ],
+      "sourceIds": [
+        "KZ-FORWARDING-708-714",
+        "KZ-FREIGHT-689"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-006",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-07",
+      "legalReviewId": "LEG-R0-007",
+      "title": "Exclusive capacity concurrency",
+      "scenario": "Two dispatchers allocate same truck/driver interval",
+      "options": [
+        "Redis-only lock",
+        "Application-level availability check",
+        "PG exclusion/resource fencing with expiry and actual resource consent"
+      ],
+      "recommendedOption": "C",
+      "preferredPolicy": "Differentiate physical hold from carrier contractual acceptance; prohibit R0 shared loads until terms/insurer/safety approved",
+      "legalRiskArea": "ASSET_COMMITMENT",
+      "untilApproved": "No overlapping CONFIRMED capacity; stale expiry never releases CONFIRMED",
+      "affectedPrs": [
+        "PR-10V",
+        "PR-10"
+      ],
+      "sourceIds": [
+        "KZ-FREIGHT-689",
+        "KZ-TRANSPORT-RULES-546"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-007",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-08",
+      "legalReviewId": "LEG-R0-008",
+      "title": "Compliance unknown permits",
+      "scenario": "Proposed route may need permit or dangerous-goods constraints",
+      "options": [
+        "Warn and continue",
+        "Dispatcher bypass",
+        "HOLD and competent verified reviewer"
+      ],
+      "recommendedOption": "C",
+      "preferredPolicy": "Define geographic/cargo scope, qualified reviewer, permits, versioned official rules; R0 standard cargo default, regulated cargo disabled pending independent legal review",
+      "legalRiskArea": "REGULATORY_SAFETY",
+      "untilApproved": "UNKNOWN or expired permit HOLD; no dangerous-goods auto-approval",
+      "affectedPrs": [
+        "PR-09",
+        "PR-10"
+      ],
+      "sourceIds": [
+        "KZ-TRANSPORT-ROAD",
+        "KZ-TRANSPORT-RULES-546"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL",
+        "QUALIFIED_COMPLIANCE"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-008",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-09",
+      "legalReviewId": "LEG-R0-009",
+      "title": "Offline custody evidence after reassignment",
+      "scenario": "Driver uploads old pickup event after his grant revoked",
+      "options": [
+        "Discard all historical proof",
+        "Trust device clock and overwrite",
+        "Preserve original, verify historical actor/assignment and reconcile independently"
+      ],
+      "recommendedOption": "C",
+      "preferredPolicy": "An audit hash or device photo is not automatically a statutory signed transport document; preserve original bytes, authority snapshot and transport forms",
+      "legalRiskArea": "EVIDENCE_CHAIN_OF_CUSTODY",
+      "untilApproved": "Ambiguous event QUARANTINE and no unauthorized custody mutation",
+      "affectedPrs": [
+        "PR-13"
+      ],
+      "sourceIds": [
+        "KZ-DIGITAL-44-47-49-61-62",
+        "KZ-TRANSPORT-RULES-546"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-009",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-10",
+      "legalReviewId": "LEG-R0-010",
+      "title": "Partial delivery and receiver authority",
+      "scenario": "Consignee accepts 8 of 10 cargo units with two damaged",
+      "options": [
+        "Full DELIVERED",
+        "Full FAILED",
+        "PARTIAL with signed discrepancy act and 2 units current custodian"
+      ],
+      "recommendedOption": "C",
+      "preferredPolicy": "Require carrier/shipper/consignee-appropriate TTN/CMR/discrepancy act as applicable, no unilateral correction of signed record; 8/10 not completed delivery",
+      "legalRiskArea": "TRANSPORT_TTN_POD",
+      "untilApproved": "No full POD/settlement from partial event; preserve unresolved claim and evidence",
+      "affectedPrs": [
+        "PR-14",
+        "PR-16"
+      ],
+      "sourceIds": [
+        "KZ-TRANSPORT-RULES-546",
+        "KZ-FREIGHT-689"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-010",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-11",
+      "legalReviewId": "LEG-R0-011",
+      "title": "Booking cancellation and liabilities",
+      "scenario": "Customer clicks cancel after pickup and demands no fee",
+      "options": [
+        "Immediate CANCELLED",
+        "CancellationRequest with state-sensitive agreed terms/compensation",
+        "Forbid all cancellation"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Distinguish forwarding vs carriage contractual parties, advance notices, indemnities, cargo safe return, carrier commitment, same-form material amendments; avoid hardcoded universal penalties",
+      "legalRiskArea": "CONTRACT_WITHDRAWAL",
+      "untilApproved": "Request not cancellation; no automatic fee/asset release after custody",
+      "affectedPrs": [
+        "PR-12C",
+        "PR-17"
+      ],
+      "sourceIds": [
+        "KZ-FORWARDING-708-714",
+        "KZ-TRANSPORT-RULES-546"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-011",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "BR-12",
+      "legalReviewId": "LEG-R0-012",
+      "title": "No payment processing in KERUENIX",
+      "scenario": "Accounting operator handles bank and official tax records externally; KERUENIX shows commercial cost/margin and external document reference only",
+      "options": [
+        "Operate bank, AR/AP and settlement inside KERUENIX",
+        "Exclude all payments/ledger; external accounting only, with reference for commercial documents",
+        "Permit manual marking paid without evidence"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "No payments, refunds, accounts receivable/payable or bank callbacks in KERUENIX. Commercial price and external accounting document reference may be displayed. No PAID/SETTLED value, tax ESF issuing or bank integration.",
+      "legalRiskArea": "TAX_ACCOUNTING_AND_PAYMENT",
+      "untilApproved": "No payment endpoint, data model, bank provider config or paid status",
+      "affectedPrs": [
+        "PR-17"
+      ],
+      "sourceIds": [
+        "KZ-TAX-ESF-2026",
+        "KZ-GOV-ESF-2026"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL",
+        "ACCOUNTING_TAX"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-012",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "DEC-R0-01",
+      "legalReviewId": "LEG-R0-013",
+      "title": "Order aggregate versus projection",
+      "scenario": "Customer view duplicates mutable booking state",
+      "options": [
+        "Second Order aggregate",
+        "Read-only customer-scoped composition",
+        "Single mega-aggregate with all stages"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Order UI label must not masquerade as contractual party/order form; carry original contract/shipper/carrier refs and document version for dispute",
+      "legalRiskArea": "CONTRACT_ROLE_ALLOCATION",
+      "untilApproved": "No mutable Order table until ADR and agreement",
+      "affectedPrs": [
+        "PR-12",
+        "PR-19"
+      ],
+      "sourceIds": [
+        "KZ-FORWARDING-708-714"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-013",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "DEC-R0-02",
+      "legalReviewId": "LEG-R0-014",
+      "title": "CustomerAccount ownership",
+      "scenario": "Tenancy duplicates commercial client legal relationship",
+      "options": [
+        "Tenancy owns both identity and account business",
+        "Commercial owns business account; Tenancy only grants",
+        "Duplicate writes"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Provider-customer contract links verified BIN/legal identity + authorized delegations; neutral versioned event, audited source and revoked grants",
+      "legalRiskArea": "LEGAL_ENTITY_VERIFICATION",
+      "untilApproved": "No automatic grants on unverified contact or event",
+      "affectedPrs": [
+        "PR-03C",
+        "PR-03"
+      ],
+      "sourceIds": [
+        "KZ-PERSONAL-12-16",
+        "KZ-DIGITAL-40-44"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-014",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "DEC-R0-03",
+      "legalReviewId": "LEG-R0-015",
+      "title": "RFQ submit right",
+      "scenario": "Requester draft accidentally binds legal dispatch",
+      "options": [
+        "CREATE implies SUBMIT",
+        "Separate scoped SUBMIT with explicit nonbinding/binding semantics",
+        "Every customer user submits"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Classify RFQ submit explicitly as request for quotation or contractual offer; for R0 default nonbinding RFQ, no silent agreement/transport commitment",
+      "legalRiskArea": "REQUEST_VS_OFFER",
+      "untilApproved": "Until business policy confirmed, DRAFT remains and submit denied",
+      "affectedPrs": [
+        "PR-04",
+        "PR-05"
+      ],
+      "sourceIds": [
+        "KZ-CIVIL-395-397"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-015",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "DEC-R0-04",
+      "legalReviewId": "LEG-R0-016",
+      "title": "Cancellation command boundary",
+      "scenario": "Cancel button changes canonical booking and carrier obligations",
+      "options": [
+        "Direct Booking cancellation",
+        "Separate CancellationRequest and bounded provider decision"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Uses BR-11 approved terms, must preserve original contract and reimbursement evidence; request received != agreement to terminate",
+      "legalRiskArea": "CONTRACT_WITHDRAWAL",
+      "untilApproved": "No auto CANCELLED; in-flight custody continues",
+      "affectedPrs": [
+        "PR-12C"
+      ],
+      "sourceIds": [
+        "KZ-TRANSPORT-RULES-546",
+        "KZ-FORWARDING-708-714"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-016",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "DEC-R0-05",
+      "legalReviewId": "LEG-R0-017",
+      "title": "Private feedback after delivery",
+      "scenario": "Wrong person publishes harmful or inaccurate reputation from partial delivery",
+      "options": [
+        "Public provider rating",
+        "Private account-scoped factual feedback with dispute/removal process",
+        "Remove feedback feature"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Eligibility after verified completion not 8/10 partial; privacy, lawful processing and response/correction workflow; no publication by default",
+      "legalRiskArea": "PRIVACY_REPUTATION",
+      "untilApproved": "No public review, self-review or review before eligibility",
+      "affectedPrs": [
+        "PR-16R"
+      ],
+      "sourceIds": [
+        "KZ-PERSONAL-12-16"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-017",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "DEC-R0-06",
+      "legalReviewId": "LEG-R0-018",
+      "title": "Fleet registry versus capacity",
+      "scenario": "Registering a truck implies authorization to allocate it",
+      "options": [
+        "Single PR all-in-one",
+        "Fleet registry PR-10V plus legal/physical hold PR-10"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Verify right to operate/hire asset/driver and safety documents separately from technical registration; expired proof not confirmed resource",
+      "legalRiskArea": "OWNER_CARRIER_ASSET_RIGHTS",
+      "untilApproved": "Registry record never creates capacity commitment",
+      "affectedPrs": [
+        "PR-10V",
+        "PR-10"
+      ],
+      "sourceIds": [
+        "KZ-TRANSPORT-ROAD"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-018",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "DEC-R0-07",
+      "legalReviewId": "LEG-R0-019",
+      "title": "Commercial costing and external accountant, with EDS signing independently",
+      "scenario": "Commercial document signed through EDS but payment and official ESF handled by external accounting",
+      "options": [
+        "Full invoice and payment lifecycle inside KERUENIX",
+        "Commercial sell/buy/margin plus externally issued document reference; no payment or tax ESF generation",
+        "Internal paid toggle and export"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Contract commercial amount and independent EDS signing are not payment processing. External accounting/tax system is sole settlement and ESF owner.",
+      "legalRiskArea": "TAX_ACCOUNTING_AND_PAYMENT",
+      "untilApproved": "No internal invoice/PAID/settlement behavior",
+      "affectedPrs": [
+        "PR-17"
+      ],
+      "sourceIds": [
+        "KZ-TAX-ESF-2026",
+        "KZ-GOV-ESF-2026"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL",
+        "ACCOUNTING_TAX"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-019",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    },
+    {
+      "id": "DEC-R0-08",
+      "legalReviewId": "LEG-R0-020",
+      "title": "Immutable proof storage",
+      "scenario": "Uploaded image URL is treated as legally signed custody receipt",
+      "options": [
+        "Blob URL alone",
+        "Verified staged original + proof receipt + legally appropriate EDS/TTN/CMR profile",
+        "Persist mutable photo only"
+      ],
+      "recommendedOption": "B",
+      "preferredPolicy": "Preserve originals, metadata, hash and time; prove identity, signatory authority and transport document status separately; safe quarantine/orphan cleanup and legal hold",
+      "legalRiskArea": "EVIDENCE_CHAIN_OF_CUSTODY",
+      "untilApproved": "Without matching signature/TTN profile: internal observation only, not binding POD",
+      "affectedPrs": [
+        "PR-13",
+        "PR-16"
+      ],
+      "sourceIds": [
+        "KZ-DIGITAL-44-47-49-61-62",
+        "KZ-TRANSPORT-RULES-546"
+      ],
+      "requiredApproval": [
+        "BUSINESS_OWNER",
+        "LEGAL_COUNSEL"
+      ],
+      "legalApproval": "PENDING_COUNSEL_REVIEW",
+      "businessApproval": "RETAIN_CANONICAL_PENDING",
+      "tddAcceptance": {
+        "id": "LEG-TDD-020",
+        "status": "SPECIFIED_NOT_EXECUTED",
+        "positive": "After explicit owner-approved policy, authorized operation uses exact contract terms and legally correct evidence profile",
+        "negative": "Before approval or with foreign/stale/revoked authority operation remains safe without unauthorized mutation, false Outbox or invented legal binding"
+      }
+    }
+  ],
+  "scopeOverlayV17": {
+    "version": "1.7.0",
+    "source": "docs/40-r0-contract-consistency-business-readiness-v1-7.md",
+    "rule": "PR-17S was retired; no bank/payment-related legal release gate or financial operation exists in KERUENIX.",
+    "businessAndLegalApproval": "PENDING_REAL_STAKEHOLDER"
+  }
+}

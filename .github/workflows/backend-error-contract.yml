@@ -1,0 +1,37 @@
+name: Backend Error Contract
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'docs/contracts/api-error-catalog.v1.json'
+      - '.github/workflows/backend-error-contract.yml'
+  push:
+    branches:
+      - main
+      - docs/idea-multitenant-foundation
+    paths:
+      - 'backend/**'
+      - 'docs/contracts/api-error-catalog.v1.json'
+      - '.github/workflows/backend-error-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  error-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Enforce JSON catalog and Java enum parity
+        run: python3 backend/scripts/check_error_catalog.py
+      - name: Compile and run MVC, Security and RFC9457 contract tests
+        run: mvn -B -ntp -f backend/pom.xml verify

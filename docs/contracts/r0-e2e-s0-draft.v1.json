@@ -1,0 +1,442 @@
+{
+  "schemaVersion": "1.0.0",
+  "asOfDate": "2026-11-08",
+  "status": "S0_E2E_GIVEN_WHEN_DRAFT",
+  "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+  "owner": "cross-functional",
+  "count": 10,
+  "active": 9,
+  "retired": 1,
+  "noPayments": true,
+  "disclaimer": "Proposed role-specific E2E Given/When and oracles need S0 design review and real BR/DEC approval; no tests implemented or run",
+  "cases": [
+    {
+      "caseId": "TDD-R0-E2E-01",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "CustomerOrg-X invited -> RFQ -> provider inbox -> quote approved -> customer acceptance",
+      "canonicalThen": "Customer sees own business objects; provider sees only allowed queue; no Booked until capacity",
+      "proposed": {
+        "actors": [
+          "customer-org-x-user",
+          "provider-tenant-a-operator",
+          "authorized-company-signatory"
+        ],
+        "given": [
+          "Provider Tenant-A has a verified CustomerAccount-X relationship; CustomerAccount-Y is a separate restricted customer",
+          "Invitation and resource grants are valid and individually scoped; Quote signing rules remain gated by BR-01/02 and EDS approvals",
+          "There is no committed CapacityReservation at journey start"
+        ],
+        "whenSteps": [
+          "CustomerOrg-X accepts its own invitation and creates RFQ DRAFT",
+          "Authorized Customer-X actor submits only after PR-05 permission is approved; otherwise assert DENY",
+          "Provider operator receives only the authorized Inbox entry and creates immutable QuoteVersion",
+          "Authorized signatory proves acceptance on the exact quote hash under approved BR/EDS contract",
+          "Customer checks own RFQ/Quote projection, then attempts Booking without capacity"
+        ],
+        "expected": {
+          "http": "Customer-X sees only own RFQ/Quote; Customer-Y count/detail/export excludes X; unauthorized submit/accept DENY",
+          "db": "QuoteVersion immutable and no BOOKING.CONFIRMED without valid exclusive capacity and carrier requirement",
+          "events": "No false QuoteAccepted or BookingConfirmed before necessary signed/capacity evidence",
+          "ui": "Separate DRAFT, ISSUED, ACCEPTED (only when approved), NO CAPACITY states",
+          "canonicalThen": "Customer sees own business objects; provider sees only allowed queue; no Booked until capacity"
+        },
+        "negativeVariants": [
+          "Same idempotencyKey different cargo payload CONFLICT",
+          "Cross-customer pagination/count must not leak resource existence"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03",
+          "BR-05",
+          "BR-01",
+          "BR-02",
+          "DEC-R0-02",
+          "DEC-R0-03"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-02",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Forwarder + external carrier -> offer -> capacity hold -> confirmed booking",
+      "canonicalThen": "Customer can see Booking confirmed only after authoritative Fleet and compliance verification",
+      "proposed": {
+        "actors": [
+          "provider-forwarder",
+          "external-carrier",
+          "customer-org-x"
+        ],
+        "given": [
+          "Immutable accepted QuoteVersion and verified CarrierOffer are available only under approved legal profile",
+          "Two overlapping capacity consumers share one vehicle combination",
+          "Compliance rule source is verified, route assessed and not UNKNOWN"
+        ],
+        "whenSteps": [
+          "Provider selects an authorized CarrierOffer, separately from confirmation of carrier commitment",
+          "Fleet executes exclusive capacity hold with expectedVersion and TTL",
+          "External carrier confirms commitment under valid authority",
+          "Booking process tests confirmation with and without independently valid CapacityReservation",
+          "Repeat and race a competing hold while comparing customer Booking projection"
+        ],
+        "expected": {
+          "http": "Only valid authorized provider/customer queries expose resulting Booking state",
+          "db": "Only one exclusive reservation; Booking.CONFIRMED iff contractual/compliance/capacity predicates hold",
+          "events": "No duplicate BookingConfirmed or phantom CapacityReserved under race/replay",
+          "ui": "OfferSelected, CapacityHeld, CarrierCommitted and BookingConfirmed shown as different facts",
+          "canonicalThen": "Customer can see Booking confirmed only after authoritative Fleet and compliance verification"
+        },
+        "negativeVariants": [
+          "Carrier confirmation revoked after hold",
+          "Concurrent overlapping branch hold must not succeed twice"
+        ],
+        "pendingDecisionRefs": [
+          "BR-05",
+          "BR-07",
+          "BR-06",
+          "DEC-R0-06",
+          "DEC-R0-01"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-03",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Own fleet instead of external carrier",
+      "canonicalThen": "No fake CarrierOffer required, same exclusive reservation invariants",
+      "proposed": {
+        "actors": [
+          "provider-dispatcher",
+          "own-fleet-manager",
+          "customer-org-x"
+        ],
+        "given": [
+          "Provider owns verified fleet combination with no external CarrierOffer",
+          "Cargo and compliance assessment are valid",
+          "An overlapping hold from a second internal branch is possible"
+        ],
+        "whenSteps": [
+          "Select own-fleet fulfillment path",
+          "Create and confirm one exclusive CapacityReservation under authorized own-fleet actor",
+          "Attempt same resource hold concurrently from another provider branch",
+          "Evaluate Booking predicates without injecting a fictitious third-party carrier offer"
+        ],
+        "expected": {
+          "http": "Own-fleet fulfillment can be queried without a fake external carrier offer",
+          "db": "Vehicle resource exclusivity preserved and no synthetic CarrierOffer persisted",
+          "events": "Only authoritative capacity and booking facts emitted; duplicate hold rejected",
+          "ui": "Own-fleet path shown distinctly from external carrier procurement",
+          "canonicalThen": "No fake CarrierOffer required, same exclusive reservation invariants"
+        },
+        "negativeVariants": [
+          "Same resource simultaneous hold must conflict",
+          "Expired hold cannot free already confirmed reservation"
+        ],
+        "pendingDecisionRefs": [
+          "BR-07",
+          "BR-06",
+          "DEC-R0-06",
+          "DEC-R0-01"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-04",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Driver online/offline pickup -> partial POD 8/10 -> remaining returned",
+      "canonicalThen": "Cargo conservation and original proof immutable; track customer-safe statuses",
+      "proposed": {
+        "actors": [
+          "assigned-driver",
+          "receiver",
+          "provider-operator",
+          "customer-org-x"
+        ],
+        "given": [
+          "Trip and driver assignment are verified and not revoked",
+          "Exactly 10 immutable HandlingUnit IDs exist; no previous custody receipt",
+          "Receiver has narrow delivery-attempt scope; offline event IDs are globally unique within correct tenant"
+        ],
+        "whenSteps": [
+          "Driver scans 10 units and commits online custody pickup with original evidence",
+          "Driver goes offline; stores signed-scoped movement event and reopens local pending queue",
+          "Receiver accepts exactly 8 units; marks remaining 2 refused/return-pending with named custodian",
+          "Replay same and changed-digest offline eventIds while network recovers",
+          "Record return/disposition of 2 units under authorized custody transition, never overwrite original POD"
+        ],
+        "expected": {
+          "http": "Shipment shows PARTIAL_DELIVERY while 8/10; no customer-facing full-delivery claim",
+          "db": "8 accepted + 2 retained = 10; 2 named custodian/disposition; no duplicate unit handover; immutable evidence hash",
+          "events": "Inbox dedup, changed digest conflict/quarantine; no ShipmentDelivered until full verified final disposition",
+          "ui": "Partial delivery, damaged/refused count and named remaining custody visible; review disabled for partial",
+          "canonicalThen": "Cargo conservation and original proof immutable; track customer-safe statuses"
+        },
+        "negativeVariants": [
+          "Revoked driver assignment with forged observedAt DENY",
+          "Duplicate offline event with different payload hash quarantined"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "BR-10",
+          "BR-04",
+          "DEC-R0-08"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-05",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Confirmed Booking cancellation before/after Trip.STARTED",
+      "canonicalThen": "Request-only separation and correct compensation/custody branch",
+      "proposed": {
+        "actors": [
+          "customer-org-x",
+          "provider-booking-approver",
+          "carrier-driver"
+        ],
+        "given": [
+          "Booking is CONFIRMED with exclusive CapacityReservation",
+          "Two separate variants: Trip has NOT STARTED, and Trip already STARTED with active custody",
+          "Cancellation authority/rules BR-11 and DEC-R0-04 remain pending and must fail closed"
+        ],
+        "whenSteps": [
+          "Customer submits CancelRequest; do not mutate Booking immediately",
+          "Authorized approver tries cancellation before Trip.STARTED and records decision or DENY if policy pending",
+          "Simulate concurrent Trip.STARTED while cancellation request is pending",
+          "Attempt cancellation after active custody and inspect protected resource transitions"
+        ],
+        "expected": {
+          "http": "CancelRequest response never claims Booking CANCELLED until independent authorization succeeds",
+          "db": "Trip.STARTED prevents unsafe resource release; cargo custody never orphaned",
+          "events": "At most one authorized cancellation/compensation, no duplicate release on replay",
+          "ui": "Separate requested, denied/pending, approved and recovery states",
+          "canonicalThen": "Request-only separation and correct compensation/custody branch"
+        },
+        "negativeVariants": [
+          "Concurrent cancel vs Trip.STARTED",
+          "Replay cancellation request with same ID and conflicting payload"
+        ],
+        "pendingDecisionRefs": [
+          "BR-06",
+          "BR-07",
+          "BR-11",
+          "BR-09",
+          "DEC-R0-01",
+          "DEC-R0-04",
+          "DEC-R0-08"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-06",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Payable approved -> advance + partial bank receipt + duplicate callback",
+      "canonicalThen": "No false Paid, unique allocations and money precision",
+      "proposed": null,
+      "retired": true,
+      "retirementReason": "Removed from KERUENIX product; no payment, cash allocation, bank callback, PAID/SETTLED state or AR/AP implementation",
+      "replacedBy": [
+        "PAY-ABS-01",
+        "PAY-ABS-02",
+        "PAY-ABS-03",
+        "PAY-ABS-04",
+        "PAY-ABS-05",
+        "PAY-ABS-06"
+      ],
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-07",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Subscription suspended while active custody and mandatory POD pending",
+      "canonicalThen": "Only approved safety continuity, no new discretionary booking, no cargo evidence stranded",
+      "proposed": {
+        "actors": [
+          "tenant-admin",
+          "driver-in-active-custody",
+          "provider-operator"
+        ],
+        "given": [
+          "Tenant subscription is suspended during active custody and mandatory POD is pending",
+          "The supported safety-continuity scope remains subject to pending BR-04 legal approval"
+        ],
+        "whenSteps": [
+          "Suspend tenant while preserving immutable custody facts",
+          "Driver submits mandatory pre-authorized POD/evidence through narrow continuity policy; otherwise fail closed with durable recovery path",
+          "Provider attempts to create new Booking through same continuity token",
+          "Restart service while custody evidence is pending and retry mandatory event"
+        ],
+        "expected": {
+          "http": "Fresh discretionary booking DENY; mandatory evidence handled only by approved bounded safety policy",
+          "db": "Active cargo custody and original evidence never lost or silently overwritten",
+          "events": "Safety event retry is idempotent, no unrestricted fallback or fresh booking event",
+          "ui": "Shows restricted subscription, safe mandatory recovery status; not a global unrestricted mode",
+          "canonicalThen": "Only approved safety continuity, no new discretionary booking, no cargo evidence stranded"
+        },
+        "negativeVariants": [
+          "Provider switches tenant header during continuity",
+          "SaaS policy service unavailable, default DENY fresh booking"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "BR-10",
+          "BR-04",
+          "DEC-R0-08"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-08",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Provider staff phone RFQ and explicit later customer acceptance",
+      "canonicalThen": "Captured request provenance distinct from customer signatory; no forged approval",
+      "proposed": {
+        "actors": [
+          "provider-sales",
+          "customer-org-x-authorized-signatory"
+        ],
+        "given": [
+          "Provider sales verified an assisted phone/email request origin and attribution",
+          "Customer has not agreed to any contract or authorized a provider to sign on its behalf"
+        ],
+        "whenSteps": [
+          "Provider sales records customer-attributed assisted RFQ DRAFT with provenance",
+          "Provider issues commercial proposal only under valid scoped permissions",
+          "Sales user attempts customer acceptance using own JWT",
+          "Customer independently signs/accepts exact QuoteVersion under approved EDS/legal policy"
+        ],
+        "expected": {
+          "http": "Sales cannot impersonate Customer-X actor; independent customer acceptance required",
+          "db": "Assisted origin and actual signer distinct; QuoteVersion remains ISSUED absent real signer",
+          "events": "No false QuoteAccepted due to a phone call or sales-assisted RFQ",
+          "ui": "Origin displayed distinctly from formal customer acceptance",
+          "canonicalThen": "Captured request provenance distinct from customer signatory; no forged approval"
+        },
+        "negativeVariants": [
+          "Sales submit while customer grant revoked",
+          "Unsigned provider-side approval cannot become customer acceptance"
+        ],
+        "pendingDecisionRefs": [
+          "BR-01",
+          "BR-02",
+          "BR-05",
+          "DEC-R0-03"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-09",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Revoke CustomerAccount grant while read cache and signed link active",
+      "canonicalThen": "Future protected API denies; signed URL TTL semantics explicit",
+      "proposed": {
+        "actors": [
+          "customer-org-x-user",
+          "provider-relationship-owner",
+          "customer-org-y-user"
+        ],
+        "given": [
+          "Tenant-A has two separately scoped CustomerAccounts X/Y",
+          "Customer-X has cached list/detail and a signed document link with explicit original TTL",
+          "The authoritative grant can be revoked while JWT remains signed and unexpired"
+        ],
+        "whenSteps": [
+          "Customer-X reads authorized resources and obtains a bounded signed URL",
+          "Provider revokes only Customer-X grant",
+          "Customer-X reuses same JWT against list/count/detail/export",
+          "Customer-X tries new signed link and old link before/after documented TTL",
+          "Customer-Y independently repeats its allowed read"
+        ],
+        "expected": {
+          "http": "All new protected calls immediately DENY, including list counts and new link issuance",
+          "db": "No foreign reads or disclosure; audit records denied attempt where specified without revealing resource",
+          "events": "Revocation propagates to read cache/subscription; no new data export",
+          "ui": "Cached protected content invalidated; old signed link limitation disclosed; no false instantaneous revoke claim",
+          "canonicalThen": "Future protected API denies; signed URL TTL semantics explicit"
+        },
+        "negativeVariants": [
+          "Warm cache served after grant revoke",
+          "Signed URL remaining TTL cannot exceed reviewed policy"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    },
+    {
+      "caseId": "TDD-R0-E2E-10",
+      "source": "docs/contracts/r0-tdd-scenarios.v1.json",
+      "canonicalJourney": "Carrier withdraws after customer accepted quote before/after hold",
+      "canonicalThen": "Booking never falsely confirmed; exception and replacement sourced safely",
+      "proposed": {
+        "actors": [
+          "provider-dispatcher",
+          "external-carrier",
+          "customer-org-x"
+        ],
+        "given": [
+          "Customer approved exact QuoteVersion under applicable BR/EDS approval",
+          "CarrierOffer is selected but carrier might withdraw before or after resource hold"
+        ],
+        "whenSteps": [
+          "Carrier submits withdrawal before CapacityReservation and provider tries Booking",
+          "Provider requests alternative authorized CarrierOffer; stale offer confirmation rejected",
+          "Repeat with capacity hold already active when carrier withdraws",
+          "Process manager compensates/reconciles hold and booking state under authorized rule"
+        ],
+        "expected": {
+          "http": "Customer never sees Booking.CONFIRMED without all authoritative predicates",
+          "db": "Stale/withdrawn offer not usable; capacity hold and booking reconcile to one coherent state",
+          "events": "No phantom booking or duplicate reservation on replay; exception/replacement is durable",
+          "ui": "Carrier withdrawn and reallocation/recovery shown, not a fake confirmation",
+          "canonicalThen": "Booking never falsely confirmed; exception and replacement sourced safely"
+        },
+        "negativeVariants": [
+          "Withdraw races confirmation",
+          "Replayed carrier withdrawal after new offer selection"
+        ],
+        "pendingDecisionRefs": [
+          "BR-07",
+          "BR-06",
+          "DEC-R0-01"
+        ]
+      },
+      "retired": false,
+      "stage": "S0_DRAFT_NOT_APPROVED",
+      "testExecution": "NOT_WRITTEN",
+      "reviewerEvidence": null
+    }
+  ]
+}

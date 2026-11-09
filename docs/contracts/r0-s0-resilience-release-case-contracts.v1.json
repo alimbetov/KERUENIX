@@ -1,0 +1,1488 @@
+{
+  "schemaVersion": "1.0.0",
+  "date": "2026-11-09",
+  "phase": "S0_SCENARIO_DESIGN",
+  "batch": "resilience_release",
+  "status": "PROPOSED_NOT_REVIEWED",
+  "sourceAllocation": "docs/contracts/r0-scenario-allocation.v1.json",
+  "sourceExtension": "docs/contracts/r0-s0-extension-gwt.v1.json",
+  "scopePrs": [
+    "PR-18",
+    "PR-19",
+    "PR-20"
+  ],
+  "count": {
+    "primary": 18,
+    "impacted": 7,
+    "local": 4,
+    "total": 29
+  },
+  "rules": {
+    "noNewDomainCode": true,
+    "suspensionSafetyScopeNotGeneralAuth": true,
+    "noBookingDuringSuspension": true,
+    "noLostCustodyOnCrash": true,
+    "outboxInboxIdempotent": true,
+    "exactShaReleaseEvidence": true,
+    "restoreDrillRequired": true,
+    "twoTenantPilotRequired": true,
+    "noPayments": true,
+    "reviewCannotBeIssuedByCi": true
+  },
+  "fixture": {
+    "id": "FIX-R0-RELIABILITY-01",
+    "tenants": [
+      "Tenant-A",
+      "Tenant-B"
+    ],
+    "outboxWorkerCrashAfterConsumerCommit": true,
+    "grantRevokeInFlight": true,
+    "offlineEvidencePending": true,
+    "subscriptionSuspended": true,
+    "snapshotVersion": "N-1",
+    "migrationVersion": "N",
+    "releaseShaAndDigest": "MUST_CAPTURE_FROM_CI",
+    "rpoRtoSlo": "MEASURE_AND_REVIEW_NOT_INVENT",
+    "pilotPartialAndFull": [
+      "8/10_partial",
+      "separate_10/10_verified"
+    ],
+    "syntheticOnly": true
+  },
+  "cases": [
+    {
+      "id": "TDD-SIM-41-G05-01",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Trip STARTED and active custody; subscription enters SUSPENDED",
+        "when": "Authorized assigned driver records necessary POD/evidence under continuity policy",
+        "then": "Safety/evidence permitted and auditable, no cargo evidence lost; new discretionary booking blocked"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Trip STARTED and active custody; subscription enters SUSPENDED"
+        ],
+        "whenSteps": [
+          "Authorized assigned driver records necessary POD/evidence under continuity policy",
+          "When tenant suspended during active custody, require only separately approved mandatory evidence continuity and preserve original evidence"
+        ],
+        "dbOracle": "SaaS subscription state does not delete custody ledger; verified safety evidence may be appended solely under approved continuity policy",
+        "eventOracle": "No BookingConfirmed/new discretionary action; one authorized CustodyEvidenceRecorded after verified scope only",
+        "httpUiOracle": "Customer/driver see suspension restricted mode and pending evidence, not generic allow",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_SIM_41_G05_01Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [
+        "BR-04 legal continuity pending: safety-scope must be explicit, not a blanket override."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-41-G05-02",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Tenant suspended and sales attempts new discretionary Booking",
+        "when": "Sales submits booking command",
+        "then": "DENY under agreed SaaS policy while evidence/recovery operations remain available"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Tenant suspended and sales attempts new discretionary Booking"
+        ],
+        "whenSteps": [
+          "Sales submits booking command",
+          "A suspended tenant requests new commercial operations with safety token"
+        ],
+        "dbOracle": "New Booking/RFQ/Quote remains unchanged, safety evidence if approved remains recoverable",
+        "eventOracle": "No quote/booking side effects from safety token",
+        "httpUiOracle": "403/HOLD commercial action; scoped recovery state",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_SIM_41_G05_02Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [
+        "BR-04 legal continuity pending: safety-scope must be explicit, not a blanket override."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-41-G05-03",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Suspension transition races driver pickup/POD write",
+        "when": "Both operations commit concurrently",
+        "then": "Deterministic scoped continuity guard, no orphan evidence/custody"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Suspension transition races driver pickup/POD write"
+        ],
+        "whenSteps": [
+          "Both operations commit concurrently",
+          "Race subscription suspension with in-flight custody evidence submission"
+        ],
+        "dbOracle": "Atomic decision logs authorization version and preserves already committed safe evidence; no orphan unit",
+        "eventOracle": "One logical evidence event, no duplicate or blanket continuation",
+        "httpUiOracle": "Deterministic status including timing, no false acknowledged uncommitted POD",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_SIM_41_G05_03Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [
+        "BR-04 legal continuity pending: safety-scope must be explicit, not a blanket override."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-41-G05-04",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "SaaS service temporarily unreachable with safe-continuity policy version available",
+        "when": "Critical custody event retries",
+        "then": "Idempotent evidence accepted only under valid preapproved continuity scope; logs decision"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "SaaS service temporarily unreachable with safe-continuity policy version available"
+        ],
+        "whenSteps": [
+          "Critical custody event retries",
+          "Replay offline evidence during suspended SaaS subscription"
+        ],
+        "dbOracle": "Same eventId/digest idempotent only in reviewed mandatory scope, changed digest quarantined",
+        "eventOracle": "One verified logical effect, no booking/quote event",
+        "httpUiOracle": "Driver sees completed or needs-reconciliation based on server decision",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_SIM_41_G05_04Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [
+        "BR-04 legal continuity pending: safety-scope must be explicit, not a blanket override."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-41-G05-05",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Suspended Tenant-A driver tries read another Tenant-B Trip",
+        "when": "Call via continuation privileges",
+        "then": "DENY; safe continuity does not grant cross-tenant access"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Suspended Tenant-A driver tries read another Tenant-B Trip"
+        ],
+        "whenSteps": [
+          "Call via continuation privileges",
+          "Suspended Tenant-A safety grant used to request Tenant-B cargo"
+        ],
+        "dbOracle": "No cross-tenant data read/write or grant, RLS and ABAC both enforced",
+        "eventOracle": "No foreign evidence/export/Booking event",
+        "httpUiOracle": "Return an authenticated, nondisclosing 403; suspended Tenant-A safety capability never reveals Tenant-B cargo, custodian, booking or identifiers.",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_SIM_41_G05_05Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [
+        "BR-04 legal continuity pending: safety-scope must be explicit, not a blanket override."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-SIM-35-S26-01",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Job handler retries after user membership revoke",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Re-check service scope and resource grant; deny stale authority, preserve dedup and audit"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Job handler retries after user membership revoke"
+        ],
+        "whenSteps": [
+          "Run the stated R0 safety/exception operation under affected roles and current resource state",
+          "Background service principal executes queued action after original user grant revoked"
+        ],
+        "dbOracle": "Reauthorize at command execution against current grant/resource, not saved JWT scope; keep safe audit record",
+        "eventOracle": "No success event from revoked delegate; denied job recorded redacted",
+        "httpUiOracle": "Failed/needs-operator action without payload disclosure",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_SIM_35_S26_01Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-01",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-19",
+        "PR-20"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Customer sees own business objects; provider sees only allowed queue; no Booked until capacity"
+      },
+      "proposal": {
+        "actors": [
+          "customer-org-x-user",
+          "provider-tenant-a-operator",
+          "authorized-company-signatory"
+        ],
+        "given": [
+          "Provider Tenant-A has a verified CustomerAccount-X relationship; CustomerAccount-Y is a separate restricted customer",
+          "Invitation and resource grants are valid and individually scoped; Quote signing rules remain gated by BR-01/02 and EDS approvals",
+          "There is no committed CapacityReservation at journey start"
+        ],
+        "whenSteps": [
+          "CustomerOrg-X accepts its own invitation and creates RFQ DRAFT",
+          "Authorized Customer-X actor submits only after PR-05 permission is approved; otherwise assert DENY",
+          "Provider operator receives only the authorized Inbox entry and creates immutable QuoteVersion",
+          "Authorized signatory proves acceptance on the exact quote hash under approved BR/EDS contract",
+          "Customer checks own RFQ/Quote projection, then attempts Booking without capacity"
+        ],
+        "dbOracle": "QuoteVersion immutable and no BOOKING.CONFIRMED without valid exclusive capacity and carrier requirement",
+        "eventOracle": "No false QuoteAccepted or BookingConfirmed before necessary signed/capacity evidence",
+        "httpUiOracle": "Separate DRAFT, ISSUED, ACCEPTED (only when approved), NO CAPACITY states",
+        "negativeVariants": [
+          "Same idempotencyKey different cargo payload CONFLICT",
+          "Cross-customer pagination/count must not leak resource existence"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03",
+          "BR-05",
+          "BR-01",
+          "BR-02",
+          "DEC-R0-02",
+          "DEC-R0-03"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_01Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-02",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Customer can see Booking confirmed only after authoritative Fleet and compliance verification"
+      },
+      "proposal": {
+        "actors": [
+          "provider-forwarder",
+          "external-carrier",
+          "customer-org-x"
+        ],
+        "given": [
+          "Immutable accepted QuoteVersion and verified CarrierOffer are available only under approved legal profile",
+          "Two overlapping capacity consumers share one vehicle combination",
+          "Compliance rule source is verified, route assessed and not UNKNOWN"
+        ],
+        "whenSteps": [
+          "Provider selects an authorized CarrierOffer, separately from confirmation of carrier commitment",
+          "Fleet executes exclusive capacity hold with expectedVersion and TTL",
+          "External carrier confirms commitment under valid authority",
+          "Booking process tests confirmation with and without independently valid CapacityReservation",
+          "Repeat and race a competing hold while comparing customer Booking projection"
+        ],
+        "dbOracle": "Only one exclusive reservation; Booking.CONFIRMED iff contractual/compliance/capacity predicates hold",
+        "eventOracle": "No duplicate BookingConfirmed or phantom CapacityReserved under race/replay",
+        "httpUiOracle": "OfferSelected, CapacityHeld, CarrierCommitted and BookingConfirmed shown as different facts",
+        "negativeVariants": [
+          "Carrier confirmation revoked after hold",
+          "Concurrent overlapping branch hold must not succeed twice"
+        ],
+        "pendingDecisionRefs": [
+          "BR-05",
+          "BR-07",
+          "BR-06",
+          "DEC-R0-06",
+          "DEC-R0-01"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_02Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-03",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "No fake CarrierOffer required, same exclusive reservation invariants"
+      },
+      "proposal": {
+        "actors": [
+          "provider-dispatcher",
+          "own-fleet-manager",
+          "customer-org-x"
+        ],
+        "given": [
+          "Provider owns verified fleet combination with no external CarrierOffer",
+          "Cargo and compliance assessment are valid",
+          "An overlapping hold from a second internal branch is possible"
+        ],
+        "whenSteps": [
+          "Select own-fleet fulfillment path",
+          "Create and confirm one exclusive CapacityReservation under authorized own-fleet actor",
+          "Attempt same resource hold concurrently from another provider branch",
+          "Evaluate Booking predicates without injecting a fictitious third-party carrier offer"
+        ],
+        "dbOracle": "Vehicle resource exclusivity preserved and no synthetic CarrierOffer persisted",
+        "eventOracle": "Only authoritative capacity and booking facts emitted; duplicate hold rejected",
+        "httpUiOracle": "Own-fleet path shown distinctly from external carrier procurement",
+        "negativeVariants": [
+          "Same resource simultaneous hold must conflict",
+          "Expired hold cannot free already confirmed reservation"
+        ],
+        "pendingDecisionRefs": [
+          "BR-07",
+          "BR-06",
+          "DEC-R0-06",
+          "DEC-R0-01"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_03Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-04",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-18",
+        "PR-19",
+        "PR-20"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Cargo conservation and original proof immutable; track customer-safe statuses"
+      },
+      "proposal": {
+        "actors": [
+          "assigned-driver",
+          "receiver",
+          "provider-operator",
+          "customer-org-x"
+        ],
+        "given": [
+          "Trip and driver assignment are verified and not revoked",
+          "Exactly 10 immutable HandlingUnit IDs exist; no previous custody receipt",
+          "Receiver has narrow delivery-attempt scope; offline event IDs are globally unique within correct tenant"
+        ],
+        "whenSteps": [
+          "Driver scans 10 units and commits online custody pickup with original evidence",
+          "Driver goes offline; stores signed-scoped movement event and reopens local pending queue",
+          "Receiver accepts exactly 8 units; marks remaining 2 refused/return-pending with named custodian",
+          "Replay same and changed-digest offline eventIds while network recovers",
+          "Record return/disposition of 2 units under authorized custody transition, never overwrite original POD"
+        ],
+        "dbOracle": "8 accepted + 2 retained = 10; 2 named custodian/disposition; no duplicate unit handover; immutable evidence hash",
+        "eventOracle": "Inbox dedup, changed digest conflict/quarantine; no ShipmentDelivered until full verified final disposition",
+        "httpUiOracle": "Partial delivery, damaged/refused count and named remaining custody visible; review disabled for partial",
+        "negativeVariants": [
+          "Revoked driver assignment with forged observedAt DENY",
+          "Duplicate offline event with different payload hash quarantined"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "BR-10",
+          "BR-04",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_04Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [
+        "POD 8/10 not full completion/review eligibility; separate final 10/10 acceptance required."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-05",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Request-only separation and correct compensation/custody branch"
+      },
+      "proposal": {
+        "actors": [
+          "customer-org-x",
+          "provider-booking-approver",
+          "carrier-driver"
+        ],
+        "given": [
+          "Booking is CONFIRMED with exclusive CapacityReservation",
+          "Two separate variants: Trip has NOT STARTED, and Trip already STARTED with active custody",
+          "Cancellation authority/rules BR-11 and DEC-R0-04 remain pending and must fail closed"
+        ],
+        "whenSteps": [
+          "Customer submits CancelRequest; do not mutate Booking immediately",
+          "Authorized approver tries cancellation before Trip.STARTED and records decision or DENY if policy pending",
+          "Simulate concurrent Trip.STARTED while cancellation request is pending",
+          "Attempt cancellation after active custody and inspect protected resource transitions"
+        ],
+        "dbOracle": "Trip.STARTED prevents unsafe resource release; cargo custody never orphaned",
+        "eventOracle": "At most one authorized cancellation/compensation, no duplicate release on replay",
+        "httpUiOracle": "Separate requested, denied/pending, approved and recovery states",
+        "negativeVariants": [
+          "Concurrent cancel vs Trip.STARTED",
+          "Replay cancellation request with same ID and conflicting payload"
+        ],
+        "pendingDecisionRefs": [
+          "BR-06",
+          "BR-07",
+          "BR-11",
+          "BR-09",
+          "DEC-R0-01",
+          "DEC-R0-04",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_05Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-07",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-18",
+        "PR-19"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Only approved safety continuity, no new discretionary booking, no cargo evidence stranded"
+      },
+      "proposal": {
+        "actors": [
+          "tenant-admin",
+          "driver-in-active-custody",
+          "provider-operator"
+        ],
+        "given": [
+          "Tenant subscription is suspended during active custody and mandatory POD is pending",
+          "The supported safety-continuity scope remains subject to pending BR-04 legal approval"
+        ],
+        "whenSteps": [
+          "Suspend tenant while preserving immutable custody facts",
+          "Driver submits mandatory pre-authorized POD/evidence through narrow continuity policy; otherwise fail closed with durable recovery path",
+          "Provider attempts to create new Booking through same continuity token",
+          "Restart service while custody evidence is pending and retry mandatory event"
+        ],
+        "dbOracle": "Active cargo custody and original evidence never lost or silently overwritten",
+        "eventOracle": "Safety event retry is idempotent, no unrestricted fallback or fresh booking event",
+        "httpUiOracle": "Shows restricted subscription, safe mandatory recovery status; not a global unrestricted mode",
+        "negativeVariants": [
+          "Provider switches tenant header during continuity",
+          "SaaS policy service unavailable, default DENY fresh booking"
+        ],
+        "pendingDecisionRefs": [
+          "BR-09",
+          "BR-10",
+          "BR-04",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_07Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [
+        "BR-04 legal continuity pending: safety-scope must be explicit, not a blanket override."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-08",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Captured request provenance distinct from customer signatory; no forged approval"
+      },
+      "proposal": {
+        "actors": [
+          "provider-sales",
+          "customer-org-x-authorized-signatory"
+        ],
+        "given": [
+          "Provider sales verified an assisted phone/email request origin and attribution",
+          "Customer has not agreed to any contract or authorized a provider to sign on its behalf"
+        ],
+        "whenSteps": [
+          "Provider sales records customer-attributed assisted RFQ DRAFT with provenance",
+          "Provider issues commercial proposal only under valid scoped permissions",
+          "Sales user attempts customer acceptance using own JWT",
+          "Customer independently signs/accepts exact QuoteVersion under approved EDS/legal policy"
+        ],
+        "dbOracle": "Assisted origin and actual signer distinct; QuoteVersion remains ISSUED absent real signer",
+        "eventOracle": "No false QuoteAccepted due to a phone call or sales-assisted RFQ",
+        "httpUiOracle": "Origin displayed distinctly from formal customer acceptance",
+        "negativeVariants": [
+          "Sales submit while customer grant revoked",
+          "Unsigned provider-side approval cannot become customer acceptance"
+        ],
+        "pendingDecisionRefs": [
+          "BR-01",
+          "BR-02",
+          "BR-05",
+          "DEC-R0-03"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_08Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-09",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Future protected API denies; signed URL TTL semantics explicit"
+      },
+      "proposal": {
+        "actors": [
+          "customer-org-x-user",
+          "provider-relationship-owner",
+          "customer-org-y-user"
+        ],
+        "given": [
+          "Tenant-A has two separately scoped CustomerAccounts X/Y",
+          "Customer-X has cached list/detail and a signed document link with explicit original TTL",
+          "The authoritative grant can be revoked while JWT remains signed and unexpired"
+        ],
+        "whenSteps": [
+          "Customer-X reads authorized resources and obtains a bounded signed URL",
+          "Provider revokes only Customer-X grant",
+          "Customer-X reuses same JWT against list/count/detail/export",
+          "Customer-X tries new signed link and old link before/after documented TTL",
+          "Customer-Y independently repeats its allowed read"
+        ],
+        "dbOracle": "No foreign reads or disclosure; audit records denied attempt where specified without revealing resource",
+        "eventOracle": "Revocation propagates to read cache/subscription; no new data export",
+        "httpUiOracle": "Cached protected content invalidated; old signed link limitation disclosed; no false instantaneous revoke claim",
+        "negativeVariants": [
+          "Warm cache served after grant revoke",
+          "Signed URL remaining TTL cannot exceed reviewed policy"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_09Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-10",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-19",
+      "ownerModule": "cross-functional",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Booking never falsely confirmed; exception and replacement sourced safely"
+      },
+      "proposal": {
+        "actors": [
+          "provider-dispatcher",
+          "external-carrier",
+          "customer-org-x"
+        ],
+        "given": [
+          "Customer approved exact QuoteVersion under applicable BR/EDS approval",
+          "CarrierOffer is selected but carrier might withdraw before or after resource hold"
+        ],
+        "whenSteps": [
+          "Carrier submits withdrawal before CapacityReservation and provider tries Booking",
+          "Provider requests alternative authorized CarrierOffer; stale offer confirmation rejected",
+          "Repeat with capacity hold already active when carrier withdraws",
+          "Process manager compensates/reconciles hold and booking state under authorized rule"
+        ],
+        "dbOracle": "Stale/withdrawn offer not usable; capacity hold and booking reconcile to one coherent state",
+        "eventOracle": "No phantom booking or duplicate reservation on replay; exception/replacement is durable",
+        "httpUiOracle": "Carrier withdrawn and reallocation/recovery shown, not a fake confirmation",
+        "negativeVariants": [
+          "Withdraw races confirmation",
+          "Replayed carrier withdrawal after new offer selection"
+        ],
+        "pendingDecisionRefs": [
+          "BR-07",
+          "BR-06",
+          "DEC-R0-01"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.TDD_R0_E2E_10Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-037",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Trip STARTED, customer cargo in custody, subscription suspended",
+        "when": "Assigned driver/recipient records mandatory handover/POD under continuity contract",
+        "then": "Do not strand active safety evidence; allow exactly scoped approved continuity"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Trip STARTED, customer cargo in custody, subscription suspended"
+        ],
+        "whenSteps": [
+          "Assigned driver/recipient records mandatory handover/POD under continuity contract",
+          "SaaS suspends provider while active cargo/POD evidence pending"
+        ],
+        "dbOracle": "No cargo evidence lost or forced invalid completed state; continuity only if approved scoped safety permit",
+        "eventOracle": "No additional commercial action, no missing safety replay",
+        "httpUiOracle": "Suspended tenant recovery screen shows pending protected evidence",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_037Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-038",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Billing or policy service unreachable; driver task ongoing",
+        "when": "Call safety API with absent tenant context or forged trip ID",
+        "then": "DENY cross-tenant, do not enable blanket fallback; only previously approved safety scope"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Billing or policy service unreachable; driver task ongoing"
+        ],
+        "whenSteps": [
+          "Call safety API with absent tenant context or forged trip ID",
+          "Tenant-B impersonates suspended Tenant-A worker while continuity mode active"
+        ],
+        "dbOracle": "No cross-tenant privilege; no runtime permitAll or bypassRLS",
+        "eventOracle": "No outbox job/protected evidence from foreign tenant",
+        "httpUiOracle": "Return a nondisclosing cross-tenant access denial and safe correlation ID; no implicit unrestricted recovery-mode or Tenant-A resource metadata.",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_038Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-039",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-18",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Tenant has active trip continuity grant only and subscription suspended",
+        "when": "Call create new Booking using continuity credential",
+        "then": "DENY new commercial action; safety grant cannot expand"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Tenant has active trip continuity grant only and subscription suspended"
+        ],
+        "whenSteps": [
+          "Call create new Booking using continuity credential",
+          "Safety continuity token used for a new booking/quote/fee update"
+        ],
+        "dbOracle": "No commercial aggregate state changes",
+        "eventOracle": "No QuoteIssued/BookingConfirmed/CostChanged",
+        "httpUiOracle": "Return 403/RESTRICTED_SAFETY_SCOPE for attempted new Booking/Quote, with no success acknowledgment or commercially visible state change.",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_039Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-040",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-03",
+      "ownerModule": "tenancy",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Grant revoked in DB but old JWT, WS subscription and cached response remain",
+        "when": "Call HTTP, stream and async export after commit",
+        "then": "DENY all newly authorized data operations; close/re-authorize stream and export"
+      },
+      "proposal": {
+        "actors": [
+          "tenancy",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Grant revoked in DB but old JWT, WS subscription and cached response remain"
+        ],
+        "whenSteps": [
+          "Call HTTP, stream and async export after commit",
+          "Grant revoked while streaming/export job holds stale session"
+        ],
+        "dbOracle": "Re-authenticated new chunks/export deny after authoritative revoke, governed in-flight semantics",
+        "eventOracle": "No post-revoke new export or stream, cache invalidation",
+        "httpUiOracle": "No protected data streamed; previous bounded payload caveat",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-03",
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_040Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-041",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-01",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "DB transaction committed and Outbox message delivered, acknowledgement lost",
+        "when": "Retry same message concurrently on two workers",
+        "then": "At-least-once transport, exactly one logical domain effect via inbox uniqueness"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "DB transaction committed and Outbox message delivered, acknowledgement lost"
+        ],
+        "whenSteps": [
+          "Retry same message concurrently on two workers",
+          "Consumer Inbox commits but sender fails before outbox ACK, then redelivers"
+        ],
+        "dbOracle": "At-least-once transport and exactly one logical domain effect, tenant+consumer+event uniqueness",
+        "eventOracle": "One business result even if two delivery attempts, hash conflict quarantined",
+        "httpUiOracle": "One user-visible completion, no duplicate notice",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_041Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-042",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-01",
+      "ownerModule": "platform",
+      "impactedPrs": [
+        "PR-18"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Manual delegated job queued under active role, role revoked before execution",
+        "when": "Use saved JWT/role snapshot to execute privileged operation",
+        "then": "DENY unauthorized new action; service principal only within explicit scoped job contract"
+      },
+      "proposal": {
+        "actors": [
+          "platform",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Manual delegated job queued under active role, role revoked before execution"
+        ],
+        "whenSteps": [
+          "Use saved JWT/role snapshot to execute privileged operation",
+          "Job authorization snapshot valid at enqueue, grant revoked before claim"
+        ],
+        "dbOracle": "Executor checks present-time authoritative scope; no protected resource mutation",
+        "eventOracle": "No success event, redacted denied job trace",
+        "httpUiOracle": "Display a denied or operator-reconciliation job state without sensitive payload; revoked user's previous token and saved scope do not authorize execution.",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_042Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-045",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-12C",
+      "ownerModule": "booking",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Booking.CONFIRMED and driver/cargo assignment still active",
+        "when": "Customer posts cancellation request with cancel=true and fee=0 overposted",
+        "then": "Only request recorded; server derives terms/fees, Booking unchanged"
+      },
+      "proposal": {
+        "actors": [
+          "booking",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Booking.CONFIRMED and driver/cargo assignment still active"
+        ],
+        "whenSteps": [
+          "Customer posts cancellation request with cancel=true and fee=0 overposted",
+          "Cancellation submitted with caller-controlled cost/fee fields"
+        ],
+        "dbOracle": "Cancel REQUESTED only; server derives policy/fees and existing booking state unchanged",
+        "eventOracle": "No direct BookingCancelled/CapacityReleased",
+        "httpUiOracle": "Request pending/denied, no fake tariff",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-06",
+          "BR-07",
+          "BR-11",
+          "DEC-R0-01",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_045Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-046",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-12C",
+      "ownerModule": "booking",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Authorized cancellation and Trip.STARTED race on same Booking",
+        "when": "Commit actions concurrently with stale versions",
+        "then": "One coherent contract/custody branch; cannot free vehicle with active cargo"
+      },
+      "proposal": {
+        "actors": [
+          "booking",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Authorized cancellation and Trip.STARTED race on same Booking"
+        ],
+        "whenSteps": [
+          "Commit actions concurrently with stale versions",
+          "Cancellation races started trip with active cargo custody"
+        ],
+        "dbOracle": "Custody cannot be orphaned and resource cannot release until disposition/approved recovery",
+        "eventOracle": "At most one authorized compensation and no duplicate release",
+        "httpUiOracle": "Recovery/exception, no false Cancelled",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "BR-11",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_046Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-047",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-16R",
+      "ownerModule": "commercial",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Service partial POD or undelivered with customer damage report",
+        "when": "Submit customer complaint with requested amount and altered POD fields",
+        "then": "Create scoped claim record only; no automatic evidence mutation/refund"
+      },
+      "proposal": {
+        "actors": [
+          "commercial",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Service partial POD or undelivered with customer damage report"
+        ],
+        "whenSteps": [
+          "Submit customer complaint with requested amount and altered POD fields",
+          "Customer complaint while partial POD 8/10 and request for refund"
+        ],
+        "dbOracle": "Scoped claim only, immutable POD and no payment state",
+        "eventOracle": "ClaimOpened, not RefundGranted/Delivered",
+        "httpUiOracle": "Complaint independent of private review eligibility",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "DEC-R0-05",
+          "DEC-R0-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_047Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "NEG-R0-048",
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "primaryPr": "PR-16R",
+      "ownerModule": "commercial",
+      "impactedPrs": [
+        "PR-19"
+      ],
+      "batchPrimary": false,
+      "canonical": {
+        "given": "Provider employee has Sales permission and can see customer records",
+        "when": "Submit private review as customer using forged customerAccountId",
+        "then": "DENY; only verified customer feedback capability on eligible completed service"
+      },
+      "proposal": {
+        "actors": [
+          "commercial",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Provider employee has Sales permission and can see customer records"
+        ],
+        "whenSteps": [
+          "Submit private review as customer using forged customerAccountId",
+          "Provider Sales forges customer context to submit completed-service private review"
+        ],
+        "dbOracle": "No customer review/reputation row without verified customer and verified full completion",
+        "eventOracle": "No ReviewPublished/ReputationChanged",
+        "httpUiOracle": "Return 403 for provider Sales attempting customer review with forged CustomerAccount; no review UI success, user rating or provider reputation update.",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [
+          "DEC-R0-05"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "testHarness": "release.s0.NEG_R0_048Test#contract",
+        "failureInjection": "crash between consumer commit and sender ACK; lease expiry; revoke in-flight"
+      },
+      "reviewPoints": [],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "PR20-REL-01",
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "primaryPr": "PR-20",
+      "ownerModule": "release",
+      "impactedPrs": [
+        "PR-20"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "PostgreSQL snapshot of known N-1 state and migration bundle",
+        "when": "Restore snapshot, run Liquibase upgrade and data verification",
+        "then": "No lost records, correct RLS/indexes and schema history"
+      },
+      "proposal": {
+        "actors": [
+          "release reviewer/CI worker",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "PostgreSQL snapshot of known N-1 state and migration bundle"
+        ],
+        "whenSteps": [
+          "Restore snapshot, run Liquibase upgrade and data verification",
+          "Restore snapshot, run Liquibase upgrade and data verification"
+        ],
+        "dbOracle": "No lost records, correct RLS/indexes and schema history; restore/qualification must prove actual data and permissions, no assumed RPO/RTO",
+        "eventOracle": "Recovery evidence linked to exact SHA; exact SHA evidence required",
+        "httpUiOracle": "Release acceptance report and explicit NO-GO on failure; release is NO-GO without grounded evidence",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "release.s0.PR20_REL_01Test#contract",
+        "failureInjection": "snapshot restore / exact SHA / load / pilot evidence"
+      },
+      "reviewPoints": [
+        "Release thresholds and RPO/RTO/SLO must be measured and reviewed; no invented target or evidence."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "PR20-REL-02",
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "primaryPr": "PR-20",
+      "ownerModule": "release",
+      "impactedPrs": [
+        "PR-20"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "CI built image and SBOM for exact commit SHA",
+        "when": "Deploy staging with pinned digest and compare provenance",
+        "then": "Running digest/SBOM matches reviewed SHA and scan gates"
+      },
+      "proposal": {
+        "actors": [
+          "release reviewer/CI worker",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "CI built image and SBOM for exact commit SHA"
+        ],
+        "whenSteps": [
+          "Deploy staging with pinned digest and compare provenance",
+          "Deploy staging with pinned digest and compare provenance"
+        ],
+        "dbOracle": "Running digest/SBOM matches reviewed SHA and scan gates; restore/qualification must prove actual data and permissions, no assumed RPO/RTO",
+        "eventOracle": "No ambiguous latest tag qualification; exact SHA evidence required",
+        "httpUiOracle": "Release acceptance report and explicit NO-GO on failure; release is NO-GO without grounded evidence",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "release.s0.PR20_REL_02Test#contract",
+        "failureInjection": "snapshot restore / exact SHA / load / pilot evidence"
+      },
+      "reviewPoints": [
+        "Release thresholds and RPO/RTO/SLO must be measured and reviewed; no invented target or evidence."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "PR20-REL-03",
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "primaryPr": "PR-20",
+      "ownerModule": "release",
+      "impactedPrs": [
+        "PR-20"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Known representative load, backup and scheduled jobs",
+        "when": "Exercise p95 reads and crash/restart under staged load",
+        "then": "Only measured SLO/recovery accepted; failure remains NO-GO"
+      },
+      "proposal": {
+        "actors": [
+          "release reviewer/CI worker",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Known representative load, backup and scheduled jobs"
+        ],
+        "whenSteps": [
+          "Exercise p95 reads and crash/restart under staged load",
+          "Exercise p95 reads and crash/restart under staged load"
+        ],
+        "dbOracle": "Only measured SLO/recovery accepted; failure remains NO-GO; restore/qualification must prove actual data and permissions, no assumed RPO/RTO",
+        "eventOracle": "No silent dropped outbox or custody evidence; exact SHA evidence required",
+        "httpUiOracle": "Release acceptance report and explicit NO-GO on failure; release is NO-GO without grounded evidence",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "release.s0.PR20_REL_03Test#contract",
+        "failureInjection": "snapshot restore / exact SHA / load / pilot evidence"
+      },
+      "reviewPoints": [
+        "Release thresholds and RPO/RTO/SLO must be measured and reviewed; no invented target or evidence."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    },
+    {
+      "id": "PR20-REL-04",
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "primaryPr": "PR-20",
+      "ownerModule": "release",
+      "impactedPrs": [
+        "PR-20"
+      ],
+      "batchPrimary": true,
+      "canonical": {
+        "given": "Reviewed R0 case list, signed BR/legal evidence and 2 tenant fixture",
+        "when": "Run cross-role shipment including 8/10 and separate 10/10 paths",
+        "then": "No unauthorized data, no false full-delivery, reviewer evidence recorded"
+      },
+      "proposal": {
+        "actors": [
+          "release reviewer/CI worker",
+          "verified principal/service job with bounded authority"
+        ],
+        "given": [
+          "Reviewed R0 case list, signed BR/legal evidence and 2 tenant fixture"
+        ],
+        "whenSteps": [
+          "Run cross-role shipment including 8/10 and separate 10/10 paths",
+          "Run cross-role shipment including 8/10 and separate 10/10 paths"
+        ],
+        "dbOracle": "No unauthorized data, no false full-delivery, reviewer evidence recorded; restore/qualification must prove actual data and permissions, no assumed RPO/RTO",
+        "eventOracle": "No rollout before stakeholder acceptance; exact SHA evidence required",
+        "httpUiOracle": "Release acceptance report and explicit NO-GO on failure; release is NO-GO without grounded evidence",
+        "negativeVariants": [
+          "replay/lease takeover with stale event digest",
+          "foreign tenant/grant revoked or infrastructure unavailable"
+        ],
+        "pendingDecisionRefs": [],
+        "activation": "TECHNICAL_SCOPE_PROPOSAL",
+        "testHarness": "release.s0.PR20_REL_04Test#contract",
+        "failureInjection": "snapshot restore / exact SHA / load / pilot evidence"
+      },
+      "reviewPoints": [
+        "Release thresholds and RPO/RTO/SLO must be measured and reviewed; no invented target or evidence."
+      ],
+      "status": "S0_DRAFT_UNREVIEWED",
+      "testStatus": "NOT_WRITTEN",
+      "reviewer": null,
+      "evidence": null
+    }
+  ]
+}

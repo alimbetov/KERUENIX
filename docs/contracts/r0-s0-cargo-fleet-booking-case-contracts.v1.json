@@ -1,0 +1,1219 @@
+{
+  "schemaVersion": "1.0.0",
+  "date": "2026-11-08",
+  "stage": "S0_SCENARIO_DESIGN",
+  "reviewStatus": "PROPOSED_NOT_REVIEWED",
+  "sourceAllocation": "docs/contracts/r0-scenario-allocation.v1.json",
+  "sourceCargo": "docs/contracts/r0-s0-extension-gwt.v1.json",
+  "scopePrs": [
+    "PR-08",
+    "PR-09",
+    "PR-10V",
+    "PR-10",
+    "PR-12",
+    "PR-12C"
+  ],
+  "summary": {
+    "primary": 27,
+    "impacted": 4,
+    "cargoLocal": 6,
+    "total": 37,
+    "pendingDecisions": [
+      "BR-07",
+      "BR-08",
+      "BR-11",
+      "DEC-R0-04",
+      "BR-06",
+      "DEC-R0-06",
+      "DEC-R0-01",
+      "BR-05",
+      "BR-09",
+      "DEC-R0-08"
+    ]
+  },
+  "guardrails": {
+    "noDomainImplementation": true,
+    "unknownComplianceBlocks": true,
+    "noDoubleExclusiveCapacity": true,
+    "ownFleetNotExternalCarrier": true,
+    "cancelDoesNotReleaseActiveCustody": true,
+    "noBookingWithoutAcceptedCapacity": true,
+    "noPayments": true,
+    "legalDecisionsNotApprovedByCi": true
+  },
+  "cases": [
+    {
+      "id": "TDD-SIM-18-G12-01",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Vehicle/driver/trailer free for specified UTC interval",
+        "when": "Fleet commits HELD and validates confirmation",
+        "then": "Single valid reservation and holdExpiry/version recorded atomically"
+      },
+      "proposed": {
+        "stimulus": "Fleet commits HELD and validates confirmation",
+        "dbOracle": "Only the exact lawful version/state transition may be committed after BR approval Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "Only one versioned authorized domain event after actual approved transition Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "Exact HTTP/error contract pending S2 UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Concurrent resource holds must be proven on real PostgreSQL with locking/exclusion and stale worker fencing, not mocks.",
+        "pendingDecisionRefs": [
+          "BR-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_18_G12_01Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-18-G12-02",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Overlapping active reservation exists for same indivisible resource",
+        "when": "Second dispatcher reserves overlapping interval",
+        "then": "DB enforces conflict, no second HELD/CONFIRMED"
+      },
+      "proposed": {
+        "stimulus": "Second dispatcher reserves overlapping interval",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Concurrent resource holds must be proven on real PostgreSQL with locking/exclusion and stale worker fencing, not mocks.",
+        "pendingDecisionRefs": [
+          "BR-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_18_G12_02Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-18-G12-03",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Two dispatchers and hold expiry job compete for same slot",
+        "when": "Concurrent HELD/CONFIRM/EXPIRE operations execute",
+        "then": "At most one compatible final reservation; stale expiry cannot free confirmed hold"
+      },
+      "proposed": {
+        "stimulus": "Concurrent HELD/CONFIRM/EXPIRE operations execute",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Concurrent resource holds must be proven on real PostgreSQL with locking/exclusion and stale worker fencing, not mocks.",
+        "pendingDecisionRefs": [
+          "BR-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_18_G12_03Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-18-G12-04",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Crash after capacity transaction commits before notification",
+        "when": "Job retries from durable outbox",
+        "then": "One authoritative reservation, eventual notification, no new capacity hold"
+      },
+      "proposed": {
+        "stimulus": "Job retries from durable outbox",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Concurrent resource holds must be proven on real PostgreSQL with locking/exclusion and stale worker fencing, not mocks.",
+        "pendingDecisionRefs": [
+          "BR-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_18_G12_04Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-18-G12-05",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Planner from ungranted Tenant-Z attempts Tenant-A vehicle hold",
+        "when": "Send vehicle ID and interval",
+        "then": "DENY before write; RLS still protects resource row"
+      },
+      "proposed": {
+        "stimulus": "Send vehicle ID and interval",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Concurrent resource holds must be proven on real PostgreSQL with locking/exclusion and stale worker fencing, not mocks.",
+        "pendingDecisionRefs": [
+          "BR-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_18_G12_05Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-19-G13-01",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Cargo/route compliance assessed with qualified applicable rule source and reviewer",
+        "when": "Qualified Compliance actor approves reviewed evidence",
+        "then": "Versioned legally applicable permit/assessment permits allowed transition as configured"
+      },
+      "proposed": {
+        "stimulus": "Qualified Compliance actor approves reviewed evidence",
+        "dbOracle": "Only the exact lawful version/state transition may be committed after BR approval Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "Only one versioned authorized domain event after actual approved transition Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "Exact HTTP/error contract pending S2 UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_19_G13_01Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-19-G13-02",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Critical jurisdiction/cargo permit status is UNKNOWN or DENY",
+        "when": "Dispatcher presses override/Start Trip",
+        "then": "DENY; pending HOLD with reason; no route/Trip READY/Booking allow"
+      },
+      "proposed": {
+        "stimulus": "Dispatcher presses override/Start Trip",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_19_G13_02Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-19-G13-03",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Permit expires between assessment and Trip READY",
+        "when": "READY command checks current effective rule snapshot/version",
+        "then": "DENY or requalification; no stale compliance approval"
+      },
+      "proposed": {
+        "stimulus": "READY command checks current effective rule snapshot/version",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_19_G13_03Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-19-G13-04",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Late Compliance ALLOW event arrives after later DENY",
+        "when": "Consumer retries outdated event",
+        "then": "No regression from DENY into ALLOW, emit reconciliation/audit"
+      },
+      "proposed": {
+        "stimulus": "Consumer retries outdated event",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_19_G13_04Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-19-G13-05",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Reviewer with scope for another legal entity tries to release HOLD",
+        "when": "Submit approval for foreign cargo",
+        "then": "DENY, full audit of attempted release"
+      },
+      "proposed": {
+        "stimulus": "Submit approval for foreign cargo",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_19_G13_05Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-21-G21-01",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-12C",
+      "originalOwner": "booking",
+      "applicablePrs": [
+        "PR-12C"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Booking confirmed, no Trip started, customer submits cancel request",
+        "when": "Booking owner evaluates policy, consent/charges and versions",
+        "then": "Request separate from state; only authorized approval may CANCEL and release capacity with audit"
+      },
+      "proposed": {
+        "stimulus": "Booking owner evaluates policy, consent/charges and versions",
+        "dbOracle": "Only the exact lawful version/state transition may be committed after BR approval Safety refinement: Cancellation REQUESTED differs from Booking.CANCELLED; active custody blocks immediate resource release; approved compensation atomic.",
+        "eventOracle": "Only one versioned authorized domain event after actual approved transition Event refinement: Only one authorized cancellation/compensation; no false CapacityReleased with active cargo.",
+        "uiOracle": "Exact HTTP/error contract pending S2 UI refinement: Requested/denied/approved and recovery states separated; cancellation fees never caller-controlled.",
+        "mandatoryNegativeCheck": "Cancellation can never orphan active cargo custody or silently release resources; BR-11/DEC-R0-04 remain pending.",
+        "pendingDecisionRefs": [
+          "BR-11",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_21_G21_01Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-21-G21-02",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-12C",
+      "originalOwner": "booking",
+      "applicablePrs": [
+        "PR-12C"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Customer sees cancel button while Trip.STARTED with custody",
+        "when": "Customer submits direct cancellation",
+        "then": "Booking not directly CANCELLED; exception/recovery and cargo disposition required"
+      },
+      "proposed": {
+        "stimulus": "Customer submits direct cancellation",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Cancellation REQUESTED differs from Booking.CANCELLED; active custody blocks immediate resource release; approved compensation atomic.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: Only one authorized cancellation/compensation; no false CapacityReleased with active cargo.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: Requested/denied/approved and recovery states separated; cancellation fees never caller-controlled.",
+        "mandatoryNegativeCheck": "Cancellation can never orphan active cargo custody or silently release resources; BR-11/DEC-R0-04 remain pending.",
+        "pendingDecisionRefs": [
+          "BR-11",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_21_G21_02Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-21-G21-03",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-12C",
+      "originalOwner": "booking",
+      "applicablePrs": [
+        "PR-12C"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Trip.STARTED occurs while cancellation approval commits",
+        "when": "Both commands operate same Booking expectedVersion",
+        "then": "One coherent outcome; no vehicle released with active custody"
+      },
+      "proposed": {
+        "stimulus": "Both commands operate same Booking expectedVersion",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Cancellation REQUESTED differs from Booking.CANCELLED; active custody blocks immediate resource release; approved compensation atomic.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: Only one authorized cancellation/compensation; no false CapacityReleased with active cargo.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: Requested/denied/approved and recovery states separated; cancellation fees never caller-controlled.",
+        "mandatoryNegativeCheck": "Cancellation can never orphan active cargo custody or silently release resources; BR-11/DEC-R0-04 remain pending.",
+        "pendingDecisionRefs": [
+          "BR-11",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_21_G21_03Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-21-G21-04",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-12C",
+      "originalOwner": "booking",
+      "applicablePrs": [
+        "PR-12C"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Cancellation request and compensation event retransmitted",
+        "when": "Same idempotency key after timeout",
+        "then": "One cancel request and at most one authorized compensation/release effect"
+      },
+      "proposed": {
+        "stimulus": "Same idempotency key after timeout",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Cancellation REQUESTED differs from Booking.CANCELLED; active custody blocks immediate resource release; approved compensation atomic.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: Only one authorized cancellation/compensation; no false CapacityReleased with active cargo.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: Requested/denied/approved and recovery states separated; cancellation fees never caller-controlled.",
+        "mandatoryNegativeCheck": "Cancellation can never orphan active cargo custody or silently release resources; BR-11/DEC-R0-04 remain pending.",
+        "pendingDecisionRefs": [
+          "BR-11",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_21_G21_04Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-21-G21-05",
+      "kind": "BLOCKER",
+      "originalPrimaryPr": "PR-12C",
+      "originalOwner": "booking",
+      "applicablePrs": [
+        "PR-12C"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Customer from different provider relationship requests cancellation",
+        "when": "Post cancel for foreign Booking",
+        "then": "DENY; booking/tariff hidden"
+      },
+      "proposed": {
+        "stimulus": "Post cancel for foreign Booking",
+        "dbOracle": "Current immutable state/quantity remains correct; no unauthorized additional committed record Safety refinement: Cancellation REQUESTED differs from Booking.CANCELLED; active custody blocks immediate resource release; approved compensation atomic.",
+        "eventOracle": "No unauthorized domain event; replay/race cannot duplicate logical effects Event refinement: Only one authorized cancellation/compensation; no false CapacityReleased with active cargo.",
+        "uiOracle": "DENY/CONFLICT, verify code in S2 UI refinement: Requested/denied/approved and recovery states separated; cancellation fees never caller-controlled.",
+        "mandatoryNegativeCheck": "Cancellation can never orphan active cargo custody or silently release resources; BR-11/DEC-R0-04 remain pending.",
+        "pendingDecisionRefs": [
+          "BR-11",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_21_G21_05Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-SIM-17-S11-01",
+      "kind": "SAFETY",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Provider uses own truck with no external CarrierOffer",
+        "when": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "then": "Fleet exclusive hold/confirm succeeds without fictitious third-party offer"
+      },
+      "proposed": {
+        "stimulus": "Run the stated R0 safety/exception operation under affected roles and current resource state",
+        "dbOracle": "Evidence and current custodian/state preserved unless canonical safe transition explicitly permits change Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "Audit safe-continuity action, no false binding/settlement event Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "Exact HTTP/error contract pending S2 UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Own-fleet route is valid without external carrier offer; do not fabricate external supplier legal identity.",
+        "pendingDecisionRefs": [
+          "BR-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_SIM_17_S11_01Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-016",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-10V",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10V"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Tenant-A owns vehicle, legal owner capacity authority and valid compliance",
+        "when": "Create Booking with own vehicle and no CarrierOffer",
+        "then": "Do not reject valid own-fleet path and do not fabricate external Carrier identity"
+      },
+      "proposed": {
+        "stimulus": "Create Booking with own vehicle and no CarrierOffer",
+        "dbOracle": "One own-fleet reservation, no fake CarrierOffer or external PartnerGrant Safety refinement: Own-fleet vehicle combination identity/ownership verified and unambiguous without inventing external CarrierOffer.",
+        "eventOracle": "No bogus CarrierOfferSelected event Event refinement: No synthetic CarrierCommitment on owned fleet path.",
+        "uiOracle": "Provider sees internally confirmed vehicle after actual capacity proof UI refinement: Own fleet and external carrier views remain separate.",
+        "mandatoryNegativeCheck": "Own-fleet route is valid without external carrier offer; do not fabricate external supplier legal identity.",
+        "pendingDecisionRefs": [
+          "BR-06",
+          "DEC-R0-06"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_016Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-017",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10",
+        "PR-12"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Same shared vehicle/trailer/driver exists across provider branches",
+        "when": "Both branches reserve overlapping UTC intervals in parallel",
+        "then": "At most one exclusive active hold/confirmation for physical resource"
+      },
+      "proposed": {
+        "stimulus": "Both branches reserve overlapping UTC intervals in parallel",
+        "dbOracle": "DB exclusion or row lock enforces physical uniqueness independent of branch Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "Only winning reservation produces hold outbox event Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "Loser receives conflict/reselect vehicle, not confirmed UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Concurrent resource holds must be proven on real PostgreSQL with locking/exclusion and stale worker fencing, not mocks.",
+        "pendingDecisionRefs": [
+          "BR-07",
+          "BR-06",
+          "DEC-R0-01"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_017Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-018",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "HELD expiry task queued, dispatch confirms the same hold with newer version",
+        "when": "Run old expiry task after confirmation commit",
+        "then": "No release of CONFIRMED/CONSUMED capacity by stale job"
+      },
+      "proposed": {
+        "stimulus": "Run old expiry task after confirmation commit",
+        "dbOracle": "CONFIRMED version and booking remain intact Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "No ReservationReleased event from old version Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "Booking stays confirmed, not 'resource unavailable' UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Concurrent resource holds must be proven on real PostgreSQL with locking/exclusion and stale worker fencing, not mocks.",
+        "pendingDecisionRefs": [
+          "BR-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_018Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-019",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-10",
+      "originalOwner": "fleet",
+      "applicablePrs": [
+        "PR-10"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Vehicle available but required trailer or driver unavailable",
+        "when": "Attempt atomic reservation of all mandatory resources",
+        "then": "Fail entire operation or compensate consistently; never confirm partial resource set"
+      },
+      "proposed": {
+        "stimulus": "Attempt atomic reservation of all mandatory resources",
+        "dbOracle": "No stranded active HELD for vehicle if transaction fails; exact released state if saga Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "No BookingConfirmed; no orphan reservation event Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "Needs alternate driver/trailer; not confirmed UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Concurrent resource holds must be proven on real PostgreSQL with locking/exclusion and stale worker fencing, not mocks.",
+        "pendingDecisionRefs": [
+          "BR-07"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_019Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-020",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-12",
+      "originalOwner": "booking",
+      "applicablePrs": [
+        "PR-12"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Booking and Outbox commit succeeded but publish ack lost",
+        "when": "Retry command and publish same event twice",
+        "then": "One Booking and one logical business outcome; consumers deduplicate"
+      },
+      "proposed": {
+        "stimulus": "Retry command and publish same event twice",
+        "dbOracle": "Same booking ID/version; no additional exclusive capacity Safety refinement: BookingConfirmed is derived only from immutable quote, valid compliance, verified carrier/own-fleet requirement and exclusive confirmed capacity.",
+        "eventOracle": "Event published at-least-once but consumer effect exactly once logically Event refinement: No duplicate BookingConfirmed from Outbox replay; consumer Inbox idempotent.",
+        "uiOracle": "Client can refresh authoritative booking, not duplicate cards UI refinement: PENDING until every predicate verified; not confirmed by selection alone.",
+        "mandatoryNegativeCheck": "At-least-once transport may deliver twice, but only one Booking aggregate transition and logical event is permitted.",
+        "pendingDecisionRefs": [
+          "BR-06",
+          "BR-07",
+          "DEC-R0-01"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_020Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-021",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Cargo requires regulated permit; rule source unavailable or unknown",
+        "when": "Press mark-ready/confirm without qualified Compliance evidence",
+        "then": "DENY and retain critical UNKNOWN/HOLD"
+      },
+      "proposed": {
+        "stimulus": "Press mark-ready/confirm without qualified Compliance evidence",
+        "dbOracle": "No READY or Booking confirmation from UNKNOWN Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "No trip-dispatch/customer confirmation event Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "Display compliance review required, not ready UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_021Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-022",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Compliance approval references rule/permit expired before Trip READY",
+        "when": "Execute downstream READY or confirm Booking",
+        "then": "DENY until fresh qualified evidence/review"
+      },
+      "proposed": {
+        "stimulus": "Execute downstream READY or confirm Booking",
+        "dbOracle": "Approval version no longer validates current cargo/route snapshot Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "No ready/departure instruction event Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "Renew/reverify mandatory documents UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_022Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-023",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Route contains segment with unresolved official restriction",
+        "when": "Actor submits manual override with invented reason",
+        "then": "DENY nonqualified actor; no implicit legal clearance"
+      },
+      "proposed": {
+        "stimulus": "Actor submits manual override with invented reason",
+        "dbOracle": "Compliance HOLD and route provenance retained Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "No override-applied event Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "Operator sees independent review requirement UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_023Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-024",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-09",
+      "originalOwner": "compliance",
+      "applicablePrs": [
+        "PR-09"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Regulatory source emits versions 6 DENY then delayed version 5 ALLOW",
+        "when": "Consumer replays old ALLOW after current DENY",
+        "then": "Do not regress to ALLOW on outdated evidence"
+      },
+      "proposed": {
+        "stimulus": "Consumer replays old ALLOW after current DENY",
+        "dbOracle": "Persist current rule version/decision; monotonic version check Safety refinement: Compliance ruleSetVersion and evidence validity must be checked at action time; UNKNOWN/expired => HOLD, never ALLOW or READY.",
+        "eventOracle": "No BookingUnlocked event Event refinement: No ComplianceApproved/BookingConfirmed while critical evidence is unknown, expired or revoked.",
+        "uiOracle": "Hold remains until current approved review UI refinement: DENY/HOLD with reason and evidence/version; only legally verified permitted transition conditional on BR-08.",
+        "mandatoryNegativeCheck": "UNKNOWN/expired rule or unverified qualified actor must always HOLD/DENY, even when a stale cached compliance status says ALLOW.",
+        "pendingDecisionRefs": [
+          "BR-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_024Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-045",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-12C",
+      "originalOwner": "booking",
+      "applicablePrs": [
+        "PR-12",
+        "PR-12C"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Booking.CONFIRMED and driver/cargo assignment still active",
+        "when": "Customer posts cancellation request with cancel=true and fee=0 overposted",
+        "then": "Only request recorded; server derives terms/fees, Booking unchanged"
+      },
+      "proposed": {
+        "stimulus": "Customer posts cancellation request with cancel=true and fee=0 overposted",
+        "dbOracle": "No released capacity, no mutating fee from user-controlled field Safety refinement: Cancellation REQUESTED differs from Booking.CANCELLED; active custody blocks immediate resource release; approved compensation atomic.",
+        "eventOracle": "No BookingCancelled event from customer command Event refinement: Only one authorized cancellation/compensation; no false CapacityReleased with active cargo.",
+        "uiOracle": "Requested; awaiting decision UI refinement: Requested/denied/approved and recovery states separated; cancellation fees never caller-controlled.",
+        "mandatoryNegativeCheck": "Cancellation can never orphan active cargo custody or silently release resources; BR-11/DEC-R0-04 remain pending.",
+        "pendingDecisionRefs": [
+          "BR-06",
+          "BR-07",
+          "BR-11",
+          "DEC-R0-01",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_045Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "NEG-R0-046",
+      "kind": "NEGATIVE",
+      "originalPrimaryPr": "PR-12C",
+      "originalOwner": "booking",
+      "applicablePrs": [
+        "PR-12C"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": "Authorized cancellation and Trip.STARTED race on same Booking",
+        "when": "Commit actions concurrently with stale versions",
+        "then": "One coherent contract/custody branch; cannot free vehicle with active cargo"
+      },
+      "proposed": {
+        "stimulus": "Commit actions concurrently with stale versions",
+        "dbOracle": "Either valid pre-start cancellation or execution exception; never both Safety refinement: Cancellation REQUESTED differs from Booking.CANCELLED; active custody blocks immediate resource release; approved compensation atomic.",
+        "eventOracle": "No contradictory Cancelled and InExecution customer events Event refinement: Only one authorized cancellation/compensation; no false CapacityReleased with active cargo.",
+        "uiOracle": "Single consistent status; exceptions displayed UI refinement: Requested/denied/approved and recovery states separated; cancellation fees never caller-controlled.",
+        "mandatoryNegativeCheck": "Cancellation can never orphan active cargo custody or silently release resources; BR-11/DEC-R0-04 remain pending.",
+        "pendingDecisionRefs": [
+          "BR-11",
+          "DEC-R0-04"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_NEG_R0_046Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-02",
+      "kind": "E2E",
+      "originalPrimaryPr": "PR-19",
+      "originalOwner": "cross-functional",
+      "applicablePrs": [
+        "PR-10V",
+        "PR-10",
+        "PR-12"
+      ],
+      "thisBatchPrimary": false,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Customer can see Booking confirmed only after authoritative Fleet and compliance verification"
+      },
+      "proposed": {
+        "stimulus": "Use real role-by-role E2E sequence with verified actor/context",
+        "dbOracle": "A CarrierOffer selected and a valid exclusive CapacityReservation must precede Booking.CONFIRMED Safety refinement: Own-fleet vehicle combination identity/ownership verified and unambiguous without inventing external CarrierOffer.",
+        "eventOracle": "No BookingConfirmed from offer selection alone; no overlapping capacity double hold Event refinement: No synthetic CarrierCommitment on owned fleet path.",
+        "uiOracle": "Carrier selection, hold and booking each show independently confirmed state UI refinement: Own fleet and external carrier views remain separate.",
+        "mandatoryNegativeCheck": "Cross-role exact quote/hold/compliance/custody commitments must agree; E2E is not accepted on a mock-only run.",
+        "pendingDecisionRefs": [
+          "BR-05",
+          "BR-07",
+          "BR-06",
+          "DEC-R0-06",
+          "DEC-R0-01"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_R0_E2E_02Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-03",
+      "kind": "E2E",
+      "originalPrimaryPr": "PR-19",
+      "originalOwner": "cross-functional",
+      "applicablePrs": [
+        "PR-10V",
+        "PR-10",
+        "PR-12"
+      ],
+      "thisBatchPrimary": false,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "No fake CarrierOffer required, same exclusive reservation invariants"
+      },
+      "proposed": {
+        "stimulus": "Use real role-by-role E2E sequence with verified actor/context",
+        "dbOracle": "Own-fleet capacity ownership established without invented external CarrierOffer Safety refinement: Own-fleet vehicle combination identity/ownership verified and unambiguous without inventing external CarrierOffer.",
+        "eventOracle": "No unnecessary external-carrier confirmation or duplicate capacity hold Event refinement: No synthetic CarrierCommitment on owned fleet path.",
+        "uiOracle": "Own-fleet allocation presented without fictitious outside offer UI refinement: Own fleet and external carrier views remain separate.",
+        "mandatoryNegativeCheck": "Cross-role exact quote/hold/compliance/custody commitments must agree; E2E is not accepted on a mock-only run.",
+        "pendingDecisionRefs": [
+          "BR-07",
+          "BR-06",
+          "DEC-R0-06",
+          "DEC-R0-01"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_R0_E2E_03Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-05",
+      "kind": "E2E",
+      "originalPrimaryPr": "PR-19",
+      "originalOwner": "cross-functional",
+      "applicablePrs": [
+        "PR-12",
+        "PR-12C"
+      ],
+      "thisBatchPrimary": false,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Request-only separation and correct compensation/custody branch"
+      },
+      "proposed": {
+        "stimulus": "Use real role-by-role E2E sequence with verified actor/context",
+        "dbOracle": "Cancellation request distinct from confirmed cancellation; active custody remains allocated until authorized compensation Safety refinement: BookingConfirmed is derived only from immutable quote, valid compliance, verified carrier/own-fleet requirement and exclusive confirmed capacity.",
+        "eventOracle": "No capacity release while Trip.STARTED or unresolved custody Event refinement: No duplicate BookingConfirmed from Outbox replay; consumer Inbox idempotent.",
+        "uiOracle": "Cancellation pending/denied and actual resource state consistent UI refinement: PENDING until every predicate verified; not confirmed by selection alone.",
+        "mandatoryNegativeCheck": "Cross-role exact quote/hold/compliance/custody commitments must agree; E2E is not accepted on a mock-only run.",
+        "pendingDecisionRefs": [
+          "BR-06",
+          "BR-07",
+          "BR-11",
+          "BR-09",
+          "DEC-R0-01",
+          "DEC-R0-04",
+          "DEC-R0-08"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_R0_E2E_05Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "TDD-R0-E2E-10",
+      "kind": "E2E",
+      "originalPrimaryPr": "PR-19",
+      "originalOwner": "cross-functional",
+      "applicablePrs": [
+        "PR-10",
+        "PR-12"
+      ],
+      "thisBatchPrimary": false,
+      "source": "docs/contracts/r0-scenario-allocation.v1.json",
+      "canonical": {
+        "given": null,
+        "when": null,
+        "then": "Booking never falsely confirmed; exception and replacement sourced safely"
+      },
+      "proposed": {
+        "stimulus": "Use real role-by-role E2E sequence with verified actor/context",
+        "dbOracle": "Carrier withdrawal during capacity commitment leaves booking consistent and recoverable Safety refinement: Physical vehicle combination can have at most one overlapping exclusive active reservation; lease expiration cannot release CONFIRMED/CONSUMED.",
+        "eventOracle": "No BookingConfirmed until replacement authority/capacity evidence; invalidated offers cannot confirm Event refinement: At most one CapacityHeld/Confirmed logical outcome; stale worker cannot release, replay cannot double-book.",
+        "uiOracle": "Shows blocked/reassignment state, not success UI refinement: HELD, CONFIRMED, CONSUMED and EXPIRED are independent verified states.",
+        "mandatoryNegativeCheck": "Cross-role exact quote/hold/compliance/custody commitments must agree; E2E is not accepted on a mock-only run.",
+        "pendingDecisionRefs": [
+          "BR-07",
+          "BR-06",
+          "DEC-R0-01"
+        ],
+        "activation": "DENY_HOLD_UNTIL_BR_DEC",
+        "plannedTestMethod": "S0_TDD_R0_E2E_10Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "PR08-CARGO-01",
+      "kind": "CARGO_LOCAL_GAP",
+      "originalPrimaryPr": "PR-08",
+      "originalOwner": "cargo",
+      "applicablePrs": [
+        "PR-08"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "canonical": {
+        "given": "Draft CargoProfile with ten uniquely identified handling units",
+        "when": "Validate and save cargo declaration",
+        "then": "Exactly ten units persist without identifier collision"
+      },
+      "proposed": {
+        "stimulus": "Validate and save cargo declaration",
+        "dbOracle": "Exactly ten units persist without identifier collision; no hidden unit/mass overwrite or cross-customer record",
+        "eventOracle": "No duplicate unit or quantity change; committed unit IDs/digests cannot be replayed into second logical cargo result",
+        "uiOracle": "Correct validation/authorization response, no false success; typed validation/403/409 as appropriate",
+        "mandatoryNegativeCheck": "Validate units/quantity, WGS84 coordinates if present, versioned classification and unknown compliance as HOLD.",
+        "pendingDecisionRefs": [],
+        "activation": "PROPOSED_TECH_CONTRACT",
+        "plannedTestMethod": "CargoS0_PR08_CARGO_01Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "PR08-CARGO-02",
+      "kind": "CARGO_LOCAL_GAP",
+      "originalPrimaryPr": "PR-08",
+      "originalOwner": "cargo",
+      "applicablePrs": [
+        "PR-08"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "canonical": {
+        "given": "CargoProfile has explicit mass and quantity units",
+        "when": "Submit negative weight, zero/invalid unit count, or inconsistent totals",
+        "then": "Validation denies with no partial cargo aggregate"
+      },
+      "proposed": {
+        "stimulus": "Submit negative weight, zero/invalid unit count, or inconsistent totals",
+        "dbOracle": "Validation denies with no partial cargo aggregate; no hidden unit/mass overwrite or cross-customer record",
+        "eventOracle": "No CargoDeclared or false permit; committed unit IDs/digests cannot be replayed into second logical cargo result",
+        "uiOracle": "Correct validation/authorization response, no false success; typed validation/403/409 as appropriate",
+        "mandatoryNegativeCheck": "Validate units/quantity, WGS84 coordinates if present, versioned classification and unknown compliance as HOLD.",
+        "pendingDecisionRefs": [],
+        "activation": "PROPOSED_TECH_CONTRACT",
+        "plannedTestMethod": "CargoS0_PR08_CARGO_02Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "PR08-CARGO-03",
+      "kind": "CARGO_LOCAL_GAP",
+      "originalPrimaryPr": "PR-08",
+      "originalOwner": "cargo",
+      "applicablePrs": [
+        "PR-08"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "canonical": {
+        "given": "One cargo declaration is already stored with unit IDs",
+        "when": "Replay same idempotency key and altered units",
+        "then": "Conflict instead of overwriting declared units"
+      },
+      "proposed": {
+        "stimulus": "Replay same idempotency key and altered units",
+        "dbOracle": "Conflict instead of overwriting declared units; no hidden unit/mass overwrite or cross-customer record",
+        "eventOracle": "No second CargoCreated event; committed unit IDs/digests cannot be replayed into second logical cargo result",
+        "uiOracle": "Correct validation/authorization response, no false success; typed validation/403/409 as appropriate",
+        "mandatoryNegativeCheck": "Validate units/quantity, WGS84 coordinates if present, versioned classification and unknown compliance as HOLD.",
+        "pendingDecisionRefs": [],
+        "activation": "PROPOSED_TECH_CONTRACT",
+        "plannedTestMethod": "CargoS0_PR08_CARGO_03Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "PR08-CARGO-04",
+      "kind": "CARGO_LOCAL_GAP",
+      "originalPrimaryPr": "PR-08",
+      "originalOwner": "cargo",
+      "applicablePrs": [
+        "PR-08"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "canonical": {
+        "given": "A cargo profile has version N referenced by an issued quote",
+        "when": "Amend mass or handling units",
+        "then": "New version or explicit invalidation, never hidden mutation of quoted snapshot"
+      },
+      "proposed": {
+        "stimulus": "Amend mass or handling units",
+        "dbOracle": "New version or explicit invalidation, never hidden mutation of quoted snapshot; no hidden unit/mass overwrite or cross-customer record",
+        "eventOracle": "No stale QuoteVersion accepted without revalidation; committed unit IDs/digests cannot be replayed into second logical cargo result",
+        "uiOracle": "Correct validation/authorization response, no false success; typed validation/403/409 as appropriate",
+        "mandatoryNegativeCheck": "Validate units/quantity, WGS84 coordinates if present, versioned classification and unknown compliance as HOLD.",
+        "pendingDecisionRefs": [],
+        "activation": "PROPOSED_TECH_CONTRACT",
+        "plannedTestMethod": "CargoS0_PR08_CARGO_04Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "PR08-CARGO-05",
+      "kind": "CARGO_LOCAL_GAP",
+      "originalPrimaryPr": "PR-08",
+      "originalOwner": "cargo",
+      "applicablePrs": [
+        "PR-08"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "canonical": {
+        "given": "Provider Tenant-A holds CargoProfile for Customer-X",
+        "when": "Customer-Y attempts list/detail/count of cargo IDs",
+        "then": "Scoped DENY/no count leakage"
+      },
+      "proposed": {
+        "stimulus": "Customer-Y attempts list/detail/count of cargo IDs",
+        "dbOracle": "Scoped DENY/no count leakage; no hidden unit/mass overwrite or cross-customer record",
+        "eventOracle": "No cross-customer export; committed unit IDs/digests cannot be replayed into second logical cargo result",
+        "uiOracle": "Correct validation/authorization response, no false success; typed validation/403/409 as appropriate",
+        "mandatoryNegativeCheck": "Validate units/quantity, WGS84 coordinates if present, versioned classification and unknown compliance as HOLD.",
+        "pendingDecisionRefs": [],
+        "activation": "PROPOSED_TECH_CONTRACT",
+        "plannedTestMethod": "CargoS0_PR08_CARGO_05Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    },
+    {
+      "id": "PR08-CARGO-06",
+      "kind": "CARGO_LOCAL_GAP",
+      "originalPrimaryPr": "PR-08",
+      "originalOwner": "cargo",
+      "applicablePrs": [
+        "PR-08"
+      ],
+      "thisBatchPrimary": true,
+      "source": "docs/contracts/r0-s0-extension-gwt.v1.json",
+      "canonical": {
+        "given": "Cargo profile classification cannot be verified by trusted rule source",
+        "when": "Evaluate compliance precondition",
+        "then": "UNKNOWN/HOLD; not automatically compatible"
+      },
+      "proposed": {
+        "stimulus": "Evaluate compliance precondition",
+        "dbOracle": "UNKNOWN/HOLD; not automatically compatible; no hidden unit/mass overwrite or cross-customer record",
+        "eventOracle": "No permit or BookingConfirmed event; committed unit IDs/digests cannot be replayed into second logical cargo result",
+        "uiOracle": "Correct validation/authorization response, no false success; typed validation/403/409 as appropriate",
+        "mandatoryNegativeCheck": "Validate units/quantity, WGS84 coordinates if present, versioned classification and unknown compliance as HOLD.",
+        "pendingDecisionRefs": [],
+        "activation": "PROPOSED_TECH_CONTRACT",
+        "plannedTestMethod": "CargoS0_PR08_CARGO_06Test#invariant"
+      },
+      "reviewStatus": "DRAFT_NOT_APPROVED",
+      "executionStatus": "NOT_WRITTEN_BY_THIS_DESIGN",
+      "reviewerEvidence": null
+    }
+  ]
+}

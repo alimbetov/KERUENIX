@@ -1,0 +1,211 @@
+# 15 — KERUENIX Logistics Hub: WMS, Yard, Dock и автоматизация складского учёта
+
+**Дата:** 07.11.2026 · **Версия:** 0.1 · **Статус:** предложенная архитектура и симуляционные тест-кейсы, не реализованная система.
+
+## 1. Цель и продуктовый периметр
+
+Объединить в KERUENIX управление перевозками (TMS), складским учётом (WMS), двором/территорией (YMS), воротами и окнами погрузки (Dock Appointment Scheduling), а позже — управление исполнением складских задач (WES) и оборудованием (WCS). **Склад** должен быть самостоятельным оператором в SaaS, а не дополнительным полем у перевозчика.
+
+Приоритетная модель — мультитенантный логистический узел, обслуживающий несколько грузовладельцев, экспедиторов и перевозчиков, с прямой связью с Shipment, TransportLeg, Trip и KERUENIX Rescue Network.
+
+**Не путать:** WMS учитывает физические запасы и операции; TMS планирует перевозку; YMS управляет прибытиями, местами стоянки и воротами; WCS управляет подключённым оборудованием. На MVP не строить свой PLC/робототехнику или полнофункциональную ERP.
+
+## 2. Каталог процессов для склада
+
+| Этап | Действия и автоматизация | Источник подтверждения |
+|---|---|---|
+| Pre-advice / ASN | Ожидаемая поставка, состав грузовых мест, вес/объём, условия, документы | Проверенный заказ, ASN, EDI или запись сотрудника |
+| Slot booking | Бронирование окна погрузки/разгрузки с ограничениями по воротам и персоналу | Подтверждение склада |
+| Gate in | Госномер, водитель, перевозчик, проверка доступа и документов | КПП; ANPR только как сигнал с подтверждением |
+| Yard | Очередь, место парковки, назначение ворот, ожидаемое время | YMS и события КПП |
+| Weigh-in/out | Вес автомобиля/груза, время и устройство, проверка аномалий | Калиброванная весовая и оператор |
+| Unload / receive | Скан SSCC/LPN, фактическое количество, состояние, пломбы и фото | Оператор/терминал/доверенная автоматическая линия |
+| Quality / customs hold | Проверка повреждений, расхождений, температуры и разрешений | Уполномоченный сотрудник, документы и гос. интеграция |
+| Putaway / cross-dock | Ячейка хранения либо буфер перегрузки на ближайшую машину | Скан единицы и целевой ячейки |
+| Inventory / count | Остатки по владельцу, единице, партии, ячейке и статусу; cycle count | Журнал движений и пересчёты |
+| Picking / consolidation | Резерв, подбор по FEFO/FIFO, сбор нескольких заказов, упаковка | Задание + подтверждённые сканы |
+| Load / dispatch | Сверка по списку, транспорт, вес, пломбы, документы, custody transfer | Скан и согласованная передача |
+| Gate out | Проверка отсутствия блокировок и допуска к выезду | КПП, документы, статус отгрузки |
+| Billing | Хранение, обработка, простой, услуги перегрузки и оборудование | Аудируемые фактические события |
+
+**Отдельные сценарии:** возвраты, неполная приёмка, повреждения, утерянная этикетка, перепаковка, разделение/объединение паллет, контейнеры, температурные зоны, опасные грузы, залоговые паллеты, досмотр и временное хранение.
+
+## 3. Идентификаторы и event traceability
+
+- Сохранять внутренний `HandlingUnit.id` и внешний **SSCC** (если выдан по правилам GS1); не присваивать обычному UUID название SSCC.
+- **GTIN** идентифицирует торговую единицу, **GLN** — организацию/локацию, внутренние `BinLocation` — адрес ячейки; внешние идентификаторы опциональны до внедрения стандартов.
+- **EPCIS 2.0** — шаблон для межкорпоративного обмена событиями: что, где, когда и в каком процессе произошло; поддерживает сигналы о температуре и других свойствах. Требуется схема преобразования и проверка прав получателя.
+- Тара и вложенные паллеты: `HandlingUnitParentChild`, количество в единицах измерения, конверсия, масса и объем; все разборки и сборки сохраняют прослеживаемость.
+- `event_time`, `received_at`, `actor_id`, `device_id`, `tenant_id`, `facility_id`, `source_event_id`, `document_ref` и `quality/status` сохраняются раздельно.
+
+Справка: [GS1 SSCC](https://support.gs1.org/support/solutions/articles/43000734289-what-is-a-logistics-unit-and-how-is-it-identified-), [GS1 EPCIS](https://support.gs1.org/support/solutions/articles/43000755325-what-is-electronic-product-code-information-services-epcis-), [GS1 Казахстан EPCIS](https://gs1.kz/ru/publications/3).
+
+## 4. Multi-Tenant: собственник ≠ хранитель ≠ оператор перевозки
+
+У одного складского оператора `WarehouseOperatorTenant` могут находиться товары многих `CargoOwnerTenant`, а экспедирование выполняет третья компания. Права собственности, хранение, транспортировка и доступ к данным не наследуются друг от друга.
+
+- **Physical inventory ledger** принадлежит оператору склада; позиции содержит `legal_owner_ref`, `custody_holder`, `shipment_ref`, `handling_unit`, `lot`, `location`, `stock_status`.
+- **Customer inventory projection** раскрывает владельцу только принадлежащие ему грузы и разрешённые операции/документы.
+- **Forwarder projection** — согласованные статусы и окна доставки, без чужих себестоимости склада и полных остатков.
+- Общие ячейки или инфраструктура не означают общие права на данные.
+- Доступ выдаётся через explicit collaboration grant, ограниченный контрагентом, объектом, ролью, полями и сроком.
+- Shared / Dedicated / On-Prem связываются API/событиями, не межтенантными SQL-запросами.
+- Отдельно утвердить, как учитывать клиента, не зарегистрированного в KERUENIX: внешний контрагент с ограниченной проекцией, а не автоматически tenant.
+
+## 5. Адресное хранение и жизненный цикл товара
+
+Иерархия физической инфраструктуры: `Facility -> Building/Zone -> Aisle -> Rack -> Level -> Bin`; для двора отдельно `YardZone -> YardSlot` и `DockDoor`.
+
+Характеристики ячейки: вместимость (масса/объем/количество паллет), разрешённые классы грузов, температура, доступность, статус, высота, приоритет и оборудование. Бронирование ёмкости атомарно, нет двойного размещения.
+
+Состояния груза **по независимым измерениям**:
+- Physical: EXPECTED, ARRIVED, RECEIVED, STORED, STAGED, LOADED, DISPATCHED;
+- Quality: UNINSPECTED, OK, DAMAGED, QUARANTINE;
+- Customs/Legal: NOT_APPLICABLE, HOLD, RELEASE_PENDING, RELEASED;
+- Reservation: FREE, RESERVED, ALLOCATED.
+
+Не использовать один огромный enum вместо независимых ограничений. Товар может быть `STORED + QUARANTINE + HOLD`, а не «просто на складе». Фактическая отгрузка требует одновременно наличия, доступного качества, подтверждения права выдачи и разрешений.
+
+## 6. Stock Ledger — ключ к достоверному учёту
+
+Каждое складское действие является атомарной транзакцией из `StockMovement` и `StockMovementLine`, описывающих откуда и куда (ячейка/статус/участник) переносится конкретное количество в конкретной единице измерения.
+
+- При приёмке: `EXTERNAL -> RECEIVING`, затем `RECEIVING -> STORAGE_BIN`.
+- При перемещении: `BIN_A -q, BIN_B +q`; глобальный остаток по владельцу/товару/статусу не меняется.
+- При резервировании: меняется `reserved_qty` в транзакции; физический stock не исчезает.
+- При отгрузке: `STAGING -> EXTERNAL`, с подтверждёнными сканами и разрешением выпуска.
+- Ошибочная запись не редактируется и не удаляется: корректирующее/реверсивное движение с обоснованием и подписью.
+- Проекция `StockBalance` поддерживается транзакционно и реконструируется из ledger; запрет неразрешённых отрицательных остатков и конфликтных резервирований.
+- Обязательные атрибуты: tenant/facility/owner, cargo-unit/sku, lot/serial/expiry при наличии, qty/uom, status, location, reason, source_event, actor, timestamp, evidence, version.
+- Сверка `sum(in) - sum(out)` и реального пересчёта; фоновые проверки и cycle counts с отдельным процессом одобрения корректировок.
+
+**Offline scanner:** может создавать локально подписанные/идентифицируемые предварительные события со стабильным idempotency key; сервер повторно проверяет stock/reservation/rights и помечает конфликт как `NEEDS_RECONCILIATION`. Нельзя обещать окончательное резервирование только на локальном устройстве.
+
+## 7. Умные складские задания и правила
+
+`TaskEngine`: RECEIVE, INSPECT, PUTAWAY, MOVE, PICK, PACK, LOAD, COUNT, REPACK, QUARANTINE, RELEASE_REQUEST. Каждая задача имеет owner, priority, SLA, source/target, требуемое оборудование, зависимости, версию и подтверждение.
+
+- **Cross-docking:** из приёмки непосредственно к зоне отгрузки при подтверждённом downstream Trip/LoadingSlot, минуя длительное хранение.
+- **Putaway:** выбор допустимой ячейки по ёмкости, температуре, ABC, прогнозу следующего отъезда и расстоянию погрузчика.
+- **Picking:** FIFO/FEFO там, где применимо; учёт партии и серийника; проверка зарезервированных единиц.
+- **Dock scheduling:** согласовать ETA грузовика, длительность операции, число ворот, смену и доступную технику. Заказное окно может быть пропущено, требует перепланирования.
+- **Labor/equipment:** задачи погрузчика, оператора, весовой, время выполнения, техническая доступность.
+- **Discrepancy workflow:** недостача/излишек/повреждение создают `InventoryDiscrepancy` и претензию, не молчаливую корректировку.
+
+Оптимизировать через правила и ограничители; ML/Timefold добавлять после измерения реального времени операций.
+
+## 8. СВХ и таможенное удержание
+
+Отделить стандартный WMS от `CustomsBondedExtension`: регистрация СВХ, контроль въезда/лиц, видеонаблюдение, весовая, таможенный досмотр, отчётность, ограничения по времени и разрешение на выдачу.
+
+**Строгий запрет:** физическая отгрузка товара со статусом `HOLD` не проходит, даже если диспетчер/клиент требует срочности. Разрешение на выпуск подтверждается уполномоченным источником/сотрудником по регламенту, с неизменяемым доказательством.
+
+Не считать внутренний статус `RELEASED` юридическим таможенным разрешением: требуется проверка актуального законодательства и подключаемых официальных систем (например, Keden, если доступны официальные интерфейсы). Ссылки: [КГД РК — требования СВХ](https://www.gov.kz/org/kgd/press/article/details/230315?lang=ru), [КГД РК — ответы по таможенному делу](https://kgd.gov.kz/ru/faq/525?page=1).
+
+## 9. Экономика логистического узла
+
+Учитывать отдельно:
+- хранение по паллето-дням, м³-дням, тонно-дням, локациям или минимальному периоду;
+- погрузку/разгрузку, кросс-док, комплектацию, упаковку, маркировку, взвешивание, сортировку, инвентаризацию;
+- ожидание у ворот, простой машины, сверхнормативное хранение, подъёмно-транспортную технику;
+- особые режимы: рефрижератор, карантин, опасные грузы, СВХ и досмотр;
+- арендуемые/возвратные паллеты и контейнеры.
+
+`WarehouseServiceEvent` создаётся из подтверждённого действия; `WarehouseCharge` рассчитывается из версии контракта/тарифа и создаёт предварительный расчёт, затем сверяется с финансовыми документами. Не выставлять счета дважды при повторных сканах/событиях. Разделить складскую выручку оператора и затраты экспедитора: одна операция — разные договорные представления.
+
+## 10. Интеграция с KERUENIX TMS и Rescue Network
+
+- До въезда: `Trip.ETA -> WarehouseDockAppointment`; изменение ETA запускает перепроверку окна и уведомление о возможной очереди.
+- Приёмка: `WarehouseReceipt/CargoCustodyEvent -> Shipment milestone`; GPS у ворот не подтверждает наличие груза.
+- Перегрузка: `HandlingUnit` сохраняет идентичность, но появляется новая `TripAssignment/TransportLeg` после подписанной передачи.
+- Выезд: `LoadingManifest` и подтверждённые сканы сверяются с Trip и CargoUnits; только после этого выдаётся событие `CARGO_DISPATCHED`.
+- Rescue: неисправный автомобиль прибывает на безопасную площадку; склад резервирует кран/погрузчик, зоны и ворота, регистрирует осмотр, приём и передачу новому перевозчику; стоимость включается в отдельный recovery estimate.
+- СВХ: выпуск из HOLD — только на основании проверенного полномочия, а не сообщения оптимизатора.
+
+## 11. Техническая архитектура — Java / PostgreSQL
+
+В модульном Spring Boot монолите:
+`warehouse-facility`, `yard-dock`, `warehouse-inventory`, `warehouse-execution`, `warehouse-costing`, `warehouse-customs` (опционально).
+Использовать явные порты между TMS и WMS, не прямые запросы к чужим таблицам.
+
+Основные сущности:
+`WarehouseFacility`, `FacilityZone`, `BinLocation`, `DockDoor`, `YardSlot`, `DockAppointment`, `InboundASN`, `WarehouseReceipt`, `HandlingUnit`, `HandlingUnitContent`, `Lot`, `StockMovement`, `StockMovementLine`, `StockBalance`, `InventoryReservation`, `WarehouseTask`, `InventoryCount`, `InventoryDiscrepancy`, `LoadingManifest`, `CustodyHandover`, `CustomsHold`, `WarehouseServiceEvent`, `WarehouseCharge`.
+
+- PostgreSQL для transactional stock, бронирования, audit и outbox; уникальные tenant-bound ограничения, row locks/optimistic versions, RLS, Testcontainers для конкурентных тестов.
+- Redis как вспомогательный кеш; **не источник истины** для складских резервов.
+- RustFS/S3 для подписанных документов, фотографий повреждений и сертификатов с разграничением по tenant/owner/grant.
+- Мобильный сканер Flutter/Android, поддержка offline queue с безопасной серверной сверкой.
+- Шлюз устройств для весовых, ANPR, RFID, ворот/турникетов, датчиков температуры и автоматической техники; данные непроверенного устройства не становятся финансовыми или юридическими фактами без правил подтверждения.
+- Idempotency и transactional outbox/inbox между `Warehouse`, `Shipment`, `Trip`, `Cost` и внешними партнёрами.
+
+## 12. Уровни автоматизации
+
+**L0 — Data foundation:** мастер-данные склада, груза, услуг, адреса, документы.
+**L1 — Scan-first WMS:** въезд, ASN, скан, размещение, движения, отгрузка, простой, базовые тарифы.
+**L2 — Smart orchestration:** окна ворот, очередь, cross-dock, приоритеты заданий, уведомления и маршрут/ETA.
+**L3 — Connected equipment:** весовая, RFID/ANPR, температурные датчики и автоматическое создание кандидатов событий.
+**L4 — Advanced optimization:** Timefold под график ворот/техники/персонала; ML прогноз простоев, загруженности и потока; WCS роботизация, если подтверждена окупаемость.
+
+Нет необходимости внедрять RFID, компьютерное зрение и автономных роботов до появления точного адресного учёта.
+
+## 13. Симуляция рабочего дня узла (только модель)
+
+| Время | Событие | Ожидаемое поведение | Риск, который тестируем |
+|---|---|---|---|
+| 07:00 | 3 машины имеют слоты на 08:00, одна запаздывает | Пересчёт окон и уведомление TMS | Двойная запись ворот |
+| 08:10 | Машина приехала без ASN | Ручной карантинный workflow/проверка | Ложная автоматическая приёмка |
+| 09:00 | Скан 20 паллет, фактически 19 | Создать discrepancy на 1 паллету | Неверный доступный остаток |
+| 09:30 | Одна паллета повреждена | QUARANTINE; фото/акт; недоступно к отгрузке | Утечка недостоверного stock |
+| 11:00 | 10 паллет транзитом на другой автомобиль | Cross-dock с отдельным custody handover | Потеря прослеживаемости |
+| 12:00 | Два оператора пытаются отгрузить одну паллету | Одна успешная резервация/операция | Double-pick |
+| 13:00 | У клиента A и B одинаковый SKU | Учёт по владельцу и разрешениям | Cross-tenant leak/mixing |
+| 14:30 | Пропал Wi-Fi на терминале | Локальная очередь, последующая сверка | Повторная проводка |
+| 16:00 | СВХ-груз в HOLD и просят отгрузить | Отказ, аудит, эскалация | Незаконная выдача |
+| 17:00 | Rescue перегрузка после поломки грузовика | Безопасная зона, проверка паллет, новый рейс | Ошибка custody |
+| 19:00 | Начисление услуг по событиям | Один charge на подтверждённую услугу | Двойной счёт |
+
+## 14. Приёмочные тесты (блокируют релиз)
+
+1. Одновременные операции двух пользователей не создают отрицательных остатков и двойных резервов.
+2. Любое складское движение воспроизводится из журнала с `tenant`, владельцем, единицей, складской зоной и источником.
+3. Запасы двух владельцев в одной ячейке видимы каждому только через разрешённую проекцию.
+4. Упаковка/разделение паллет сохраняет количество и lineage входящих/исходящих units.
+5. Offline-событие, повторно отправленное 5 раз, отражается в stock один раз.
+6. Недостача/повреждение создаёт quarantine/discrepancy, а не незаметное изменение заказа.
+7. Заблокированный по таможне или качеству груз нельзя отгрузить, даже если скан прошёл.
+8. Cross-dock переносит cargo между рейсами, не изменяя право собственности.
+9. Опоздание машины меняет appointment status, но не завершает приёмку без сканов.
+10. Два tenant не могут читать чужие остатки, складские документы, фото или цены в API, поиске, файлах, WebSocket.
+11. Повторная выдача charge event не создаёт второй финансовый документ.
+12. Инцидент с неисправным погрузчиком блокирует неподходящие задачи, но сохраняет подтверждённые операции.
+13. Restoring a backup replays outbox safely and restores balances and custody evidence.
+14. Each state transition is attributable and supports reversing corrections with approval.
+
+## 15. Roadmap и нерешённые вопросы
+
+**MVP Warehouse Hub**: ASN + gate-in/out + dock appointment + SSCC/LPN scan + адресное хранение + ledger + inventory reservation + cross-dock + loading manifest + basic custody + storage/handling charges.
+
+**P2**: mobile offline, cycle count, quarantine, SLA, dynamic dock scheduling, RF guns, basic temperature, returnable assets.
+**P3**: customs/SVH compliant workflow after legal assessment, certified weighing and integration, advanced fuel/yard, OCR/ANPR/RFID.
+**P4**: Timefold optimization of docks, labor and equipment, demand prediction, robotic/WCS adapters.
+
+Уточнить: физический размер склада; паллеты/контейнеры или штучные товары; отдельные владельцы и складские договоры; FEFO/серии/партии; типы грузов; необходимость СВХ; количество ворот, сотрудников, устройств; модель тарификации; допустимые integration providers; автономность локального склада; требования к хранению персональных данных и видео.
+
+## Benchmark references
+
+- [GS1 Singapore — Warehouse Management identifiers and scans](https://gs1.org.sg/transport-and-logistics/warehouse-management/)
+- [GS1 EPCIS 2.0 visibility standard](https://support.gs1.org/support/solutions/articles/43000755325-what-is-electronic-product-code-information-services-epcis-)
+- [SAP EWM — Yard, dock and shipping/receiving](https://learning.sap.com/courses/advanced-customizing-in-sap-s-4hana-ewm/managing-shipping-and-receiving)
+- [Kazakhstan Committee of State Revenues — temporary storage](https://www.gov.kz/org/kgd/press/article/details/230315?lang=ru)
+
+## Warehouse commodity neighborhood and compatibility rules
+
+Stock allocation, cross-docking and putaway require a separate cargo-compliance check: owner/quantity and storage status alone do not prove commodity coexistence is safe. `WarehouseZoneCapability`, `BinAdjacency`, shared airflow and temperature/humidity zones must be evaluated against `CargoComplianceProfile`, packaging, cleaning history and currently occupied neighbors. Customs/quality hold independently blocks release. See [18 — Cargo Classification & Compatibility](18-cargo-classification-and-compatibility.md).
+
+## Vehicle body and warehouse dock compatibility
+
+Gate/yard/dock scheduling checks measured truck/trailer dimensions, door/loading orientation, temperature-controlled docking, tank transfer equipment and site access. Temperature-sensitive cross-dock cannot rely on unverified “reefer” category; liquid fuels and hazardous tanks use a physically and legally permitted specialized loading/unloading zone. See [20 — Vehicle Classification & Capacity](20-vehicle-classification-capacity-and-special-equipment.md).
+
+## GS1 international warehouse marking and tracking
+
+Use `HandlingUnit UUID` as internal identity and a valid, issuer-authorized `GS1 SSCC` when available; otherwise use clearly distinct internal LPN labeling. GS1-128 AI (00) must not be faked. Scanner events may later map to EPCIS 2.0 and GS1 CBV, preserving aggregation, stock ledger and cross-tenant visibility policy. Hazard signs and national regulated DataMatrix marking are separate from SSCC. See [22 — Global Identification](22-global-cargo-identification-and-marking.md).

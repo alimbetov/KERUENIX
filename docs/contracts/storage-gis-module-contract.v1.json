@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "1.1.0",
+  "status": "V1_7_NO_PAYMENTS_DESIGN_NOT_IMPLEMENTED",
+  "date": "2026-11-07",
+  "authoritativeModules": "docs/contracts/module-boundaries.v1.json",
+  "architectureRef": "docs/15-data-platform-partitioning-postgis.md",
+  "testIds": [
+    "DATA-01",
+    "DATA-02",
+    "DATA-03",
+    "DATA-04",
+    "DATA-05",
+    "DATA-06",
+    "DATA-07",
+    "DATA-08",
+    "DATA-09",
+    "DATA-10",
+    "DATA-11",
+    "GEO-01",
+    "GEO-02",
+    "GEO-03",
+    "GEO-04",
+    "GEO-05",
+    "GEO-06",
+    "GEO-07",
+    "GEO-08",
+    "GEO-09",
+    "GEO-10"
+  ],
+  "rules": [
+    "NO_PARTITION_PER_MODULE_BY_DEFAULT",
+    "NO_PARTITION_PER_TENANT_BY_DEFAULT",
+    "NO_EVENTUALLY_CONSISTENT_READ_GUARDS_FOR_MONEY_RESERVATION_OR_STOCK",
+    "POSTGIS_INFRASTRUCTURE_R0",
+    "GEOGRAPHY_METERS_FOR_RADIUS",
+    "TENANT_RLS_ON_ALL_GEO_DATA",
+    "NO_GEOFENCE_AS_PROOF_OF_DELIVERY",
+    "GLOBAL_DEDUP_REQUIRED_FOR_PARTITIONED_EVENT_FEED",
+    "PARTITION_DROP_REQUIRES_RETENTION_AND_LEGAL_HOLD_REVIEW"
+  ],
+  "modules": [
+    {
+      "id": "tenancy",
+      "phase": "R0",
+      "writeModel": "Tenant/membership/grant write model; per-resource policy is always authoritative",
+      "readModels": "AccessDecision cache optional, never stale grant authorization",
+      "partitioning": "none",
+      "gis": "coordinates in partner grants cannot authorize raw GPS",
+      "requiredTests": "TEN-GEO-01 cross-tenant spatial query denied; TEN-DATA-01 direct child partition RLS denied"
+    },
+    {
+      "id": "commercial",
+      "phase": "R0",
+      "writeModel": "RFQ, QuoteVersion and CarrierOffer immutable snapshots",
+      "readModels": "RFQ pipeline and quote-search indexes; optional filtered quote list",
+      "partitioning": "none",
+      "gis": "pickup/delivery locations are typed references, not geo truth",
+      "requiredTests": "COM-DATA-01 quote acceptance unaffected by stale projection"
+    },
+    {
+      "id": "fleet",
+      "phase": "R0",
+      "writeModel": "VehicleCombination, capacity holds, position event writer",
+      "readModels": "vehicle_current_position, available-capacity projection, spatial nearest shortlist",
+      "partitioning": "vehicle_position_event RANGE(observed_at) when GPS ingestion enabled",
+      "gis": "Point(4326)/geography near vehicle; GiST, stale quality",
+      "requiredTests": "FLT-GEO-01 nearest eligible truck respects tenant and freshness; FLT-DATA-01 duplicate/late GPS"
+    },
+    {
+      "id": "cargo",
+      "phase": "R0",
+      "writeModel": "CargoProfile and HandlingUnit revisions",
+      "readModels": "filtered product/handling-unit catalog, no replica of stock ledger",
+      "partitioning": "none",
+      "gis": "cargo stops reference approved facility positions; not owner of global route",
+      "requiredTests": "CAR-DATA-01 no duplicate HU on replay; CAR-GEO-01 no fabricated storage GPS"
+    },
+    {
+      "id": "compliance",
+      "phase": "R0",
+      "writeModel": "Safety/eligibility assessment and approved operational decisions",
+      "readModels": "versioned compatibility lookup, explainable assessment by rule set",
+      "partitioning": "none, assessment audit may be candidate after measurements",
+      "gis": "point/polygon overlap for legal/geofence candidate only; no auto-legal approval",
+      "requiredTests": "CMP-GEO-01 missing jurisdiction rule => NEEDS_REVIEW; CMP-DATA-01 replay stable decision"
+    },
+    {
+      "id": "booking",
+      "phase": "R0",
+      "writeModel": "Booking workflow/commitment, not the FleetCapacityHold itself",
+      "readModels": "booking pipeline/due upcoming departures",
+      "partitioning": "none; exclusivity remains indexed DB constraint",
+      "gis": "customer pickup/delivery refs, never direct write to route geometry",
+      "requiredTests": "BKG-DATA-01 stale read model cannot confirm; BKG-GEO-01 geo-near does not book"
+    },
+    {
+      "id": "execution",
+      "phase": "R0",
+      "writeModel": "Trip/TransportLeg/Shipment/Custody/POD and route version",
+      "readModels": "trip board, shipment checkpoints/route metadata",
+      "partitioning": "shipment event history: later RANGE(occurred_at) candidate",
+      "gis": "route geometry(LineString,4326); geofence arrival is provisional",
+      "requiredTests": "EXE-GEO-01 geofence != POD; EXE-DATA-01 event replay maintains cargo custody"
+    },
+    {
+      "id": "tracking",
+      "phase": "R0",
+      "writeModel": "CustomerTrackingGrant and permission-filtered TrackingSnapshot",
+      "readModels": "shipment customer timeline/ETA/watermark; indexed by tenant and Shipment",
+      "partitioning": "snapshot NO; archive of notices only after measurements",
+      "gis": "geometry must be privacy-filtered and recent; no full truck history",
+      "requiredTests": "TRK-GEO-01 old truck after transfer hidden; TRK-DATA-01 stale watermark labelled"
+    },
+    {
+      "id": "documents",
+      "phase": "R0",
+      "writeModel": "DocumentPackageVersion, evidence ref, verifier, checksum",
+      "readModels": "document checklist read model by shipment; filtered customer list",
+      "partitioning": "none",
+      "gis": "geo metadata optional, cannot prove signature or physical delivery",
+      "requiredTests": "DOC-DATA-01 no document authority from uploaded GPS"
+    },
+    {
+      "id": "finance",
+      "phase": "R0",
+      "writeModel": "CostEstimate, CommercialCostReport, MarginReadModel, optional opaque ExternalAccountingDocRef only",
+      "readModels": "Versioned sell/buy/cost/margin projections with tenant/account field masks and freshness",
+      "partitioning": "No finance/payment table partitioning in KERUENIX; external accounting remains authoritative",
+      "gis": "geo only as reference for pricing/route cost, no own spatial truth",
+      "requiredTests": "FIN-DATA-01 delayed margin read model never invents payments, invoice or PAID; PAY-ABS-01..06"
+    },
+    {
+      "id": "optimization",
+      "phase": "R1",
+      "writeModel": "OptimizationJob and Result/RoutePlanProposal, not confirmed booking",
+      "readModels": "candidate vehicle proximity and schedule eligibility projection",
+      "partitioning": "Job history candidate only after high volume",
+      "gis": "PostGIS preliminary shortlist, routing provider verified travel feasibility",
+      "requiredTests": "OPT-GEO-01 straight-line near candidate rejected if road/legal unsafe"
+    },
+    {
+      "id": "recovery",
+      "phase": "R1",
+      "writeModel": "RecoveryCase, ReplacementOffer, reservation link",
+      "readModels": "nearby partner/capacity with masked zone",
+      "partitioning": "none",
+      "gis": "ST_DWithin to shortlist, rescue availability/legal checks mandatory",
+      "requiredTests": "RSC-GEO-01 replacement cargo custody verified before tracking switch"
+    },
+    {
+      "id": "warehouse",
+      "phase": "R1",
+      "writeModel": "Stock ledger, ASN, location, dock and appointment",
+      "readModels": "occupancy, stock balance, dock availability/yard map",
+      "partitioning": "historical stock movements candidate, not active balance",
+      "gis": "valid Polygon(4326) yard/dock geofence; indoor aisle/rack local CRS",
+      "requiredTests": "WMS-GEO-01 boundary logic; WMS-DATA-01 legal hold blocks pickup despite projection"
+    },
+    {
+      "id": "marketplace",
+      "phase": "R2",
+      "writeModel": "FreightListing, CapacityListing, MatchCandidate, visibility",
+      "readModels": "geo coarse heatmap, backhaul discovery and privacy-filtered feed",
+      "partitioning": "listing events candidate only, not active listing",
+      "gis": "coarse regions/precision by grants, avoid exact GPS of carrier",
+      "requiredTests": "MKT-GEO-01 query doesn't disclose competitor raw location"
+    },
+    {
+      "id": "regulatory",
+      "phase": "R2",
+      "writeModel": "RegulatorySource, jurisdiction rule and effective date/version",
+      "readModels": "country/mode/route overlay and applicability cache",
+      "partitioning": "none, version retention by legal policy",
+      "gis": "spatial overlay only under approved legal source/version",
+      "requiredTests": "REG-GEO-01 border crossing without confirmed rule not auto-allowed"
+    },
+    {
+      "id": "saas-control",
+      "phase": "R1",
+      "writeModel": "Subscription, quota, metering, tenant provisioning",
+      "readModels": "aggregated tenant-specific usage and operating costs",
+      "partitioning": "usage event history only if measured",
+      "gis": "geospatial usage quota without exposure of driver PII",
+      "requiredTests": "SAS-DATA-01 quota flag never disables mandatory tenant security"
+    }
+  ]
+}

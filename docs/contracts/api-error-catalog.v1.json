@@ -1,0 +1,271 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "PROPOSED_CONTRACT_WITH_REFERENCE_IMPLEMENTATION_UNQUALIFIED",
+  "date": "2026-11-07",
+  "standard": "RFC 9457 application/problem+json",
+  "specification": "docs/31-unified-error-handling-standard.md",
+  "scope": [
+    "REST Spring MVC",
+    "Spring Security filter chain",
+    "async events/jobs (separate internal classification; do not return HTTP ProblemDetail as event)"
+  ],
+  "reservedFields": [
+    "type",
+    "title",
+    "status",
+    "detail",
+    "instance"
+  ],
+  "extensions": [
+    "code",
+    "requestId",
+    "retryable",
+    "timestamp",
+    "violations"
+  ],
+  "errorCodes": [
+    {
+      "enumName": "BAD_REQUEST",
+      "code": "KX-GEN-400-001",
+      "httpStatus": 400,
+      "title": "Malformed request",
+      "publicDetail": "The request could not be parsed or validated.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-400-001",
+      "public": true
+    },
+    {
+      "enumName": "VALIDATION_FAILED",
+      "code": "KX-GEN-400-002",
+      "httpStatus": 400,
+      "title": "Validation failed",
+      "publicDetail": "One or more request fields are invalid.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-400-002",
+      "public": true
+    },
+    {
+      "enumName": "FRAMEWORK_HTTP_ERROR",
+      "code": "KX-GEN-000-001",
+      "httpStatus": 400,
+      "httpStatusPolicy": "REPLACE_WITH_FRAMEWORK_4XX_STATUS",
+      "title": "HTTP request rejected",
+      "publicDetail": "The request could not be completed using the supplied HTTP parameters.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-000-001",
+      "public": true
+    },
+    {
+      "enumName": "AUTHENTICATION_REQUIRED",
+      "code": "KX-AUTH-401-001",
+      "httpStatus": 401,
+      "title": "Authentication required",
+      "publicDetail": "Valid authentication is required to access this resource.",
+      "retryable": false,
+      "owner": "tenancy",
+      "problemType": "urn:keruenix:problem:KX-AUTH-401-001",
+      "public": true
+    },
+    {
+      "enumName": "PERMISSION_DENIED",
+      "code": "KX-AUTH-403-001",
+      "httpStatus": 403,
+      "title": "Permission denied",
+      "publicDetail": "You do not have permission to perform this operation.",
+      "retryable": false,
+      "owner": "tenancy",
+      "problemType": "urn:keruenix:problem:KX-AUTH-403-001",
+      "public": true
+    },
+    {
+      "enumName": "RESOURCE_NOT_FOUND",
+      "code": "KX-GEN-404-001",
+      "httpStatus": 404,
+      "title": "Resource not found",
+      "publicDetail": "The requested resource was not found.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-404-001",
+      "public": true
+    },
+    {
+      "enumName": "METHOD_NOT_ALLOWED",
+      "code": "KX-GEN-405-001",
+      "httpStatus": 405,
+      "title": "Method not allowed",
+      "publicDetail": "This HTTP method is not supported for the resource.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-405-001",
+      "public": true
+    },
+    {
+      "enumName": "UNSUPPORTED_MEDIA_TYPE",
+      "code": "KX-GEN-415-001",
+      "httpStatus": 415,
+      "title": "Unsupported media type",
+      "publicDetail": "The submitted content type is not supported.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-415-001",
+      "public": true
+    },
+    {
+      "enumName": "STALE_VERSION",
+      "code": "KX-GEN-409-001",
+      "httpStatus": 409,
+      "title": "Version conflict",
+      "publicDetail": "The resource has changed. Reload and retry the operation.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-409-001",
+      "public": true
+    },
+    {
+      "enumName": "IDEMPOTENCY_CONFLICT",
+      "code": "KX-GEN-409-002",
+      "httpStatus": 409,
+      "title": "Idempotency conflict",
+      "publicDetail": "The idempotency key was used with a different request.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-409-002",
+      "public": true
+    },
+    {
+      "enumName": "INVALID_TRANSITION",
+      "code": "KX-DOM-409-001",
+      "httpStatus": 409,
+      "title": "Invalid state transition",
+      "publicDetail": "The requested action is not permitted in the current state.",
+      "retryable": false,
+      "owner": "domain-owner",
+      "problemType": "urn:keruenix:problem:KX-DOM-409-001",
+      "public": true
+    },
+    {
+      "enumName": "QUOTE_EXPIRED",
+      "code": "KX-COM-409-001",
+      "httpStatus": 409,
+      "title": "Quote expired",
+      "publicDetail": "The selected quotation version is no longer effective.",
+      "retryable": false,
+      "owner": "commercial",
+      "problemType": "urn:keruenix:problem:KX-COM-409-001",
+      "public": true
+    },
+    {
+      "enumName": "SIGNATORY_REQUIRED",
+      "code": "KX-COM-403-001",
+      "httpStatus": 403,
+      "title": "Signatory authority required",
+      "publicDetail": "Verified authority to accept the quotation is required.",
+      "retryable": false,
+      "owner": "commercial",
+      "problemType": "urn:keruenix:problem:KX-COM-403-001",
+      "public": true
+    },
+    {
+      "enumName": "CAPACITY_CONFLICT",
+      "code": "KX-FLT-409-001",
+      "httpStatus": 409,
+      "title": "Capacity conflict",
+      "publicDetail": "The selected resource is unavailable for the requested interval.",
+      "retryable": false,
+      "owner": "fleet",
+      "problemType": "urn:keruenix:problem:KX-FLT-409-001",
+      "public": true
+    },
+    {
+      "enumName": "CUSTODY_EVIDENCE_REQUIRED",
+      "code": "KX-EXE-422-001",
+      "httpStatus": 422,
+      "title": "Custody evidence required",
+      "publicDetail": "Verified cargo handover evidence is required.",
+      "retryable": false,
+      "owner": "execution",
+      "problemType": "urn:keruenix:problem:KX-EXE-422-001",
+      "public": true
+    },
+    {
+      "enumName": "PARTIAL_DELIVERY_CONFLICT",
+      "code": "KX-EXE-409-001",
+      "httpStatus": 409,
+      "title": "Partial delivery conflict",
+      "publicDetail": "The delivered and remaining cargo quantities are inconsistent.",
+      "retryable": false,
+      "owner": "execution",
+      "problemType": "urn:keruenix:problem:KX-EXE-409-001",
+      "public": true
+    },
+    {
+      "enumName": "SETTLEMENT_EVIDENCE_REQUIRED",
+      "code": "KX-FIN-422-001",
+      "httpStatus": 422,
+      "title": "Settlement evidence required",
+      "publicDetail": "Verified payment settlement evidence is required.",
+      "retryable": false,
+      "owner": "finance",
+      "problemType": "urn:keruenix:problem:KX-FIN-422-001",
+      "public": true
+    },
+    {
+      "enumName": "SUBSCRIPTION_RESTRICTED",
+      "code": "KX-SAA-403-001",
+      "httpStatus": 403,
+      "title": "Subscription restricted",
+      "publicDetail": "This operation is not available under the current subscription policy.",
+      "retryable": false,
+      "owner": "saas-control",
+      "problemType": "urn:keruenix:problem:KX-SAA-403-001",
+      "public": true
+    },
+    {
+      "enumName": "RATE_LIMITED",
+      "code": "KX-GEN-429-001",
+      "httpStatus": 429,
+      "title": "Rate limit exceeded",
+      "publicDetail": "Too many requests. Retry according to the server retry policy.",
+      "retryable": true,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-429-001",
+      "public": true
+    },
+    {
+      "enumName": "UPSTREAM_UNAVAILABLE",
+      "code": "KX-GEN-503-001",
+      "httpStatus": 503,
+      "title": "Service temporarily unavailable",
+      "publicDetail": "The operation cannot be completed at this time.",
+      "retryable": true,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-503-001",
+      "public": true
+    },
+    {
+      "enumName": "INTERNAL_ERROR",
+      "code": "KX-GEN-500-001",
+      "httpStatus": 500,
+      "title": "Internal server error",
+      "publicDetail": "The request could not be completed. Contact support using the request ID.",
+      "retryable": false,
+      "owner": "platform",
+      "problemType": "urn:keruenix:problem:KX-GEN-500-001",
+      "public": true
+    }
+  ],
+  "invariants": [
+    "Never expose exception class, stack trace, SQL, internal tenant identifiers, tokens, user emails, full request path, rejected field values or raw carrier/financial payload",
+    "HTTP status must match body status",
+    "The stable machine code and type are contract identity; user-visible detail is never parsed for branching",
+    "Foreign protected and nonexistent resource must use exactly the same public 404 code, body template and status; distinguish only in restricted security audit",
+    "Only classified rate-limit or dependency failures are retryable, and clients must use idempotency for commands",
+    "OptimisticLockingFailure -> 409; raw DataIntegrityViolation and SQLSTATE may not be blindly converted to 409/403",
+    "Spring Security AuthenticationEntryPoint/AccessDeniedHandler and REST ControllerAdvice must share the same factory",
+    "Jobs classify transient/permanent/reconcile and retain sanitized internal diagnostics without exposing them in HTTP",
+    "No successful result event for denied command and no unauthorized DB changes"
+  ]
+}

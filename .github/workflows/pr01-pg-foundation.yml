@@ -1,0 +1,146 @@
+name: PR-01 PostgreSQL Platform Foundation
+
+on:
+  pull_request:
+    paths:
+      - 'backend/db/**'
+      - 'backend/pom.xml'
+      - 'backend/src/main/java/kz/keruenix/platform/persistence/**'
+      - 'backend/src/test/java/kz/keruenix/platform/persistence/**'
+      - 'backend/src/main/java/kz/keruenix/platform/security/**'
+      - 'backend/src/main/resources/application-platform-db.yml'
+      - 'backend/src/test/resources/application-platform-db-migrate-test.yml'
+      - 'backend/src/test/resources/db/**'
+      - 'backend/src/main/resources/db/changelog/**'
+      - 'backend/src/main/resources/db/**'
+      - 'scripts/test_pr01_pg_foundation.sh'
+      - '.github/workflows/pr01-pg-foundation.yml'
+  push:
+    branches: [main, docs/idea-multitenant-foundation]
+    paths:
+      - 'backend/db/**'
+      - 'backend/pom.xml'
+      - 'backend/src/main/java/kz/keruenix/platform/persistence/**'
+      - 'backend/src/test/java/kz/keruenix/platform/persistence/**'
+      - 'backend/src/main/java/kz/keruenix/platform/security/**'
+      - 'backend/src/main/resources/application-platform-db.yml'
+      - 'backend/src/test/resources/application-platform-db-migrate-test.yml'
+      - 'backend/src/test/resources/db/**'
+      - 'backend/src/main/resources/db/**'
+      - 'scripts/test_pr01_pg_foundation.sh'
+      - '.github/workflows/pr01-pg-foundation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pg-foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgis/postgis:16-3.7
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-admin
+          POSTGRES_DB: keruenix_foundation_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d keruenix_foundation_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Verify real platform RLS and PostGIS (partial FOUND qualification)
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: keruenix_foundation_test
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+        run: bash scripts/test_pr01_pg_foundation.sh
+      - name: Prepare separate Spring Boot Liquibase integration database
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: keruenix_foundation_test
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+        run: psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE keruenix_boot_test"
+      - name: Spring Boot Liquibase and tenant-scoped JDBC integration (real PostgreSQL)
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=PlatformDatabaseIntegrationTest,PlatformOutboxClaimIntegrationTest,PlatformOutboxDeliveryIntegrationTest,TrustedTenantHttpIntegrationTest test
+      - name: Confirm Liquibase idempotent replay on already-migrated schema
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+          KERUENIX_EXPECTED_CHANGESETS: '2'
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: Create separate V1 to V2 upgrade database
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: keruenix_foundation_test
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+        run: psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE keruenix_upgrade_test"
+      - name: Liquibase install baseline V1 only
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_upgrade_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+          KERUENIX_EXPECTED_CHANGESETS: '1'
+          SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-v1-only.yaml
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: Liquibase upgrade existing V1 to V2
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_upgrade_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+          KERUENIX_EXPECTED_CHANGESETS: '2'
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: Prepare synthetic legacy Flyway database
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: keruenix_foundation_test
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+        run: psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE keruenix_legacy_guard_test"
+      - name: Refuse auto-migration when legacy Flyway history exists
+        env:
+          KERUENIX_LEGACY_GUARD_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_legacy_guard_test
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseFlywayHistoryGuardTest test
+      - name: Boot runtime without Liquibase admin credentials (separate process)
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=RuntimeDatabaseProfileTest test
