@@ -270,7 +270,7 @@
         ],
         "dbOracle": "No cross-tenant data read/write or grant, RLS and ABAC both enforced",
         "eventOracle": "No foreign evidence/export/Booking event",
-        "httpUiOracle": "Nondisclosing DENY",
+        "httpUiOracle": "Return an authenticated, nondisclosing 403; suspended Tenant-A safety capability never reveals Tenant-B cargo, custodian, booking or identifiers.",
         "negativeVariants": [
           "replay/lease takeover with stale event digest",
           "foreign tenant/grant revoked or infrastructure unavailable"
@@ -907,7 +907,7 @@
         ],
         "dbOracle": "No cross-tenant privilege; no runtime permitAll or bypassRLS",
         "eventOracle": "No outbox job/protected evidence from foreign tenant",
-        "httpUiOracle": "DENY; no foreign-state leak",
+        "httpUiOracle": "Return a nondisclosing cross-tenant access denial and safe correlation ID; no implicit unrestricted recovery-mode or Tenant-A resource metadata.",
         "negativeVariants": [
           "replay/lease takeover with stale event digest",
           "foreign tenant/grant revoked or infrastructure unavailable"
@@ -953,7 +953,7 @@
         ],
         "dbOracle": "No commercial aggregate state changes",
         "eventOracle": "No QuoteIssued/BookingConfirmed/CostChanged",
-        "httpUiOracle": "403 with restricted mode",
+        "httpUiOracle": "Return 403/RESTRICTED_SAFETY_SCOPE for attempted new Booking/Quote, with no success acknowledgment or commercially visible state change.",
         "negativeVariants": [
           "replay/lease takeover with stale event digest",
           "foreign tenant/grant revoked or infrastructure unavailable"
@@ -1092,7 +1092,7 @@
         ],
         "dbOracle": "Executor checks present-time authoritative scope; no protected resource mutation",
         "eventOracle": "No success event, redacted denied job trace",
-        "httpUiOracle": "Job denied/escalated",
+        "httpUiOracle": "Display a denied or operator-reconciliation job state without sensitive payload; revoked user's previous token and saved scope do not authorize execution.",
         "negativeVariants": [
           "replay/lease takeover with stale event digest",
           "foreign tenant/grant revoked or infrastructure unavailable"
@@ -1282,7 +1282,7 @@
         ],
         "dbOracle": "No customer review/reputation row without verified customer and verified full completion",
         "eventOracle": "No ReviewPublished/ReputationChanged",
-        "httpUiOracle": "403, no fake review",
+        "httpUiOracle": "Return 403 for provider Sales attempting customer review with forged CustomerAccount; no review UI success, user rating or provider reputation update.",
         "negativeVariants": [
           "replay/lease takeover with stale event digest",
           "foreign tenant/grant revoked or infrastructure unavailable"
