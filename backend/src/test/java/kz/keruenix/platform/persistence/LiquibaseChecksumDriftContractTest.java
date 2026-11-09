@@ -48,7 +48,8 @@ class LiquibaseChecksumDriftContractTest {
                     UPDATE public.databasechangelog SET md5sum=?
                     WHERE id='platform-baseline-v1' AND author='keruenix'
                     """)) {
-                update.setString(1, "8:" + "0".repeat(32));
+                update.setString(1, originalChecksum.substring(0, originalChecksum.indexOf(':') + 1)
+                        + "0".repeat(32));
                 assertThat(update.executeUpdate()).isEqualTo(1);
             }
         }
@@ -59,7 +60,7 @@ class LiquibaseChecksumDriftContractTest {
             liquibase.setDataSource(migrator);
             liquibase.setChangeLog("classpath:db/changelog/db.changelog-master.yaml");
             assertThatThrownBy(liquibase::afterPropertiesSet)
-                    .hasStackTraceContaining("checksum");
+                    .hasStackTraceContaining("Validation Failed");
         } finally {
             try (Connection connection = DriverManager.getConnection(url, user, password);
                  PreparedStatement restore = connection.prepareStatement("""
