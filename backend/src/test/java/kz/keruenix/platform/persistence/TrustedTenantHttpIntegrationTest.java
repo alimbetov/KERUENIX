@@ -268,6 +268,37 @@ class TrustedTenantHttpIntegrationTest {
 
 
     @Test
+    void customerCursorPageDoesNotBypassAccountFilterOrTotal() throws Exception {
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID();
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_X))
+                .header("Authorization", "Bearer " + valid("alice"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(x, TENANT_A))).andExpect(status().isAccepted());
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_Y))
+                .header("Authorization", "Bearer " + valid("bob"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(y, TENANT_A))).andExpect(status().isAccepted());
+
+        String endpoint = "/__qualification/tenant/{tenant}/account/{account}/records";
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()).param("after", x.toString()).param("limit", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.ids").isEmpty());
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", y.toString()).param("limit", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.ids").isEmpty());
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("after", x.toString()).param("limit", "1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void revokedCustomerGrantImmediatelyDeniesSamePreviouslyValidJwt() throws Exception {
         String stillSignedAndUnexpiredToken = valid("alice");
         UUID first = UUID.randomUUID(), second = UUID.randomUUID();
@@ -493,21 +524,34 @@ class TrustedTenantHttpIntegrationTest {
         ResponseEntity<Map<String, Object>> list(
                 Authentication authentication,
                 @PathVariable UUID tenant, @PathVariable UUID account,
-                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID id) {
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID id,
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID after,
+                @org.springframework.web.bind.annotation.RequestParam(defaultValue = "50") int limit) {
             var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            if (limit < 1 || limit > 50) {
+                return ResponseEntity.badRequest()
+                        .body(Map.<String, Object>of("total", 0, "ids", java.util.List.of()));
+            }
             return transactions.execute(scope.tenantId(), jdbc -> {
-                // Scope both COUNT and row IDs before any filtering/pagination.
+                // Account predicate is mandatory for count AND cursor/page query.
                 String condition = id == null ? "" : " AND audit_id = ?";
-                Object[] args = id == null
+                Object[] countArgs = id == null
                         ? new Object[]{scope.customerAccountId().toString()}
                         : new Object[]{scope.customerAccountId().toString(), id};
                 Integer total = jdbc.queryForObject(
                         "SELECT count(*) FROM platform.audit_fact WHERE subject_ref = ?" + condition,
-                        Integer.class, args);
+                        Integer.class, countArgs);
+                java.util.List<Object> parameters = new java.util.ArrayList<>(
+                        java.util.Arrays.asList(countArgs));
+                String cursor = after == null ? "" : " AND audit_id > ?";
+                if (after != null) {
+                    parameters.add(after);
+                }
+                parameters.add(limit);
                 java.util.List<String> ids = jdbc.query(
                         "SELECT audit_id::text FROM platform.audit_fact WHERE subject_ref = ?"
-                                + condition + " ORDER BY audit_id LIMIT 50",
-                        (rs, row) -> rs.getString(1), args);
+                                + condition + cursor + " ORDER BY audit_id LIMIT ?",
+                        (rs, row) -> rs.getString(1), parameters.toArray());
                 return ResponseEntity.ok(Map.<String, Object>of("total", total, "ids", ids));
             });
         }
