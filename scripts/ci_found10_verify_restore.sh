@@ -18,14 +18,27 @@ SELECT concat_ws('|',
   (SELECT bool_and(relrowsecurity AND relforcerowsecurity) FROM pg_class
    WHERE oid IN ('platform.audit_fact'::regclass,
                  'platform.outbox_event'::regclass,
-                 'platform.inbox_receipt'::regclass)));
+                 'platform.inbox_receipt'::regclass)),
+  (SELECT count(*) FROM pg_constraint
+   WHERE conrelid IN ('platform.audit_fact'::regclass,
+                      'platform.outbox_event'::regclass,
+                      'platform.inbox_receipt'::regclass)
+     AND contype IN ('p', 'c', 'u')),
+  (SELECT count(*) FROM pg_policies
+   WHERE schemaname='platform'
+     AND tablename IN ('audit_fact','outbox_event','inbox_receipt')),
+  has_table_privilege('keruenix_ci_login','platform.outbox_event','SELECT'),
+  NOT has_schema_privilege('keruenix_ci_login','platform','CREATE'));
 SQL
 )
   [[ "$result" == *"found10-v1"* ]] || { echo "Missing V1 fixture in $db" >&2; exit 1; }
   [[ "$result" == *"found10:restore"* ]] || { echo "Missing audit record in $db" >&2; exit 1; }
-  [[ "$result" == *"|2|t" ]] || { echo "V2 checksum/RLS state incorrect in $db: $result" >&2; exit 1; }
+  [[ "$result" =~ \|2\|t\|[1-9][0-9]*\|[1-9][0-9]*\|t\|t$ ]] || {
+    echo "V2 checksum/RLS/constraints/policies/runtime grants incorrect in $db: $result" >&2
+    exit 1
+  }
   if [[ -z "$reference" ]]; then reference="$result"; else
     [[ "$result" == "$reference" ]] || { echo "Restored V2 differs from original V2" >&2; exit 1; }
   fi
 done
-echo "FOUND-10 populated V1->V2 & restore->V2 preserve payload, audit, history, FORCE RLS"
+echo "FOUND-10 populated V1->V2 & restore->V2 preserve payload, audit, history, FORCE RLS, constraints, policies and privileges"
