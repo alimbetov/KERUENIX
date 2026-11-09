@@ -151,6 +151,79 @@ class FoundationAtomicityGeographyContractTest {
         // application lon/lat validation policy: that remains an explicit RED target.
     }
 
+    /**
+     * FOUND-12: use a measured WGS84 geography distance as the threshold oracle.
+     * Epsilon avoids a hard-coded planar approximation and documents strict
+     * boundary semantics for the future routing/ETA API.
+     */
+    @Test
+    void found12GeographyThresholdUsesMetersAtBoundaryAndNeverLeaksAcrossTenants() {
+        UUID a = UUID.randomUUID(), b = UUID.randomUUID();
+        transactions.execute(TENANT_A, jdbc -> {
+            jdbc.update("""
+                    INSERT INTO platform.qualification_geo (tenant_id,location_id,position)
+                    VALUES (?, ?, ST_SetSRID(ST_MakePoint(76.9,43.2),4326)::geography)
+                    """, TENANT_A, a);
+            double distanceMeters = jdbc.queryForObject("""
+                    SELECT ST_Distance(position,
+                      ST_SetSRID(ST_MakePoint(76.9001,43.2),4326)::geography)
+                    FROM platform.qualification_geo WHERE location_id=?
+                    """, Double.class, a);
+            assertThat(distanceMeters).isBetween(5.0, 20.0);
+            for (double margin : new double[]{-0.5, 0.5}) {
+                int matches = jdbc.queryForObject("""
+                        SELECT count(*) FROM platform.qualification_geo
+                        WHERE location_id = ?
+                          AND ST_DWithin(position,
+                            ST_SetSRID(ST_MakePoint(76.9001,43.2),4326)::geography, ?)
+                        """, Integer.class, a, distanceMeters + margin);
+                assertThat(matches).isEqualTo(margin < 0 ? 0 : 1);
+            }
+            return null;
+        });
+        transactions.execute(TENANT_B, jdbc -> {
+            // Same coordinates in a different tenant are a separate record.
+            jdbc.update("""
+                    INSERT INTO platform.qualification_geo (tenant_id,location_id,position)
+                    VALUES (?, ?, ST_SetSRID(ST_MakePoint(76.9,43.2),4326)::geography)
+                    """, TENANT_B, b);
+            assertThat(jdbc.queryForObject("""
+                    SELECT count(*) FROM platform.qualification_geo
+                    WHERE ST_DWithin(position,
+                      ST_SetSRID(ST_MakePoint(76.9001,43.2),4326)::geography, 20)
+                    """, Integer.class)).isEqualTo(1);
+            assertThat(jdbc.queryForObject(
+                    "SELECT count(*) FROM platform.qualification_geo WHERE location_id=?",
+                    Integer.class, a)).isZero();
+            return null;
+        });
+        transactions.execute(TENANT_A, jdbc -> {
+            assertThat(jdbc.queryForObject(
+                    "SELECT count(*) FROM platform.qualification_geo WHERE location_id=?",
+                    Integer.class, b)).isZero();
+            return null;
+        });
+    }
+
+    /** RLS WITH CHECK must reject attempts to write another tenant's geography. */
+    @Test
+    void found12RejectsCrossTenantGeoWriteAndDoesNotPersistFailedRecord() {
+        UUID foreignId = UUID.randomUUID();
+        assertThatThrownBy(() -> transactions.execute(TENANT_A, jdbc -> {
+            jdbc.update("""
+                    INSERT INTO platform.qualification_geo (tenant_id,location_id,position)
+                    VALUES (?, ?, ST_SetSRID(ST_MakePoint(76.9,43.2),4326)::geography)
+                    """, TENANT_B, foreignId);
+            return null;
+        })).isInstanceOf(org.springframework.dao.DataAccessException.class);
+        transactions.execute(TENANT_B, jdbc -> {
+            assertThat(jdbc.queryForObject(
+                    "SELECT count(*) FROM platform.qualification_geo WHERE location_id=?",
+                    Integer.class, foreignId)).isZero();
+            return null;
+        });
+    }
+
     private static void insertTriplet(JdbcTemplate jdbc, UUID aggregate, UUID audit, UUID event) {
         jdbc.update("""
                 INSERT INTO platform.qualification_aggregate (tenant_id,aggregate_id,version)
