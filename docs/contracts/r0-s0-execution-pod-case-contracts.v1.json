@@ -721,7 +721,7 @@
         ],
         "dbOracle": "No signed POD, no foreign cargo details or document URL",
         "eventOracle": "No DeliveryAccepted, no new broad grant",
-        "httpUiOracle": "Link invalid; one-attempt scope",
+        "httpUiOracle": "The expired or guessed guest link returns a nondisclosing authorization failure; no cargo/recipient identifiers or document access URL are disclosed",
         "negativeVariants": [
           "forged account/tenant or expired grant must DENY",
           "replayed changed digest must CONFLICT and preserve original"
@@ -819,7 +819,7 @@
         ],
         "dbOracle": "Custody ledger untouched; suspicious historical evidence quarantined with verified server receipt",
         "eventOracle": "No PickupConfirmed or retroactive authority",
-        "httpUiOracle": "Incident/reconciliation required",
+        "httpUiOracle": "The revoked driver receives a DENIED or NEEDS_RECONCILIATION status with an incident reference; no pickup completion is acknowledged",
         "negativeVariants": [
           "forged account/tenant or expired grant must DENY",
           "replayed changed digest must CONFLICT and preserve original"
@@ -870,7 +870,7 @@
         ],
         "dbOracle": "Original accepted custody transition unchanged; tamper digest conflict durable",
         "eventOracle": "No second PickupConfirmed, no silent overwrite",
-        "httpUiOracle": "CONFLICT and support/inspection",
+        "httpUiOracle": "The app receives HTTP 409 conflict and a safe inspection route; no duplicate pickup success notification is displayed",
         "negativeVariants": [
           "forged account/tenant or expired grant must DENY",
           "replayed changed digest must CONFLICT and preserve original"
@@ -919,7 +919,7 @@
           "Dispatcher reassigns interrupted trip without actual signed handover"
         ],
         "dbOracle": "Keep original custodian; replacement driver assignment is distinct from custody transfer",
-        "eventOracle": "No CustodyTransferred event",
+        "eventOracle": "No CustodyTransferred event is issued; dispatcher reassigning a driver may emit assignment status but cannot publish a successful cargo handover without a verified proof",
         "httpUiOracle": "Interruption and pending transfer shown",
         "negativeVariants": [
           "forged account/tenant or expired grant must DENY",
