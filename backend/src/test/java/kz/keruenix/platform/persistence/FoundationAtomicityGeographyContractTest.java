@@ -165,8 +165,9 @@ class FoundationAtomicityGeographyContractTest {
                 INSERT INTO platform.outbox_event
                   (tenant_id,event_id,event_type,aggregate_ref,payload_schema_version,
                    payload,payload_sha256)
-                VALUES (?, ?,'Qualification','qualification:aggregate',1,'{}'::jsonb,?)
-                """, TENANT_A, event, DIGEST);
+                VALUES (?, ?,'Qualification',?,1,
+                        jsonb_build_object('aggregateId', CAST(? AS text), 'version', 1),?)
+                """, TENANT_A, event, "qualification:" + aggregate, aggregate, DIGEST);
     }
 
     private static void assertTripletCount(JdbcTemplate jdbc, UUID aggregate,
@@ -180,5 +181,22 @@ class FoundationAtomicityGeographyContractTest {
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM platform.outbox_event WHERE event_id=?",
                 Integer.class, event)).isEqualTo(expected);
+        if (expected == 1) {
+            assertThat(jdbc.queryForObject(
+                    "SELECT version FROM platform.qualification_aggregate WHERE aggregate_id=?",
+                    Integer.class, aggregate)).isEqualTo(1);
+            assertThat(jdbc.queryForObject(
+                    "SELECT subject_ref FROM platform.audit_fact WHERE audit_id=?",
+                    String.class, audit)).isEqualTo(aggregate.toString());
+            assertThat(jdbc.queryForObject(
+                    "SELECT aggregate_ref FROM platform.outbox_event WHERE event_id=?",
+                    String.class, event)).isEqualTo("qualification:" + aggregate);
+            assertThat(jdbc.queryForObject(
+                    "SELECT payload->>'aggregateId' FROM platform.outbox_event WHERE event_id=?",
+                    String.class, event)).isEqualTo(aggregate.toString());
+            assertThat(jdbc.queryForObject(
+                    "SELECT (payload->>'version')::integer FROM platform.outbox_event WHERE event_id=?",
+                    Integer.class, event)).isEqualTo(1);
+        }
     }
 }
