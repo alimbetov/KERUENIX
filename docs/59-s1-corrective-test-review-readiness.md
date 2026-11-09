@@ -18,7 +18,7 @@
 2. Verify FOUND-09 negative fixture detects a forbidden internal dependency, rather than a scanner/bootstrap exception.
 3. Check real PostgreSQL integration section reports **zero skipped tests** and validates FOUND-04, FOUND-12, JWT/ABAC, Outbox and Inbox.
 4. Confirm full FOUND-10 snapshot stage was executed; both V1->V2 upgrades and restore checks pass with *populated records*, correct IDs/payload, changelog count=2 and FORCE RLS. Ensure backup step is before V2 migration.
-5. Confirm RFQ suite is executed (4 tests). The expected-RED wrapper must verify **three targeted behavior failures, zero test errors**; the legal Submit denial must pass. Do not treat an arbitrary nonzero exit as valid RED.
+5. Confirm RFQ suite is executed (4 tests). The expected-RED wrapper must verify **two targeted missing-handler behavior failures, zero test errors; foreign-account and Submit denials must pass**; the legal Submit denial must pass. Do not treat an arbitrary nonzero exit as valid RED.
 6. Verify no test-only positive authorization route is registered in production application packages; no main merge or business-domain implementation in PR #3.
 
 ## Open blockers for independent S2 Test Review
