@@ -355,6 +355,76 @@ class TrustedTenantHttpIntegrationTest {
                 .andExpect(status().isOk());
     }
 
+
+    /**
+     * FOUND-08: export and aggregate facets are separate leak surfaces.
+     * Exact record filters keep fixture assertions independent of other tests.
+     */
+    @Test
+    void customerExportAndFacetCountsDoNotExposeOtherCustomerInSameTenant() throws Exception {
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID();
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_X))
+                .header("Authorization", "Bearer " + valid("alice"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(x, TENANT_A))).andExpect(status().isAccepted());
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_Y))
+                .header("Authorization", "Bearer " + valid("bob"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(y, TENANT_A))).andExpect(status().isAccepted());
+
+        String xExport = mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/export",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(xExport).contains(x.toString()).doesNotContain(y.toString());
+
+        String leaked = mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/export",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", y.toString()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(leaked).doesNotContain(y.toString());
+
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/facets",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", y.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0));
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/facets",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1));
+
+        for (String channel : new String[]{"export", "facets"}) {
+            mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/" + channel,
+                            TENANT_A, ACCOUNT_Y)
+                    .header("Authorization", "Bearer " + valid("alice")))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Test
+    void revokedGrantClosesExportAndFacetChannelsWithoutRefreshingJwt() throws Exception {
+        String token = valid("alice");
+        for (String channel : new String[]{"export", "facets"}) {
+            mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/" + channel,
+                            TENANT_A, ACCOUNT_X)
+                    .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk());
+        }
+        grantRegistry.revoke("alice", TENANT_A, ACCOUNT_X);
+        for (String channel : new String[]{"export", "facets"}) {
+            mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/" + channel,
+                            TENANT_A, ACCOUNT_X)
+                    .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
     @TestConfiguration(proxyBeanMethods = false)
     static class QualificationConfig {
         @Bean
@@ -442,6 +512,41 @@ class TrustedTenantHttpIntegrationTest {
             });
         }
 
+
+
+        @GetMapping("/__qualification/tenant/{tenant}/account/{account}/export")
+        ResponseEntity<String> export(
+                Authentication authentication, @PathVariable UUID tenant,
+                @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID id) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                String query = "SELECT audit_id::text FROM platform.audit_fact WHERE subject_ref = ?"
+                        + (id == null ? "" : " AND audit_id = ?") + " ORDER BY audit_id LIMIT 100";
+                Object[] args = id == null ? new Object[]{scope.customerAccountId().toString()}
+                        : new Object[]{scope.customerAccountId().toString(), id};
+                java.util.List<String> rows = jdbc.query(query,
+                        (rs, index) -> rs.getString(1), args);
+                return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv"))
+                        .body("audit_id\\n" + String.join("\\n", rows) + "\\n");
+            });
+        }
+
+        @GetMapping("/__qualification/tenant/{tenant}/account/{account}/facets")
+        ResponseEntity<Map<String, Object>> facets(
+                Authentication authentication, @PathVariable UUID tenant,
+                @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID id) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                String query = "SELECT count(*) FROM platform.audit_fact WHERE subject_ref = ?"
+                        + (id == null ? "" : " AND audit_id = ?");
+                Object[] args = id == null ? new Object[]{scope.customerAccountId().toString()}
+                        : new Object[]{scope.customerAccountId().toString(), id};
+                Integer count = jdbc.queryForObject(query, Integer.class, args);
+                return ResponseEntity.ok(Map.<String, Object>of("total", count));
+            });
+        }
 
         @PostMapping("/__qualification/tenant/{tenant}/account/{account}/probe")
         ResponseEntity<Map<String, String>> write(
