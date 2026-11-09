@@ -14,6 +14,7 @@ on:
       - 'backend/src/main/resources/db/changelog/**'
       - 'backend/src/main/resources/db/**'
       - 'scripts/test_pr01_pg_foundation.sh'
+      - 'scripts/ci_found10_*.sh'
       - '.github/workflows/pr01-pg-foundation.yml'
   push:
     branches: [main, docs/idea-multitenant-foundation]
@@ -117,6 +118,14 @@ jobs:
           KERUENIX_EXPECTED_CHANGESETS: '1'
           SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-v1-only.yaml
         run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: FOUND-10 snapshot populated V1 into independent restored DB
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+          KERUENIX_BACKUP_PATH: /tmp/keruenix-v1-found10.dump
+        run: bash scripts/ci_found10_snapshot_restore.sh
       - name: Liquibase upgrade existing V1 to V2
         env:
           KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_upgrade_test
@@ -126,6 +135,22 @@ jobs:
           KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
           KERUENIX_EXPECTED_CHANGESETS: '2'
         run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: Liquibase upgrade restored V1 snapshot to V2
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_restore_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+          KERUENIX_EXPECTED_CHANGESETS: '2'
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: FOUND-10 verify restored payload, audit, migrations and FORCE RLS
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+        run: bash scripts/ci_found10_verify_restore.sh
       - name: Prepare isolated checksum-drift database
         env:
           PGHOST: 127.0.0.1
