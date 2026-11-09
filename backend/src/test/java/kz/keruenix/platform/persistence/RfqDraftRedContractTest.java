@@ -9,6 +9,17 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import kz.keruenix.platform.errors.SecurityProblemHandler;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,18 +31,39 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * PR-04 safe RFQ Draft RED specification. No domain implementation or
- * test-only RFQ success controller: a valid, scoped customer must be able to
- * create a NON-BINDING draft only after S0/S2 review. The current production
- * SecurityConfig denyAll intentionally makes the positive test RED.
+ * test-only RFQ success controller: a verified customer must be able to
+ * create a NON-BINDING draft only after S0/S2 review. Test-only security
+ * enables authentication solely for Draft contract inspection, while denying
+ * Submit. Missing Draft handler is thus not confused with production denyAll.
  *
  * /api/v1/rfqs/drafts is a PROPOSED endpoint, not an approved public contract.
  */
 @EnabledIfEnvironmentVariable(named = "KERUENIX_DB_URL", matches = "jdbc:postgresql:.*")
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TrustedTenantHttpIntegrationTest.QualificationConfig.class)
+@Import({TrustedTenantHttpIntegrationTest.QualificationConfig.class, RfqDraftRedContractTest.DraftSecurityConfig.class})
 @ActiveProfiles({"platform-db", "platform-db-migrate-test"})
 class RfqDraftRedContractTest {
+    @TestConfiguration(proxyBeanMethods = false)
+    static class DraftSecurityConfig {
+        @Bean
+        @Order(1)
+        SecurityFilterChain rfqContractOnly(HttpSecurity http, SecurityProblemHandler errors)
+                throws Exception {
+            return http.securityMatcher("/api/v1/rfqs/**")
+                    .csrf(AbstractHttpConfigurer::disable)
+                    .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .authorizeHttpRequests(a -> a
+                            .requestMatchers(HttpMethod.POST, "/api/v1/rfqs/*/submit").denyAll()
+                            .anyRequest().authenticated())
+                    .exceptionHandling(e -> e.authenticationEntryPoint(errors)
+                            .accessDeniedHandler(errors))
+                    .oauth2ResourceServer(o -> o.authenticationEntryPoint(errors)
+                            .accessDeniedHandler(errors).jwt(Customizer.withDefaults()))
+                    .build();
+        }
+    }
+
     private static final UUID TENANT_A = TrustedTenantHttpIntegrationTest.TENANT_A;
     private static final UUID ACCOUNT_X = TrustedTenantHttpIntegrationTest.ACCOUNT_X;
     @Autowired MockMvc mvc;
@@ -62,7 +94,10 @@ class RfqDraftRedContractTest {
                 .header("Idempotency-Key", UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json(UUID.randomUUID())))
-                .andExpect(status().isCreated());  // deliberate behavior RED; never @Disabled
+                .andExpect(result -> assertThat(result.getHandler())
+                        .as("Missing PR-04 MVC Draft handler after valid JWT")
+                        .isInstanceOf(HandlerMethod.class))
+                .andExpect(status().isCreated());  // behavior RED, not security RED
         // To be extended after the canonical RFQ Draft schema/ADR is approved:
         // assert DRAFT persisted, same-key replay stable, new key different draft,
         // cargo hash immutable, no RFQ_SUBMITTED/QuoteAccepted/BookingConfirmed.
@@ -83,6 +118,9 @@ class RfqDraftRedContractTest {
                 .header("Idempotency-Key", key)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json(initialCargo)))
+                .andExpect(result -> assertThat(result.getHandler())
+                        .as("RFQ Draft must resolve to a real MVC handler")
+                        .isInstanceOf(HandlerMethod.class))
                 .andExpect(status().isCreated())
                 .andReturn();
 
