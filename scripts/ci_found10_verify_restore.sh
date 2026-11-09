@@ -27,7 +27,7 @@ SELECT concat_ws('|',
   (SELECT count(*) FROM pg_policies
    WHERE schemaname='platform'
      AND tablename IN ('audit_fact','outbox_event','inbox_receipt')),
-  has_table_privilege('keruenix_ci_login','platform.outbox_event','SELECT'),
+  NOT has_table_privilege('keruenix_ci_login','platform.outbox_event','SELECT'),
   NOT has_schema_privilege('keruenix_ci_login','platform','CREATE'));
 SQL
 )
@@ -41,4 +41,4 @@ SQL
     [[ "$result" == "$reference" ]] || { echo "Restored V2 differs from original V2" >&2; exit 1; }
   fi
 done
-echo "FOUND-10 populated V1->V2 & restore->V2 preserve payload, audit, history, FORCE RLS, constraints, policies and privileges"
+echo "FOUND-10 populated V1->V2 & restore->V2 preserve payload, audit, history, FORCE RLS, constraints, policies and default-deny privileges"
