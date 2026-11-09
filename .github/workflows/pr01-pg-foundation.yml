@@ -16,6 +16,7 @@ on:
       - 'scripts/test_pr01_pg_foundation.sh'
       - 'scripts/ci_found10_*.sh'
       - 'scripts/ci_assert_rfq_draft_red.sh'
+      - 'docs/59-s1-corrective-test-review-readiness.md'
       - '.github/workflows/pr01-pg-foundation.yml'
   push:
     branches: [main, docs/idea-multitenant-foundation]
