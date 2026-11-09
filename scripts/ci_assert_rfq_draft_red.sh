@@ -22,8 +22,8 @@ grep -Fq "RFQ Draft must resolve to a real MVC handler" "$log" || {
   echo "ERROR: idempotency case did not reach intended missing-handler oracle" >&2
   exit 1
 }
-grep -Eq 'Tests run: 4, Failures: 3, Errors: 0' "$log" || {
+grep -Eq 'Tests run: 4, Failures: 2, Errors: 0' "$log" || {
   echo "ERROR: unexpected RFQ RED test count or setup failure" >&2
   exit 1
 }
-echo "EXPECTED_RFQ_BEHAVIOR_RED: 3 missing-handler/domain-oracle failures, 1 fail-closed Submit PASS"
+echo "EXPECTED_RFQ_BEHAVIOR_RED: 2 missing-handler failures; cross-account and binding Submit denied"
