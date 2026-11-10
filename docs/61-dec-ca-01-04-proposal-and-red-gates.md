@@ -1,3 +1,5 @@
+> **R0 PRODUCT DIRECTION ACCEPTED (2026-11-10):** The sponsor chose the lean PostgreSQL-first design. [Decision 62](./62-r0-pragmatic-architecture-adoption.md) supersedes this document wherever it suggests an unconditional production CachePort or a second generic CustomerAccount job table. CA-CACHE proposals are **DEFERRED** (not PASS); first real behavioral RED should focus on grant security and existing outbox. This product acceptance is **not** Security/DB/Operations or independent S2 approval. Issues #4–#7 remain open.
+
 # DEC-CA-01…04 — CustomerAccount authorization, cache and jobs (S0 decision candidates)
 
 Status: **PROPOSED / AWAITING OWNER SIGN-OFF**. This file is a complete architecture recommendation, **not** an acceptance of BR-03, DEC-R0-02 or S2. Target: PR #3. Existing production behavior is fail-closed `denyAll`, and no CustomerAccount cache/job implementations are present.
