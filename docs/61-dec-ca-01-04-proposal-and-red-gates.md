@@ -70,6 +70,17 @@ All canonical values derived from verified resource ownership, not untrusted key
 
 The **pre-implementation RED sources** live under `backend/src/test-red/java` and are deliberately **not** in Maven's standard test source set. They target *absent production classes* and must not be confused with passing behavior tests. Their expected compilation failure is only `API_ABSENT_RED`, **not** `BEHAVIORAL_RED_QUALIFIED`. After the four DEC records are accepted, adapt these to the reviewed API, wire them against actual PostgreSQL + cache + worker adapters, execute failing behavioral integration tests, then obtain separate S2 Test Review **before any implementation**. Do not turn missing adapters into synthetic successful stubs.
 
+## Approval work items
+
+Decision approval is tracked in four **open** GitHub issues. Creating them is not an approval, and no verified reviewer usernames were available on PR #3 when the requests were filed:
+
+- [#4 DEC-CA-01](https://github.com/alimbetov/KERUENIX/issues/4): authoritative grants and revocation.
+- [#5 DEC-CA-02](https://github.com/alimbetov/KERUENIX/issues/5): protected-data caching and invalidation.
+- [#6 DEC-CA-03](https://github.com/alimbetov/KERUENIX/issues/6): service principals and delegated jobs.
+- [#7 DEC-CA-04](https://github.com/alimbetov/KERUENIX/issues/7): durable leases, fencing and artifact ACL.
+
+Do not infer approvals from `issue state=open/closed` alone. Each requires the named role's substantive GitHub review, explicitly accepted rationale, date and exact document SHA. BR-03/DEC-R0-02 must also be adjudicated, not merely referenced.
+
 ## Decision register and sign-off
 
 | Decision | Architecture recommendation | State | Required decision owners |
