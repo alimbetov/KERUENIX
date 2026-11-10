@@ -1,3 +1,5 @@
+> **Corrective note (2026-11-10):** Audit A-02 changed the Issue #8 direct `PlatformOutboxDelivery` test into an explicitly **passing generic-transport baseline**. It does *not* prove CustomerAccount authorization and should never be used as the S2 domain-behavior RED. Authorized Account dispatch RED remains blocked on the approved production grant/caller contract. The independent new A-03 PostgreSQL digest mismatch test is a **separate expected behavioral RED** (scripts/ci_assert_outbox_digest_red.sh). Statements below describing the old direct-dispatch test as an expected authorization RED refer only to historical evidence at SHA `25febf76`, not current qualification.
+
 # 63 — Issue #8: real PostgreSQL authorization-barrier RED evidence and S2 test-review packet
 
 **State: S1 partial behavioral RED candidate; independent S2 approval NOT GRANTED.** This is a deliberately failing business-security requirement exercised via the **existing production `PlatformOutboxDelivery`** and real PostgreSQL, not a mock worker, not a compilation error, and not a production security patch.
