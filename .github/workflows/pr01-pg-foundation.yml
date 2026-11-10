@@ -17,6 +17,7 @@ on:
       - 'scripts/ci_found10_*.sh'
       - 'scripts/ci_assert_rfq_draft_red.sh'
       - 'scripts/ci_assert_issue8_outbox_auth_red.sh'
+      - 'scripts/ci_assert_outbox_digest_red.sh'
       - 'docs/59-s1-corrective-test-review-readiness.md'
       - '.github/workflows/pr01-pg-foundation.yml'
   push:
@@ -199,7 +200,7 @@ jobs:
           KERUENIX_DB_MIGRATOR_USER: postgres
           KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
         run: bash scripts/ci_assert_rfq_draft_red.sh
-      - name: Issue 8 real PostgreSQL Account Outbox authorization behavioral RED (targeted)
+      - name: Issue 8 generic Outbox transport baseline — not account-auth RED
         env:
           KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
           KERUENIX_DB_APP_USER: keruenix_ci_login
@@ -207,6 +208,14 @@ jobs:
           KERUENIX_DB_MIGRATOR_USER: postgres
           KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
         run: bash scripts/ci_assert_issue8_outbox_auth_red.sh
+      - name: Audit A-03 real PostgreSQL Outbox digest mismatch behavioral RED (targeted)
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+        run: bash scripts/ci_assert_outbox_digest_red.sh
       - name: Boot runtime without Liquibase admin credentials (separate process)
         env:
           KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
