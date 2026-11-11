@@ -206,9 +206,10 @@ class PlatformOutboxDeliveryIntegrationTest {
         assertThat(invocations.get()).as("two transport sends are expected").isEqualTo(2);
         assertThat(count("platform.inbox_receipt", event)).isEqualTo(1);
         assertThat(count("platform.audit_fact", event)).isEqualTo(1);
-        assertThat(appScope.execute(TENANT, jdbc -> jdbc.queryForObject(
+        String finalState = appScope.execute(TENANT, jdbc -> jdbc.queryForObject(
                 "SELECT delivery_state FROM platform.outbox_event WHERE event_id=?",
-                String.class, event))).isEqualTo("PUBLISHED");
+                String.class, event));
+        assertThat(finalState).isEqualTo("PUBLISHED");
     }
 
     @Test
