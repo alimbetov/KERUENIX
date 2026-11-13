@@ -1,3 +1,5 @@
+> **Business review amendment — 2026-11-13.** Read this technical S0 charter together with [docs/67 — business review and revised commercial roadmap](67-r0-business-review-revised-roadmap.md). The revised pilot is **one shipper + one carrier + one load + one transport leg**, with explicit price/terms, pickup custody, a genuine POD, and a documented exception route. The G0→G5 business gates in docs/67 take precedence for *priority and pilot scope*; VS-01…14 remain technical scenario candidates to reconcile against the existing 132-scenario register. Neither document approves legal booking semantics or independent S2/S3.
+
 # 66 — R0 vertical slice S0: RFQ Draft → agreement → Execution → POD
 
 **Status: S0 proposed execution design; NO production implementation approval.** This document specifies the first complete customer-isolated business journey in KERUENIX. It does **not** implement or qualify binding transport contracts or claim that current services support these operations.
