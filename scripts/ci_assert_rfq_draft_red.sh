@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# S1 intentional RED: make CI GREEN only if the *expected* missing business
-# handler is demonstrated. Build/boot/security errors must FAIL this check.
+# S1 PRELIMINARY CONTRACT-UNWIRED evidence only: the RFQ handler is absent.
+# This wrapper MUST NOT be presented as authorized production-domain behavioral RED.
+# Build/boot/security errors must FAIL this check.
 set -euo pipefail
 log=$(mktemp)
 trap 'rm -f "$log"' EXIT
@@ -22,8 +23,9 @@ grep -Fq "RFQ Draft must resolve to a real MVC handler" "$log" || {
   echo "ERROR: idempotency case did not reach intended missing-handler oracle" >&2
   exit 1
 }
-grep -Eq 'Tests run: 4, Failures: 2, Errors: 0' "$log" || {
+grep -Eq 'Tests run: 4, Failures: 2, Errors: 0, Skipped: 0' "$log" || {
   echo "ERROR: unexpected RFQ RED test count or setup failure" >&2
   exit 1
 }
-echo "EXPECTED_RFQ_BEHAVIOR_RED: 2 missing-handler failures; cross-account and binding Submit denied"
+echo "RFQ_DRAFT_CONTRACT_UNWIRED: 2 expected missing-handler assertions on PostgreSQL; 2 synthetic-auth security negatives passed"
+echo "NOT_G1_BEHAVIORAL_RED_QUALIFIED: real PostgreSQL account grants and production RFQ command boundary absent; S2 NO-GO"
