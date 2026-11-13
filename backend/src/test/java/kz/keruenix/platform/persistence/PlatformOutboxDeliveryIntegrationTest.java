@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles({"platform-db","platform-db-migrate-test"})
 class PlatformOutboxDeliveryIntegrationTest {
-    static final UUID TENANT=UUID.fromString("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+    final UUID TENANT=UUID.randomUUID(); // isolate Outbox rows across JUnit test methods
     static final UUID OTHER=UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
     @Autowired DataSource dataSource;
     PlatformTenantTransaction appScope;
