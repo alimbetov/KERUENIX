@@ -51,6 +51,7 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -58,6 +59,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -104,6 +106,24 @@ class TrustedTenantHttpIntegrationTest {
                 System.getenv("KERUENIX_DB_MIGRATOR_PASSWORD"));
              Statement ddl = admin.createStatement()) {
             ddl.execute(Files.readString(Path.of("db/admin/bootstrap_roles.sql")));
+            ddl.execute("""
+                    CREATE TABLE IF NOT EXISTS platform.qualification_account_geo (
+                      tenant_id uuid NOT NULL,
+                      customer_account_id uuid NOT NULL,
+                      location_id uuid NOT NULL,
+                      position geography(Point,4326) NOT NULL,
+                      PRIMARY KEY (tenant_id, customer_account_id, location_id)
+                    )
+                    """);
+            ddl.execute("""
+                    ALTER TABLE platform.qualification_account_geo ENABLE ROW LEVEL SECURITY;
+                    ALTER TABLE platform.qualification_account_geo FORCE ROW LEVEL SECURITY;
+                    DROP POLICY IF EXISTS q_account_geo_tenant ON platform.qualification_account_geo;
+                    CREATE POLICY q_account_geo_tenant ON platform.qualification_account_geo
+                        USING (tenant_id = platform.current_tenant_id())
+                        WITH CHECK (tenant_id = platform.current_tenant_id());
+                    GRANT SELECT, INSERT ON platform.qualification_account_geo TO keruenix_app;
+                    """);
             ddl.execute("GRANT keruenix_app TO keruenix_ci_login");
         }
     }
@@ -121,7 +141,7 @@ class TrustedTenantHttpIntegrationTest {
         return signed.serialize();
     }
 
-    private static String valid(String subject) throws Exception {
+    static String valid(String subject) throws Exception {
         return sign(subject, ISSUER, AUDIENCE, Instant.now().plusSeconds(300),
                 (RSAPrivateKey) rsaKeys.getPrivate());
     }
@@ -266,6 +286,37 @@ class TrustedTenantHttpIntegrationTest {
 
 
     @Test
+    void customerCursorPageDoesNotBypassAccountFilterOrTotal() throws Exception {
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID();
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_X))
+                .header("Authorization", "Bearer " + valid("alice"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(x, TENANT_A))).andExpect(status().isAccepted());
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_Y))
+                .header("Authorization", "Bearer " + valid("bob"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(y, TENANT_A))).andExpect(status().isAccepted());
+
+        String endpoint = "/__qualification/tenant/{tenant}/account/{account}/records";
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()).param("after", x.toString()).param("limit", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.ids").isEmpty());
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", y.toString()).param("limit", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.ids").isEmpty());
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("after", x.toString()).param("limit", "1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void revokedCustomerGrantImmediatelyDeniesSamePreviouslyValidJwt() throws Exception {
         String stillSignedAndUnexpiredToken = valid("alice");
         UUID first = UUID.randomUUID(), second = UUID.randomUUID();
@@ -294,6 +345,200 @@ class TrustedTenantHttpIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload(bob, TENANT_A)))
                 .andExpect(status().isAccepted());
+    }
+
+
+    /**
+     * FOUND-08 / NEG-R0-005: X/Y have the same provider tenant, so tenant RLS
+     * alone cannot prevent count/list leakage; ABAC must precede pagination.
+     */
+    @Test
+    void customerAccountCountAndIdsAreScopedBeforePagination() throws Exception {
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID();
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_X))
+                .header("Authorization", "Bearer " + valid("alice"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(x, TENANT_A))).andExpect(status().isAccepted());
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_Y))
+                .header("Authorization", "Bearer " + valid("bob"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(y, TENANT_A))).andExpect(status().isAccepted());
+
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.ids[0]").value(x.toString()));
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", y.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.ids").isEmpty());
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("alice")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("KX-AUTH-403-001"));
+    }
+
+    @Test
+    void revokeStopsNewCustomerListAndCountEvenWithOldValidJwt() throws Exception {
+        String token = valid("alice");
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        grantRegistry.revoke("alice", TENANT_A, ACCOUNT_X);
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("KX-AUTH-403-001"));
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/records",
+                        TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("bob")))
+                .andExpect(status().isOk());
+    }
+
+
+    /**
+     * FOUND-08: export and aggregate facets are separate leak surfaces.
+     * Exact record filters keep fixture assertions independent of other tests.
+     */
+    @Test
+    void customerExportAndFacetCountsDoNotExposeOtherCustomerInSameTenant() throws Exception {
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID();
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_X))
+                .header("Authorization", "Bearer " + valid("alice"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(x, TENANT_A))).andExpect(status().isAccepted());
+        mvc.perform(post(uri(TENANT_A, ACCOUNT_Y))
+                .header("Authorization", "Bearer " + valid("bob"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload(y, TENANT_A))).andExpect(status().isAccepted());
+
+        String xExport = mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/export",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(xExport).contains(x.toString()).doesNotContain(y.toString());
+
+        String leaked = mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/export",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", y.toString()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(leaked).doesNotContain(y.toString());
+
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/facets",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", y.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0));
+        mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/facets",
+                        TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1));
+
+        for (String channel : new String[]{"export", "facets"}) {
+            mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/" + channel,
+                            TENANT_A, ACCOUNT_Y)
+                    .header("Authorization", "Bearer " + valid("alice")))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Test
+    void revokedGrantClosesExportAndFacetChannelsWithoutRefreshingJwt() throws Exception {
+        String token = valid("alice");
+        for (String channel : new String[]{"export", "facets"}) {
+            mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/" + channel,
+                            TENANT_A, ACCOUNT_X)
+                    .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk());
+        }
+        grantRegistry.revoke("alice", TENANT_A, ACCOUNT_X);
+        for (String channel : new String[]{"export", "facets"}) {
+            mvc.perform(get("/__qualification/tenant/{tenant}/account/{account}/" + channel,
+                            TENANT_A, ACCOUNT_X)
+                    .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    /** Same tenant, two customers, identical positions: tenant RLS alone is insufficient. */
+    @Test
+    void customerGeoSearchIsScopedByCurrentServerGrantAndAccountBeforeDistance() throws Exception {
+        UUID x = UUID.randomUUID(), y = UUID.randomUUID();
+        String endpoint = "/__qualification/tenant/{tenant}/account/{account}/geo";
+        mvc.perform(post(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("id", x.toString()).param("lon", "76.9")
+                .param("lat", "43.2").param("srid", "4326"))
+                .andExpect(status().isAccepted());
+        mvc.perform(post(endpoint, TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("bob"))
+                .param("id", y.toString()).param("lon", "76.9")
+                .param("lat", "43.2").param("srid", "4326"))
+                .andExpect(status().isAccepted());
+
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("lon", "76.9").param("lat", "43.2").param("radius", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ids", org.hamcrest.Matchers.hasItem(x.toString())))
+                .andExpect(jsonPath("$.ids", org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.hasItem(y.toString()))));
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_Y)
+                .header("Authorization", "Bearer " + valid("alice"))
+                .param("lon", "76.9").param("lat", "43.2").param("radius", "5"))
+                .andExpect(status().isForbidden());
+    }
+
+    /** Reject bad WGS84 inputs before PostGIS and persist no invalid row. */
+    @Test
+    void customerGeoRejectsOutOfRangeCoordinatesAndWrongSrid() throws Exception {
+        String endpoint = "/__qualification/tenant/{tenant}/account/{account}/geo";
+        for (String[] invalid : new String[][]{
+                {"181","43.2","4326"}, {"76.9","91","4326"},
+                {"-181","43.2","4326"}, {"76.9","-91","4326"},
+                {"76.9","43.2","3857"}, {"NaN","43.2","4326"}}) {
+            UUID id = UUID.randomUUID();
+            mvc.perform(post(endpoint, TENANT_A, ACCOUNT_X)
+                    .header("Authorization", "Bearer " + valid("alice"))
+                    .param("id", id.toString()).param("lon", invalid[0])
+                    .param("lat", invalid[1]).param("srid", invalid[2]))
+                    .andExpect(status().isBadRequest());
+            new PlatformTenantTransaction(dataSource).execute(TENANT_A, jdbc -> {
+                assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM platform.qualification_account_geo WHERE location_id=?",
+                        Integer.class, id)).isZero();
+                return null;
+            });
+        }
+    }
+
+    @Test
+    void customerGeoRevocationClosesReadsUsingOldJwt() throws Exception {
+        String endpoint = "/__qualification/tenant/{tenant}/account/{account}/geo";
+        String jwt = valid("alice");
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + jwt)
+                .param("lon", "76.9").param("lat", "43.2").param("radius", "50"))
+                .andExpect(status().isOk());
+        grantRegistry.revoke("alice", TENANT_A, ACCOUNT_X);
+        mvc.perform(get(endpoint, TENANT_A, ACCOUNT_X)
+                .header("Authorization", "Bearer " + jwt)
+                .param("lon", "76.9").param("lat", "43.2").param("radius", "50"))
+                .andExpect(status().isForbidden());
     }
 
     @TestConfiguration(proxyBeanMethods = false)
@@ -359,6 +604,133 @@ class TrustedTenantHttpIntegrationTest {
         }
 
         record ProbeCommand(UUID eventId, UUID tenantId) {}
+
+        @GetMapping("/__qualification/tenant/{tenant}/account/{account}/records")
+        ResponseEntity<Map<String, Object>> list(
+                Authentication authentication,
+                @PathVariable UUID tenant, @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID id,
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID after,
+                @org.springframework.web.bind.annotation.RequestParam(defaultValue = "50") int limit) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            if (limit < 1 || limit > 50) {
+                return ResponseEntity.badRequest()
+                        .body(Map.<String, Object>of("total", 0, "ids", java.util.List.of()));
+            }
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                // Account predicate is mandatory for count AND cursor/page query.
+                String condition = id == null ? "" : " AND audit_id = ?";
+                Object[] countArgs = id == null
+                        ? new Object[]{scope.customerAccountId().toString()}
+                        : new Object[]{scope.customerAccountId().toString(), id};
+                Integer total = jdbc.queryForObject(
+                        "SELECT count(*) FROM platform.audit_fact WHERE subject_ref = ?" + condition,
+                        Integer.class, countArgs);
+                java.util.List<Object> parameters = new java.util.ArrayList<>(
+                        java.util.Arrays.asList(countArgs));
+                String cursor = after == null ? "" : " AND audit_id > ?";
+                if (after != null) {
+                    parameters.add(after);
+                }
+                parameters.add(limit);
+                java.util.List<String> ids = jdbc.query(
+                        "SELECT audit_id::text FROM platform.audit_fact WHERE subject_ref = ?"
+                                + condition + cursor + " ORDER BY audit_id LIMIT ?",
+                        (rs, row) -> rs.getString(1), parameters.toArray());
+                return ResponseEntity.ok(Map.<String, Object>of("total", total, "ids", ids));
+            });
+        }
+
+
+
+        @GetMapping("/__qualification/tenant/{tenant}/account/{account}/export")
+        ResponseEntity<String> export(
+                Authentication authentication, @PathVariable UUID tenant,
+                @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID id) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                String query = "SELECT audit_id::text FROM platform.audit_fact WHERE subject_ref = ?"
+                        + (id == null ? "" : " AND audit_id = ?") + " ORDER BY audit_id LIMIT 100";
+                Object[] args = id == null ? new Object[]{scope.customerAccountId().toString()}
+                        : new Object[]{scope.customerAccountId().toString(), id};
+                java.util.List<String> rows = jdbc.query(query,
+                        (rs, index) -> rs.getString(1), args);
+                return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv"))
+                        .body("audit_id\n" + String.join("\n", rows) + "\n");
+            });
+        }
+
+        @GetMapping("/__qualification/tenant/{tenant}/account/{account}/facets")
+        ResponseEntity<Map<String, Object>> facets(
+                Authentication authentication, @PathVariable UUID tenant,
+                @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam(required = false) UUID id) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                String query = "SELECT count(*) FROM platform.audit_fact WHERE subject_ref = ?"
+                        + (id == null ? "" : " AND audit_id = ?");
+                Object[] args = id == null ? new Object[]{scope.customerAccountId().toString()}
+                        : new Object[]{scope.customerAccountId().toString(), id};
+                Integer count = jdbc.queryForObject(query, Integer.class, args);
+                return ResponseEntity.ok(Map.<String, Object>of("total", count));
+            });
+        }
+
+        /**
+         * Qualification-only GIS CRUD. Must never ship as a production endpoint.
+         * Server grant is checked before the tenant-scoped query; account
+         * predicate is mandatory even though RLS covers only tenant_id.
+         */
+        @PostMapping("/__qualification/tenant/{tenant}/account/{account}/geo")
+        ResponseEntity<Map<String, Object>> putGeo(
+                Authentication authentication, @PathVariable UUID tenant,
+                @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam UUID id,
+                @org.springframework.web.bind.annotation.RequestParam double lon,
+                @org.springframework.web.bind.annotation.RequestParam double lat,
+                @org.springframework.web.bind.annotation.RequestParam int srid) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            if (!Double.isFinite(lon) || !Double.isFinite(lat)
+                    || lon < -180 || lon > 180 || lat < -90 || lat > 90
+                    || srid != 4326) {
+                return ResponseEntity.badRequest().body(Map.of("code", "INVALID_GEO_POINT"));
+            }
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                jdbc.update("""
+                        INSERT INTO platform.qualification_account_geo
+                          (tenant_id,customer_account_id,location_id,position)
+                        VALUES (?, ?, ?, ST_SetSRID(ST_MakePoint(?,?),4326)::geography)
+                        """, scope.tenantId(), scope.customerAccountId(), id, lon, lat);
+                return ResponseEntity.accepted().body(Map.<String, Object>of("id", id.toString()));
+            });
+        }
+
+        @GetMapping("/__qualification/tenant/{tenant}/account/{account}/geo")
+        ResponseEntity<Map<String, Object>> getGeo(
+                Authentication authentication, @PathVariable UUID tenant,
+                @PathVariable UUID account,
+                @org.springframework.web.bind.annotation.RequestParam double lon,
+                @org.springframework.web.bind.annotation.RequestParam double lat,
+                @org.springframework.web.bind.annotation.RequestParam double radius) {
+            var scope = authorization.authorize(authentication, tenant, account, null, tenant);
+            if (!Double.isFinite(lon) || !Double.isFinite(lat) || !Double.isFinite(radius)
+                    || lon < -180 || lon > 180 || lat < -90 || lat > 90
+                    || radius < 0 || radius > 100000) {
+                return ResponseEntity.badRequest().body(Map.of("code", "INVALID_GEO_QUERY"));
+            }
+            return transactions.execute(scope.tenantId(), jdbc -> {
+                var ids = jdbc.query("""
+                        SELECT location_id::text FROM platform.qualification_account_geo
+                        WHERE customer_account_id = ?
+                          AND ST_DWithin(position,
+                            ST_SetSRID(ST_MakePoint(?,?),4326)::geography, ?)
+                        ORDER BY location_id
+                        """, (rs, i) -> rs.getString(1),
+                        scope.customerAccountId(), lon, lat, radius);
+                return ResponseEntity.ok(Map.<String, Object>of("total", ids.size(), "ids", ids));
+            });
+        }
 
         @PostMapping("/__qualification/tenant/{tenant}/account/{account}/probe")
         ResponseEntity<Map<String, String>> write(

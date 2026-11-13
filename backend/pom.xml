@@ -84,6 +84,34 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <!-- Opt-in, intentionally RED proposal sources. Normal verify never compiles them.
+         Only a separate CI classifier checks missing PRODUCTION ports; no mocks. -->
+    <profiles>
+        <profile>
+            <id>ca-adapter-red</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.1</version>
+                        <executions>
+                            <execution>
+                                <id>include-ca-adapter-red-sources</id>
+                                <phase>generate-test-sources</phase>
+                                <goals><goal>add-test-source</goal></goals>
+                                <configuration>
+                                    <sources>
+                                        <source>${project.basedir}/src/test-red/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>

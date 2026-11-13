@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles({"platform-db","platform-db-migrate-test"})
 class PlatformOutboxDeliveryIntegrationTest {
-    static final UUID TENANT=UUID.fromString("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+    final UUID TENANT=UUID.randomUUID(); // isolate Outbox rows across JUnit test methods
     static final UUID OTHER=UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
     @Autowired DataSource dataSource;
     PlatformTenantTransaction appScope;
@@ -144,6 +144,72 @@ class PlatformOutboxDeliveryIntegrationTest {
                 String.class,event));
         assertThat(published).isEqualTo("PUBLISHED");
         assertThat(delivery.dispatchNext(TENANT,"worker-third",30,sender)).isFalse();
+    }
+
+    /**
+     * A-05: lease expiration during Sender.send permits a second send.
+     * Both real dispatcher transactions use PostgreSQL; Inbox prevents two
+     * logical audit effects. This is at-least-once, NOT exactly-once I/O.
+     */
+    @Test
+    void expiredLeaseDuringSlowSendRedeliversButConsumerEffectIsIdempotent() throws Exception {
+        UUID event = seed();
+        var oldEnteredSend = new java.util.concurrent.CountDownLatch(1);
+        var allowOldReturn = new java.util.concurrent.CountDownLatch(1);
+        var invocations = new java.util.concurrent.atomic.AtomicInteger();
+        try (var pool = java.util.concurrent.Executors.newSingleThreadExecutor()) {
+            var old = pool.submit(() -> {
+                try {
+                    delivery.dispatchNext(TENANT, "slow-old", 60, envelope -> {
+                        assertThat(envelope.eventId()).isEqualTo(event);
+                        invocations.incrementAndGet();
+                        consume(envelope);
+                        oldEnteredSend.countDown();
+                        try {
+                            if (!allowOldReturn.await(20, java.util.concurrent.TimeUnit.SECONDS)) {
+                                throw new IllegalStateException("release latch timed out");
+                            }
+                        } catch (InterruptedException interrupted) {
+                            Thread.currentThread().interrupt();
+                            throw new IllegalStateException(interrupted);
+                        }
+                    });
+                    return "ACK_UNEXPECTED";
+                } catch (IllegalStateException expected) {
+                    return expected.getMessage();
+                }
+            });
+            assertThat(oldEnteredSend.await(20, java.util.concurrent.TimeUnit.SECONDS))
+                    .as("old sender actually reached side-effect boundary").isTrue();
+            try (Connection admin=admin(); PreparedStatement expire=admin.prepareStatement("""
+                    UPDATE platform.outbox_event
+                       SET lease_until=clock_timestamp()-interval '1 second'
+                     WHERE tenant_id=? AND event_id=? AND delivery_state='CLAIMED'
+                    """)) {
+                expire.setObject(1, TENANT);
+                expire.setObject(2, event);
+                assertThat(expire.executeUpdate()).isEqualTo(1);
+            }
+            try {
+                assertThat(delivery.dispatchNext(TENANT, "new-after-expiry", 60,
+                        envelope -> {
+                            assertThat(envelope.eventId()).isEqualTo(event);
+                            invocations.incrementAndGet();
+                            consume(envelope);
+                        })).isTrue();
+            } finally {
+                allowOldReturn.countDown();
+            }
+            assertThat(old.get(25, java.util.concurrent.TimeUnit.SECONDS))
+                    .contains("Outbox lease lost before ACK");
+        }
+        assertThat(invocations.get()).as("two transport sends are expected").isEqualTo(2);
+        assertThat(count("platform.inbox_receipt", event)).isEqualTo(1);
+        assertThat(count("platform.audit_fact", event)).isEqualTo(1);
+        String finalState = appScope.execute(TENANT, jdbc -> jdbc.queryForObject(
+                "SELECT delivery_state FROM platform.outbox_event WHERE event_id=?",
+                String.class, event));
+        assertThat(finalState).isEqualTo("PUBLISHED");
     }
 
     @Test

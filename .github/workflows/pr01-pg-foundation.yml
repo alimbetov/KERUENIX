@@ -14,6 +14,12 @@ on:
       - 'backend/src/main/resources/db/changelog/**'
       - 'backend/src/main/resources/db/**'
       - 'scripts/test_pr01_pg_foundation.sh'
+      - 'scripts/ci_found10_*.sh'
+      - 'scripts/ci_assert_rfq_draft_red.sh'
+      - 'scripts/ci_assert_issue8_outbox_auth_red.sh'
+      - 'scripts/ci_assert_outbox_digest_red.sh'
+      - 'scripts/ci_assert_outbox_poison_red.sh'
+      - 'docs/59-s1-corrective-test-review-readiness.md'
       - '.github/workflows/pr01-pg-foundation.yml'
   push:
     branches: [main, docs/idea-multitenant-foundation]
@@ -64,6 +70,8 @@ jobs:
           java-version: '21'
           cache: maven
           cache-dependency-path: backend/pom.xml
+      - name: Verify FOUND-09 Modulith positive and forbidden-dependency fixture
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=ApplicationModulesContractTest,ModulithNegativeBoundaryTest test
       - name: Verify real platform RLS and PostGIS (partial FOUND qualification)
         env:
           PGHOST: 127.0.0.1
@@ -87,7 +95,7 @@ jobs:
           KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
           KERUENIX_DB_MIGRATOR_USER: postgres
           KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
-        run: mvn -B -ntp -f backend/pom.xml -Dtest=PlatformDatabaseIntegrationTest,PlatformOutboxClaimIntegrationTest,PlatformOutboxDeliveryIntegrationTest,TrustedTenantHttpIntegrationTest test
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=PlatformDatabaseIntegrationTest,PlatformOutboxClaimIntegrationTest,PlatformOutboxDeliveryIntegrationTest,TrustedTenantHttpIntegrationTest,FoundationAtomicityGeographyContractTest,G1PostgresOperationGrantQualificationTest test
       - name: Confirm Liquibase idempotent replay on already-migrated schema
         env:
           KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
@@ -115,6 +123,14 @@ jobs:
           KERUENIX_EXPECTED_CHANGESETS: '1'
           SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-v1-only.yaml
         run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: FOUND-10 snapshot populated V1 into independent restored DB
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+          KERUENIX_BACKUP_PATH: /tmp/keruenix-v1-found10.dump
+        run: bash scripts/ci_found10_snapshot_restore.sh
       - name: Liquibase upgrade existing V1 to V2
         env:
           KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_upgrade_test
@@ -124,6 +140,45 @@ jobs:
           KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
           KERUENIX_EXPECTED_CHANGESETS: '2'
         run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: Liquibase upgrade restored V1 snapshot to V2
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_restore_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+          KERUENIX_EXPECTED_CHANGESETS: '2'
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: FOUND-10 verify restored payload, audit, migrations and FORCE RLS
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+        run: bash scripts/ci_found10_verify_restore.sh
+      - name: Prepare isolated checksum-drift database
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: keruenix_foundation_test
+          PGUSER: postgres
+          PGPASSWORD: ci-only-admin
+        run: psql -X -v ON_ERROR_STOP=1 -c "CREATE DATABASE keruenix_checksum_test"
+      - name: Bootstrap isolated FOUND-10 checksum database
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_checksum_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+          KERUENIX_EXPECTED_CHANGESETS: '2'
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseMigrationStateTest test
+      - name: FOUND-10 detect checksum drift without changing shared DB
+        env:
+          KERUENIX_CHECKSUM_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_checksum_test
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+        run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseChecksumDriftContractTest test
       - name: Prepare synthetic legacy Flyway database
         env:
           PGHOST: 127.0.0.1
@@ -138,6 +193,38 @@ jobs:
           KERUENIX_DB_MIGRATOR_USER: postgres
           KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
         run: mvn -B -ntp -f backend/pom.xml -Dtest=LiquibaseFlywayHistoryGuardTest test
+      - name: RFQ Draft contract-unwired preflight (NOT qualified G1 behavior RED)
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+        run: bash scripts/ci_assert_rfq_draft_red.sh
+      - name: Issue 8 generic Outbox transport baseline — not account-auth RED
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+        run: bash scripts/ci_assert_issue8_outbox_auth_red.sh
+      - name: Audit A-03 real PostgreSQL Outbox digest mismatch behavioral RED (targeted)
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+        run: bash scripts/ci_assert_outbox_digest_red.sh
+      - name: Audit A-04 real PostgreSQL poison-event retry behavioral RED (targeted)
+        env:
+          KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
+          KERUENIX_DB_APP_USER: keruenix_ci_login
+          KERUENIX_DB_APP_PASSWORD: ci-only-isolated-database
+          KERUENIX_DB_MIGRATOR_USER: postgres
+          KERUENIX_DB_MIGRATOR_PASSWORD: ci-only-admin
+        run: bash scripts/ci_assert_outbox_poison_red.sh
       - name: Boot runtime without Liquibase admin credentials (separate process)
         env:
           KERUENIX_DB_URL: jdbc:postgresql://127.0.0.1:5432/keruenix_boot_test
