@@ -1,3 +1,5 @@
+> **G1 qualification clarification — 2026-11-13:** `scripts/ci_assert_rfq_draft_red.sh` is a **CONTRACT_UNWIRED preflight**, not a qualified G1 real-grant/domain behavioral RED. Its two missing-handler failures are expected with a synthetic test grant registry; its two negative authorization tests establish only the test fixture's safety. [docs/69](69-g1-rfq-s1-executable-oracles-and-gates.md) defines required real PostgreSQL account-grant, RFQ persistence and independent S2 evidence. Never elevate a `CONTRACT_UNWIRED` CI SUCCESS to G1 S2 acceptance.
+
 # 59 — S1 corrective cycle evidence and S2 Test Review gate
 
 **Status:** S1_CANDIDATE — **NOT S2 APPROVED**. This document is an audit checklist, not a release decision. Target PR: [#3](https://github.com/alimbetov/KERUENIX/pull/3), branch `test/s1-platform-tenancy-oracles`.
