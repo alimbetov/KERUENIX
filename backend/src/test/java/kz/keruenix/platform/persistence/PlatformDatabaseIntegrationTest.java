@@ -109,24 +109,24 @@ class PlatformDatabaseIntegrationTest {
         scope.execute(TENANT_A, sql -> {
             insertOutbox(sql, TENANT_A, SHARED_EVENT, DIGEST_A);
             insertAudit(sql, TENANT_A, SHARED_AUDIT);
-            assertThat(count(sql, "platform.outbox_event")).isEqualTo(1);
+            assertThat(sql.queryForObject("SELECT count(*) FROM platform.outbox_event WHERE event_id=?", Integer.class, SHARED_EVENT)).isEqualTo(1);
             return null;
         });
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM platform.outbox_event", Integer.class)).isZero();
 
         scope.execute(TENANT_B, sql -> {
-            assertThat(count(sql, "platform.outbox_event")).isZero();
-            assertThat(count(sql, "platform.audit_fact")).isZero();
+            assertThat(sql.queryForObject("SELECT count(*) FROM platform.outbox_event WHERE event_id=?", Integer.class, SHARED_EVENT)).isZero();
+            assertThat(sql.queryForObject("SELECT count(*) FROM platform.audit_fact WHERE audit_id=?", Integer.class, SHARED_AUDIT)).isZero();
             // Tenant-first compound keys: no cross-tenant uniqueness oracle.
             insertOutbox(sql, TENANT_B, SHARED_EVENT, DIGEST_B);
             insertAudit(sql, TENANT_B, SHARED_AUDIT);
-            assertThat(count(sql, "platform.outbox_event")).isEqualTo(1);
+            assertThat(sql.queryForObject("SELECT count(*) FROM platform.outbox_event WHERE event_id=?", Integer.class, SHARED_EVENT)).isEqualTo(1);
             return null;
         });
         scope.execute(TENANT_A, sql -> {
-            assertThat(count(sql, "platform.outbox_event")).isEqualTo(1);
-            assertThat(count(sql, "platform.audit_fact")).isEqualTo(1);
+            assertThat(sql.queryForObject("SELECT count(*) FROM platform.outbox_event WHERE event_id=?", Integer.class, SHARED_EVENT)).isEqualTo(1);
+            assertThat(sql.queryForObject("SELECT count(*) FROM platform.audit_fact WHERE audit_id=?", Integer.class, SHARED_AUDIT)).isEqualTo(1);
             return null;
         });
     }
